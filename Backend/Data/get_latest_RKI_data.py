@@ -3,20 +3,22 @@ import pandas as pd
 from datetime import datetime
 import time
 
-rki_res = req.get(
-    'https://services7.arcgis.com/mOBPykOjAyBO2ZKk/arcgis/rest/services/rki_history_hubv/FeatureServer/0/query?where=%20(AdmUnitId%20%3D%205515%20OR%20AdmUnitId%20%3D%205516)%20&outFields=*&outSR=4326&f=json')
-data = rki_res.json()
-data['features']
 
-records = []
+def create_csv_with_latest_rk_data():
+    rki_res = req.get(
+        'https://services7.arcgis.com/mOBPykOjAyBO2ZKk/arcgis/rest/services/rki_history_hubv/FeatureServer/0/query?where=%20(AdmUnitId%20%3D%205515%20OR%20AdmUnitId%20%3D%205516)%20&outFields=*&outSR=4326&f=json')
+    data = rki_res.json()
+    data['features']
 
-for rec in data['features']:
-    records.append(rec['attributes'])
+    records = []
 
-dataRKI = pd.DataFrame(records)
+    for rec in data['features']:
+        records.append(rec['attributes'])
 
-dataRKI = dataRKI.sort_values(by='Datum')
+    dataRKI = pd.DataFrame(records)
 
-datetime.today().strftime('%d%m%y')
+    dataRKI = dataRKI.sort_values(by='Datum')
 
-dataRKI.to_csv(datetime.today().strftime('%d%m%y')+'.csv')
+    datetime.today().strftime('%d%m%y')
+
+    dataRKI.to_csv(datetime.today().strftime('%d%m%y')+'.csv')
