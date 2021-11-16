@@ -19,6 +19,8 @@ def create_csv_with_latest_rki_data():
 
     dataRKI = dataRKI.sort_values(by='Datum')
 
+    dataRKI['Datum'] = dataRKI['Datum'].apply(lambda x: (datetime.fromtimestamp(x / 1000.0)).date())
+
     datetime.today().strftime('%d%m%y')
 
     dataRKI.to_csv('./../Assets/Data/rki_data_'+datetime.today().strftime('%d%m%y')+'.csv')
