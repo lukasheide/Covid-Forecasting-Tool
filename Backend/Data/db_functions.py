@@ -23,6 +23,7 @@ def prepare_table(table_name):
                                                      'daily_rec INTEGER, '
                                                      'cum_rec INTEGER,'
                                                      'active_cases INTEGER,'
+                                                     'adjusted_active_cases INTEGER,'
                                                      'daily_vacc INTEGER, '
                                                      'cum_vacc INTEGER)')
     cursor.execute('DELETE FROM ' + table_name)
@@ -99,7 +100,7 @@ def execute_query(table, date1, date2, attributes):
     engine = get_engine()
 
     attributes_str = ''
-    if type(attributes) is list or tuple:
+    if type(attributes) is list or type(attributes) is tuple:
         attributes_str = ",".join(attributes)
 
     else:
@@ -108,8 +109,6 @@ def execute_query(table, date1, date2, attributes):
     query_sql = 'SELECT ' + attributes_str + ' FROM ' + table_name
 
     if date1 > 0 and date2 > 0:
-        query_sql = 'SELECT ' + attributes_str + \
-                    ' FROM ' + table_name + \
-                    ' WHERE date >= ' + str(date1) + ' AND date<=' + str(date2)
+        query_sql = query_sql + ' WHERE date >= ' + str(date1) + ' AND date<=' + str(date2)
 
     return pd.read_sql(query_sql, engine)

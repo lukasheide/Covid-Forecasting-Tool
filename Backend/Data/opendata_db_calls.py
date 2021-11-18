@@ -1,4 +1,5 @@
 import datetime
+import time
 
 import pandas as pd
 import requests
@@ -24,6 +25,17 @@ def get_data_by_date_and_attr(table, date1, date2, attributes):
         # will update/ create+update the table about to queried
         update_district_data(table)
         return execute_query(table, date1, date2, attributes)
+
+
+def update_all_district_data():
+
+    update_district_list()
+    district_list = execute_query("district_list", 0, 0, "district")
+
+    for district in district_list['district']:
+
+        update_district_data(district)
+        time.sleep(1)
 
 
 def update_district_data(district):
@@ -56,9 +68,12 @@ def update_district_data(district):
 
     daily_cases_list = {}
     cum_cases_list = {}
+    daily_cases_after14d = {}
+    cum_daily_cases_after14d = {}
 
     daily_deaths_list = {}
     cum_deaths_list = {}
+    cum_deaths_after14d = {}
 
     daily_recoveries_list = {}
     cum_recoveries_list = {}
@@ -68,6 +83,7 @@ def update_district_data(district):
 
     column_check_okay = False
 
+    cum_cases_a14d = 0
     for key, value in cases['result']['records'][0].items():
 
         if value == 'kr_inf_md':
@@ -75,6 +91,15 @@ def update_district_data(district):
 
         if column_check_okay and re.match("^(d[0-9]{8})", key):
             daily_cases_list[key] = value
+
+            date_obj = datetime.datetime.strptime(str(key).replace("d", ""), '%Y%m%d')
+            date_obj = date_obj + datetime.timedelta(days=14)
+            date = 'd' + date_obj.strftime('%Y%m%d')
+
+            daily_cases_after14d[date] = value
+            cum_cases_a14d = cum_cases_a14d + int(value)
+            cum_daily_cases_after14d[date] = cum_cases_a14d
+
     column_check_okay = False
     for key, value in cases['result']['records'][1].items():
 
@@ -83,7 +108,9 @@ def update_district_data(district):
 
         if column_check_okay and re.match("^(d[0-9]{8})", key):
             cum_cases_list[key] = value
+
     column_check_okay = False
+    cum_death_a14d = 0
     for key, value in deaths['result']['records'][0].items():
 
         if value == 'kr_tod_md':
@@ -91,6 +118,15 @@ def update_district_data(district):
 
         if column_check_okay and re.match("^(d[0-9]{8})", key):
             daily_deaths_list[key] = value
+
+            date_obj = datetime.datetime.strptime(str(key).replace("d", ""), '%Y%m%d')
+            date_obj = date_obj + datetime.timedelta(days=14)
+            date = 'd' + date_obj.strftime('%Y%m%d')
+
+            # daily_cases_after14d[date] = value
+            cum_death_a14d = cum_death_a14d + int(value)
+            cum_deaths_after14d[date] = cum_death_a14d
+
     column_check_okay = False
     for key, value in deaths['result']['records'][1].items():
 
@@ -99,6 +135,7 @@ def update_district_data(district):
 
         if column_check_okay and re.match("^(d[0-9]{8})", key):
             cum_deaths_list[key] = value
+
     column_check_okay = False
     for key, value in recoveries['result']['records'][0].items():
 
@@ -145,6 +182,10 @@ def update_district_data(district):
     cum_vac = 0
     for date, value in shortest.items():
         cum_vac = cum_vac + daily_vacc_list.get(date, 0)
+        adjusted_active_cases = int(cum_cases_list.get(date, 0)) - int(cum_deaths_list.get(date, 0))
+        if int(cum_daily_cases_after14d.get(date, 0)) > 0:
+            adjusted_active_cases - (int(cum_daily_cases_after14d.get(date, 0)) - int(cum_deaths_list.get(date, 0)))
+
         final_data.append((date,
                            daily_cases_list.get(date, 0),
                            cum_cases_list.get(date, 0),
@@ -155,8 +196,13 @@ def update_district_data(district):
                            (int(cum_cases_list.get(date, 0))
                             - int(cum_deaths_list.get(date, 0))
                             - int(cum_recoveries_list.get(date, 0))),
+                           adjusted_active_cases,
                            daily_vacc_list.get(date, 0),
                            cum_vacc_list.get(date, cum_vac)))
+
+    # ((int(cum_cases_list.get(date, 0)) - int(cum_daily_cases_after14d.get(date, 0)))
+    #  - (int(cum_deaths_list.get(date, 0)) - int(cum_deaths_after14d.get(date, 0)))
+    #  - int(daily_cases_after14d.get(date, 0))),
 
     df = pd.DataFrame(final_data)
     df.columns = ['date',
@@ -167,6 +213,7 @@ def update_district_data(district):
                   'daily_rec',
                   'cum_rec',
                   'active_cases',
+                  'adjusted_active_cases',
                   'daily_vacc',
                   'cum_vacc']
     df['date'] = df['date'].apply(lambda x: x.replace('d', ''))
@@ -193,7 +240,8 @@ def update_district_list():
 
 
 if __name__ == '__main__':
-    # update_district_data("Sömmerda")
+    update_district_data("Rhein-Neckar-Kreis")
     # update_district_list()
-    result_df = get_data_by_date_and_attr('Düsseldorf', 20210101, 20211031, ["daily_infec", "daily_deaths"])
-    print(result_df)
+    # result_df = get_data_by_date_and_attr('Rhein-Neckar-Kreis', 20210101, 20211031, ["daily_infec", "daily_deaths"])
+    # print(result_df)
+    # update_all_district_data()
