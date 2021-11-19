@@ -61,10 +61,15 @@ def update_district_data(district):
                                         'limit=1000&resource_id=df59e579-875d-497a-9eda-369722150d89&q=' + district
                                         , headers=headers)
 
+    response_incidents = requests.get('https://www.corona-datenplattform.de/api/3/action/datastore_search?limit=1000'
+                                  '&resource_id=8966dc58-c7f6-47a5-8af6-603fe72a5d4a&q=' + district + ':kr_inz_rate'
+                                  , headers=headers)
+
     cases = response_cases.json()
     deaths = response_deaths.json()
     recoveries = response_recoveries.json()
     vaccination = response_vaccination.json()
+    incidents = response_incidents.json()
 
     daily_cases_list = {}
     cum_cases_list = {}
@@ -80,6 +85,8 @@ def update_district_data(district):
 
     daily_vacc_list = {}
     cum_vacc_list = {}
+
+    daily_incidents_rate = {}
 
     column_check_okay = False
 
@@ -168,6 +175,17 @@ def update_district_data(district):
 
         # print(date, rec['kr_zweitimpf'], cum_vac)
 
+    for key, value in incidents['result']['records'][0].items():
+
+        if value == 'kr_inz_rate':
+            column_check_okay = True
+
+        if column_check_okay and re.match("^(d[0-9]{8})", key):
+            if float(value) < 0:
+                daily_incidents_rate[key] = 0
+            else:
+                daily_incidents_rate[key] = value
+
     shortest = {}
 
     if len(daily_cases_list) > len(daily_deaths_list):
@@ -184,7 +202,7 @@ def update_district_data(district):
         cum_vac = cum_vac + daily_vacc_list.get(date, 0)
         adjusted_active_cases = int(cum_cases_list.get(date, 0)) - int(cum_deaths_list.get(date, 0))
         if int(cum_daily_cases_after14d.get(date, 0)) > 0:
-            adjusted_active_cases - (int(cum_daily_cases_after14d.get(date, 0)) - int(cum_deaths_list.get(date, 0)))
+            adjusted_active_cases = adjusted_active_cases - (int(cum_daily_cases_after14d.get(date, 0)) - int(cum_deaths_list.get(date, 0)))
 
         final_data.append((date,
                            daily_cases_list.get(date, 0),
@@ -197,6 +215,7 @@ def update_district_data(district):
                             - int(cum_deaths_list.get(date, 0))
                             - int(cum_recoveries_list.get(date, 0))),
                            adjusted_active_cases,
+                           daily_incidents_rate.get(date, 0),
                            daily_vacc_list.get(date, 0),
                            cum_vacc_list.get(date, cum_vac)))
 
@@ -214,6 +233,7 @@ def update_district_data(district):
                   'cum_rec',
                   'active_cases',
                   'adjusted_active_cases',
+                  'daily_incidents_rate',
                   'daily_vacc',
                   'cum_vacc']
     df['date'] = df['date'].apply(lambda x: x.replace('d', ''))

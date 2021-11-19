@@ -24,6 +24,7 @@ def prepare_table(table_name):
                                                      'cum_rec INTEGER,'
                                                      'active_cases INTEGER,'
                                                      'adjusted_active_cases INTEGER,'
+                                                     'daily_incidents_rate INTEGER,'
                                                      'daily_vacc INTEGER, '
                                                      'cum_vacc INTEGER)')
     cursor.execute('DELETE FROM ' + table_name)
