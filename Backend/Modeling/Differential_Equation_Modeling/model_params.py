@@ -1,5 +1,9 @@
 params_SEIRV_fixed = {
-    'theta': 0.1,
     'delta': 1 / 3,
     'gamma': 1 / 11,
+    'theta': 0.1
+}
+
+params_SEIRV_fit = {
+    'beta': 0.4
 }

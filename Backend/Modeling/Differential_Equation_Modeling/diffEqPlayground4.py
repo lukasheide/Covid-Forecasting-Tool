@@ -15,11 +15,11 @@ def runner(y_true):
 
     beta = 0.4
 
-    params_start_guess = [beta]
+    fit_params_start_guess = [beta]
 
     opt_params, success = leastsq(
         func=fit_model,
-        x0=params_start_guess,
+        x0=fit_params_start_guess,
         args=(t_grid, y0, y_true)
     )
 
