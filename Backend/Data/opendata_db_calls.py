@@ -5,7 +5,9 @@ import pandas as pd
 import requests
 import re
 
-from Backend.Data.db_functions import update_db, execute_query
+from Backend.Data.db_functions import update_db, get_table_data
+
+population_map = {}
 
 
 def get_data_by_date_and_attr(table, date1, date2, attributes):
@@ -24,16 +26,23 @@ def get_data_by_date_and_attr(table, date1, date2, attributes):
     else:
         # will update/ create+update the table about to queried
         update_district_data(table)
-        return execute_query(table, date1, date2, attributes)
+        return get_table_data(table, date1, date2, attributes)
+
+
+def update_population_map():
+    pop_list = get_table_data("district_population", 0, 0, ["district", "population"], False)
+
+    global population_map
+    for index, row in pop_list.iterrows():
+        population_map[row['district']] = int(row['population'])
 
 
 def update_all_district_data():
-
     update_district_list()
-    district_list = execute_query("district_list", 0, 0, "district")
+    district_list = get_table_data("district_list", 0, 0, "district", False)
+    update_population_map()
 
     for district in district_list['district']:
-
         update_district_data(district)
         time.sleep(1)
 
@@ -62,8 +71,8 @@ def update_district_data(district):
                                         , headers=headers)
 
     response_incidents = requests.get('https://www.corona-datenplattform.de/api/3/action/datastore_search?limit=1000'
-                                  '&resource_id=8966dc58-c7f6-47a5-8af6-603fe72a5d4a&q=' + district + ':kr_inz_rate'
-                                  , headers=headers)
+                                      '&resource_id=8966dc58-c7f6-47a5-8af6-603fe72a5d4a&q=' + district + ':kr_inz_rate'
+                                      , headers=headers)
 
     cases = response_cases.json()
     deaths = response_deaths.json()
@@ -164,14 +173,10 @@ def update_district_data(district):
     for rec in vaccination['result']['records']:
         date_obj = datetime.datetime.strptime(rec['datum'], '%Y-%m-%d')
         date_obj = date_obj + datetime.timedelta(days=14)
-
         date = 'd' + date_obj.strftime('%Y%m%d')
-
         daily_vacc_list[date] = rec['kr_zweitimpf']
-
-        cum_vac = cum_vac + rec['kr_zweitimpf']
-
-        cum_vacc_list[date] = cum_vac
+        # cum_vac = cum_vac + rec['kr_zweitimpf']
+        # cum_vacc_list[date] = cum_vac
 
         # print(date, rec['kr_zweitimpf'], cum_vac)
 
@@ -202,10 +207,22 @@ def update_district_data(district):
         cum_vac = cum_vac + daily_vacc_list.get(date, 0)
         adjusted_active_cases = int(cum_cases_list.get(date, 0)) - int(cum_deaths_list.get(date, 0))
         if int(cum_daily_cases_after14d.get(date, 0)) > 0:
-            adjusted_active_cases = adjusted_active_cases - (int(cum_daily_cases_after14d.get(date, 0)) - int(cum_deaths_list.get(date, 0)))
+            adjusted_active_cases = adjusted_active_cases - (
+                    int(cum_daily_cases_after14d.get(date, 0)) - int(cum_deaths_list.get(date, 0)))
+
+        seven_day_avg = 0
+        for day in range(0, 7):
+            current_day = datetime.datetime.strptime(str(date).replace("d", ""), '%Y%m%d')
+            current_day = current_day - datetime.timedelta(days=day)
+            date_key = 'd' + current_day.strftime('%Y%m%d')
+            seven_day_avg = seven_day_avg + int(daily_cases_list.get(date_key, 0))
+
+        seven_day_avg = round(seven_day_avg / 7)
+        vacc_percentage = round(int(cum_vacc_list.get(date, cum_vac)) * 100 / population_map.get(district), 2)
 
         final_data.append((date,
                            daily_cases_list.get(date, 0),
+                           seven_day_avg,
                            cum_cases_list.get(date, 0),
                            daily_deaths_list.get(date, 0),
                            cum_deaths_list.get(date, 0),
@@ -217,15 +234,13 @@ def update_district_data(district):
                            adjusted_active_cases,
                            daily_incidents_rate.get(date, 0),
                            daily_vacc_list.get(date, 0),
-                           cum_vacc_list.get(date, cum_vac)))
-
-    # ((int(cum_cases_list.get(date, 0)) - int(cum_daily_cases_after14d.get(date, 0)))
-    #  - (int(cum_deaths_list.get(date, 0)) - int(cum_deaths_after14d.get(date, 0)))
-    #  - int(daily_cases_after14d.get(date, 0))),
+                           cum_vacc_list.get(date, cum_vac),
+                           vacc_percentage))
 
     df = pd.DataFrame(final_data)
     df.columns = ['date',
                   'daily_infec',
+                  'seven_day_infec',
                   'cum_infec',
                   'daily_deaths',
                   'cum_deaths',
@@ -235,7 +250,8 @@ def update_district_data(district):
                   'adjusted_active_cases',
                   'daily_incidents_rate',
                   'daily_vacc',
-                  'cum_vacc']
+                  'cum_vacc',
+                  'vacc_percentage']
     df['date'] = df['date'].apply(lambda x: x.replace('d', ''))
 
     update_db(district, df)
@@ -259,9 +275,35 @@ def update_district_list():
     update_db('district_list', df)
 
 
+def update_district_population():
+    headers = {
+        'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2MzcwNzU4MzksImp0aSI6ImV3Tk96Z0M4ZEJXdmYtc'
+                         '2wybDJfdS10NFY1Q0hySjlNamlsRElnVVdfODQifQ.q_YvSVMAed7MMZUi8om0UWla5YkPlCmckqGs_RHclfs'}
+    response = requests.get(
+        'https://www.corona-datenplattform.de/api/3/action/datastore_search?limit=1000&resource_id='
+        '6b208bc8-9b13-45c6-8614-d3ceef180e99'
+        , headers=headers)
+    populations = response.json()
+    district_list = []
+    for rec in populations['result']['records']:
+        district_list.append((rec['bundesland'], rec['kreis'], rec['kr_ew_19']))
+    district_list = list(set(district_list))
+    df = pd.DataFrame(district_list)
+    df.columns = ['state', 'district', 'population']
+    # df.to_csv('../../Assets/Data/district_list.csv')
+    update_db('district_population', df)
+
+
 if __name__ == '__main__':
-    update_district_data("Rhein-Neckar-Kreis")
+    # README: before running update_all_district_data()/update_district_data("district_name") for the FIRST time
+    #         RUN update_district_list() AND update_district_population() first.
+    #
+    #         ALWAYS RUN update_population_map() BEFORE when you run update_district_data("district_name")
+
     # update_district_list()
+    # update_district_population()
+    update_all_district_data()
+    # update_population_map()
+    # update_district_data("Münster")
     # result_df = get_data_by_date_and_attr('Rhein-Neckar-Kreis', 20210101, 20211031, ["daily_infec", "daily_deaths"])
     # print(result_df)
-    # update_all_district_data()

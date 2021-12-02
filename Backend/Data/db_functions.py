@@ -17,6 +17,7 @@ def prepare_table(table_name):
         'CREATE TABLE IF NOT EXISTS ' + table_name + '('
                                                      'date INTEGER, '
                                                      'daily_infec INTEGER, '
+                                                     'seven_day_infec INTEGER, '
                                                      'cum_infec INTEGER, '
                                                      'daily_deaths INTEGER, '
                                                      'cum_deaths INTEGER, '
@@ -26,7 +27,8 @@ def prepare_table(table_name):
                                                      'adjusted_active_cases INTEGER,'
                                                      'daily_incidents_rate INTEGER,'
                                                      'daily_vacc INTEGER, '
-                                                     'cum_vacc INTEGER)')
+                                                     'cum_vacc INTEGER, '
+                                                     'vacc_percentage INTEGER)')
     cursor.execute('DELETE FROM ' + table_name)
     connection.close()
 
@@ -78,6 +80,16 @@ def update_db(table_name, dataframe):
     dataframe.to_sql(table_name, engine, if_exists='replace', index=False)
 
 
+def update_district_matrices(table_name, definition,  dataframe):
+
+    table_name = format_name(table_name)
+    table_name = 'cor_matrix_' + definition + '_' + table_name
+    # prepare_table(table_name)
+    engine = get_engine()
+
+    dataframe.to_sql(table_name, engine, if_exists='replace', index=True, index_label='district_name')
+
+
 def evaluate_and_joining_dates(date1, date2):
     today = int(datetime.today().strftime('%Y%m%d'))
     # from_date = 0
@@ -96,7 +108,15 @@ def evaluate_and_joining_dates(date1, date2):
     #     print("invalid date parameter!")
 
 
-def execute_query(table, date1, date2, attributes):
+def get_relation_data():
+    reloaded_data = get_table_data('cor_matrix_incidents_districts', 0, 0, False, True)
+    # reloaded_data = reloaded_data.sort_values(district, ascending=False)
+    # reloaded_data = reloaded_data[district][:10].index.tolist()
+    # reloaded_data.set_index()
+    return reloaded_data
+
+
+def get_table_data(table, date1, date2, attributes, with_index):
     table_name = format_name(table)
     engine = get_engine()
 
@@ -104,12 +124,23 @@ def execute_query(table, date1, date2, attributes):
     if type(attributes) is list or type(attributes) is tuple:
         attributes_str = ",".join(attributes)
 
-    else:
+    elif type(attributes) is str:
         attributes_str = attributes
+
+    else:
+        attributes_str = '*'
 
     query_sql = 'SELECT ' + attributes_str + ' FROM ' + table_name
 
     if date1 > 0 and date2 > 0:
         query_sql = query_sql + ' WHERE date >= ' + str(date1) + ' AND date<=' + str(date2)
 
-    return pd.read_sql(query_sql, engine)
+    if with_index:
+        return pd.read_sql(table, engine, index_col=['district_name'])
+
+    else:
+        return pd.read_sql(query_sql, engine)
+
+
+# def generate_incidents_correlation():
+
