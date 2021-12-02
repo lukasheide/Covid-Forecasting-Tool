@@ -1,12 +1,10 @@
 import pandas as pd
 import numpy as np
 
-from Backend.Modeling.Differential_Equation_Modeling.model import run_SEIRV_model, fit_SEIRV_model
-from Backend.Modeling.Differential_Equation_Modeling.diffEqPlayground import model_fit
-from Backend.Modeling.Differential_Equation_Modeling.diffEqFittingAttempt import outer_function
-from Backend.Modeling.Differential_Equation_Modeling.diffEqPlayground2 import outer_function
-from Backend.Modeling.Differential_Equation_Modeling.diffEqPlayground3 import runner
-from Backend.Modeling.Differential_Equation_Modeling.diffEqPlayground4 import runner
+from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_model_pipeline
+
+from Backend.Evaluation.metrics import compute_evaluation_metrics
+
 
 def main():
 
@@ -36,12 +34,17 @@ def main():
     # get starting values for compartmental model and forward them
     start_vals = set_starting_values()
 
-    runner(inf_cases)
+    # call model pipeline:
+    y_pred = seirv_model_pipeline(inf_cases, start_vals)
+
+    # visualize model pipeline run:
 
 
 
-    # fit_SEIRV_model(num_days_train=num_days, train_data=inf_cases, starting_values=start_vals)
-    #run_SEIRV_model()
+    # compute metrics:
+    scores = compute_evaluation_metrics(y_pred=y_pred, y_true=inf_cases)
+
+
 
     print('end reached')
 
@@ -49,13 +52,13 @@ def main():
 # also to be deleted later on:
 def set_starting_values():
     S0 = 120000
-    E0 = 250
-    I0 = 1000
+    E0 = 2500
+    I0 = 10000
     R0 = 300000 - S0 - E0 - I0
-    I_cum = I0 + R0
+    # I_cum = I0 + R0
     V0 = 150000
 
-    return S0, E0, I0, R0, I_cum, V0
+    return S0, E0, I0, R0, V0
 
 
 if __name__ == '__main__':
