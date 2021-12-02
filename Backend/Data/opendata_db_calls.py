@@ -51,6 +51,9 @@ def update_population_map():
         else:
             population_map[row['district']] = int(row['population'])
 
+    # special name changes
+    population_map['München, Landeshauptstadt'] = population_map.pop('München, Stadt')
+
 
 def update_all_district_data():
     update_district_list()
