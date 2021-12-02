@@ -42,11 +42,11 @@ def update_population_map():
             # set the bigger population always as Kreis
             if existing_pop > int(row['population']):
                 population_map[row['district'] + ', Kreis'] = existing_pop
-                population_map[row['district'] + ', Stad'] = int(row['population'])
+                population_map[row['district'] + ', Stadt'] = int(row['population'])
 
             else:
                 population_map[row['district'] + ', Kreis'] = int(row['population'])
-                population_map[row['district'] + ', Stad'] = existing_pop
+                population_map[row['district'] + ', Stadt'] = existing_pop
 
         else:
             population_map[row['district']] = int(row['population'])
@@ -233,7 +233,7 @@ def update_district_data(district):
             seven_day_avg = seven_day_avg + int(daily_cases_list.get(date_key, 0))
 
         seven_day_avg = round(seven_day_avg / 7)
-        vacc_percentage = round(int(cum_vacc_list.get(date, cum_vac)) * 100 / population_map.get(district), 2)
+        vacc_percentage = round(int(cum_vacc_list.get(date, cum_vac)) * 100 / int(population_map.get(district)), 2)
 
         final_data.append((date,
                            daily_cases_list.get(date, 0),
@@ -313,12 +313,13 @@ if __name__ == '__main__':
     # README: before running update_all_district_data()/update_district_data("district_name") for the FIRST time
     #         RUN update_district_list() AND update_district_population() first.
     #
-    #         ALWAYS RUN update_population_map() BEFORE when you run update_district_data("district_name")
+    #         ALWAYS execute update_population_map() in the line BEFORE you run
+    #         update_district_data("district_name")
 
-    update_district_list()
-    update_district_population()
-    update_all_district_data()
+    # update_district_list()
+    # update_district_population()
     # update_population_map()
+    update_all_district_data()
     # update_district_data("Münster")
     # result_df = get_data_by_date_and_attr('Rhein-Neckar-Kreis', 20210101, 20211031, ["daily_infec", "daily_deaths"])
     # print(result_df)
