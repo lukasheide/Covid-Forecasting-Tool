@@ -34,7 +34,22 @@ def update_population_map():
 
     global population_map
     for index, row in pop_list.iterrows():
-        population_map[row['district']] = int(row['population'])
+
+        if row['district'] in population_map:
+            existing_pop = population_map.get(row['district'])
+            del population_map[row['district']]
+
+            # set the bigger population always as Kreis
+            if existing_pop > int(row['population']):
+                population_map[row['district'] + ', Kreis'] = existing_pop
+                population_map[row['district'] + ', Stad'] = int(row['population'])
+
+            else:
+                population_map[row['district'] + ', Kreis'] = int(row['population'])
+                population_map[row['district'] + ', Stad'] = existing_pop
+
+        else:
+            population_map[row['district']] = int(row['population'])
 
 
 def update_all_district_data():
@@ -218,7 +233,7 @@ def update_district_data(district):
             seven_day_avg = seven_day_avg + int(daily_cases_list.get(date_key, 0))
 
         seven_day_avg = round(seven_day_avg / 7)
-        vacc_percentage = round(int(cum_vacc_list.get(date, cum_vac)) * 100 / int(population_map.get(district)), 2)
+        vacc_percentage = round(int(cum_vacc_list.get(date, cum_vac)) * 100 / population_map.get(district), 2)
 
         final_data.append((date,
                            daily_cases_list.get(date, 0),
