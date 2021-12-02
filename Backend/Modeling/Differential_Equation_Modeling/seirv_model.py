@@ -1,9 +1,11 @@
 import numpy as np
 from scipy.integrate import odeint
 from Backend.Modeling.Differential_Equation_Modeling.model_params import params_SEIRV_fixed, params_SEIRV_fit
+from Backend.Modeling.Differential_Equation_Modeling.optimization_functions import weigh_residuals
 from scipy.optimize import curve_fit, leastsq
 import matplotlib.pyplot as plt
-import lmfit
+from Backend.Visualization.modeling_results import plot_train_and_val_infections
+
 
 
 def seirv_model_pipeline(y_train: np.array, start_vals_fitting: tuple, len_pred_period = 14):
@@ -51,9 +53,9 @@ def seirv_model_pipeline(y_train: np.array, start_vals_fitting: tuple, len_pred_
     fitted_and_fixed_params = tuple(opt_params) + tuple(fixed_params)
 
     # Retrieve values for each compartment over time:
-    S, E, I, R, V, cum_infections_pred, daily_infections_pred = solve_ode(y0=y0_train,
-                                                                t=t_grid_train,
-                                                                params=fitted_and_fixed_params)
+    S, E, I, R, V, cum_infections_fitted, daily_infections_fitted = solve_ode(y0=y0_train,
+                                                                              t=t_grid_train,
+                                                                              params=fitted_and_fixed_params)
 
 
     ## FORECASTING: Applying fitted model
@@ -66,26 +68,34 @@ def seirv_model_pipeline(y_train: np.array, start_vals_fitting: tuple, len_pred_
     fixed_params_predict = [param for param in params_SEIRV_fixed.values()]
     fitted_and_fixed_params_predict = tuple(opt_params) + tuple(fixed_params)
 
+
+    ### For debugging:
+    plot_train_and_val_infections(y_train=y_train, y_val=np.append(y_train[0], daily_infections_fitted))
+
+
     # Set up t_grid:
     t_grid_train = np.linspace(0, len_pred_period, len_pred_period + 1)
 
-    S_pred, E_pred, I_pred, R_pred, V_pred, cum_infections_pred, daily_infections_pred = solve_ode(y0=y0_predict,
+    S_pred, E_pred, I_pred, R_pred, V_pred, cum_infections_fitted, daily_infections_fitted = solve_ode(y0=y0_predict,
                                                                                                    t=t_grid_train,
                                                                                                    params=fitted_and_fixed_params_predict)
 
-    return daily_infections_pred
+    return daily_infections_fitted
 
 
 def fit_model(params_to_fit, t_grid, start_vals, y_true):
     fit_result = solve_ode_and_return_estimates_only(start_vals, t_grid, params_to_fit)
 
-    # drop the value at t=0 from y_true:
-    cropped_y_true = y_true[1:]
+    # add value at t=0 to fit_result:
+    y_fit = np.append(y_true[0], fit_result)
 
     # compute abs difference between predicted and actual infection counts:
-    residual = cropped_y_true - fit_result
+    residual = y_true - y_fit
 
-    return residual
+    # weight residuals:
+    weighted_residuals = weigh_residuals(residual)
+
+    return weighted_residuals
 
 
 def solve_ode_and_return_estimates_only(y0, t_grid, fit_params):
