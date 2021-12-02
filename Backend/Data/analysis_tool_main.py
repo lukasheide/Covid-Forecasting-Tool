@@ -35,7 +35,8 @@ attr_list = ['daily_infec',
              'adjusted_active_cases',
              'daily_incidents_rate',
              'daily_vacc',
-             'cum_vacc']
+             'cum_vacc',
+             'vacc_percentage']
 
 
 def create_data_set(reloaded_data):
@@ -52,7 +53,8 @@ def create_data_set(reloaded_data):
                                                    'adjusted_active_cases',
                                                    'daily_incidents_rate',
                                                    'daily_vacc',
-                                                   'cum_vacc'], False)
+                                                   'cum_vacc',
+                                                   'vacc_percentage'], False)
         dis_data['district'] = district
         frames.append(dis_data)
 
@@ -67,16 +69,18 @@ def create_data_set(reloaded_data):
                        'adjusted_active_cases',
                        'daily_incidents_rate',
                        'daily_vacc',
-                       'cum_vacc']] = all_district_data[['daily_infec',
-                                                         'cum_infec',
-                                                         'daily_deaths',
-                                                         'cum_deaths',
-                                                         'daily_rec',
-                                                         'cum_rec',
-                                                         'adjusted_active_cases',
-                                                         'daily_incidents_rate',
-                                                         'daily_vacc',
-                                                         'cum_vacc']].apply(pd.to_numeric)
+                       'cum_vacc',
+                       'vacc_percentage']] = all_district_data[['daily_infec',
+                                                                'cum_infec',
+                                                                'daily_deaths',
+                                                                'cum_deaths',
+                                                                'daily_rec',
+                                                                'cum_rec',
+                                                                'adjusted_active_cases',
+                                                                'daily_incidents_rate',
+                                                                'daily_vacc',
+                                                                'cum_vacc',
+                                                                'vacc_percentage']].apply(pd.to_numeric)
 
 
 def get_top_relation(district):
@@ -87,6 +91,7 @@ def get_top_relation(district):
     create_data_set(reloaded_data)
 
     return reloaded_data
+
 
 get_top_relation('Münster')
 
