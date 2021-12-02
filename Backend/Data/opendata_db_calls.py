@@ -53,6 +53,7 @@ def update_population_map():
 
     # special name changes
     population_map['München, Landeshauptstadt'] = population_map.pop('München, Stadt')
+    population_map['Leipzig, Kreis'], population_map['Leipzig, Stadt'] = population_map['Leipzig, Stadt'], population_map['Leipzig, Kreis']
 
 
 def update_all_district_data():
@@ -221,6 +222,7 @@ def update_district_data(district):
     final_data = []
 
     cum_vac = 0
+    curr_infectious = 0
     for date, value in shortest.items():
         cum_vac = cum_vac + daily_vacc_list.get(date, 0)
         adjusted_active_cases = int(cum_cases_list.get(date, 0)) - int(cum_deaths_list.get(date, 0))
@@ -238,8 +240,16 @@ def update_district_data(district):
         seven_day_avg = round(seven_day_avg / 7)
         vacc_percentage = round(int(cum_vacc_list.get(date, cum_vac)) * 100 / int(population_map.get(district)), 2)
 
+        current_day1 = datetime.datetime.strptime(str(date).replace("d", ""), '%Y%m%d')
+        date_bfr_3days = current_day1 - datetime.timedelta(days=3)
+        date_bfr_3days_key = 'd' + date_bfr_3days.strftime('%Y%m%d')
+        curr_infectious = (curr_infectious
+                           + int(daily_cases_list.get(date, 0))
+                           - int(daily_cases_list.get(date_bfr_3days_key, 0)))
+
         final_data.append((date,
                            daily_cases_list.get(date, 0),
+                           curr_infectious,
                            seven_day_avg,
                            cum_cases_list.get(date, 0),
                            daily_deaths_list.get(date, 0),
@@ -258,6 +268,7 @@ def update_district_data(district):
     df = pd.DataFrame(final_data)
     df.columns = ['date',
                   'daily_infec',
+                  'curr_infectious',
                   'seven_day_infec',
                   'cum_infec',
                   'daily_deaths',

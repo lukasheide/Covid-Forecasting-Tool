@@ -17,6 +17,7 @@ def prepare_table(table_name):
         'CREATE TABLE IF NOT EXISTS ' + table_name + '('
                                                      'date INTEGER, '
                                                      'daily_infec INTEGER, '
+                                                     'curr_infectious INTEGER, '
                                                      'seven_day_infec INTEGER, '
                                                      'cum_infec INTEGER, '
                                                      'daily_deaths INTEGER, '
