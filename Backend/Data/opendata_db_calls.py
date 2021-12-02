@@ -218,7 +218,7 @@ def update_district_data(district):
             seven_day_avg = seven_day_avg + int(daily_cases_list.get(date_key, 0))
 
         seven_day_avg = round(seven_day_avg / 7)
-        vacc_percentage = round(int(cum_vacc_list.get(date, cum_vac)) * 100 / population_map.get(district), 2)
+        vacc_percentage = round((int(cum_vacc_list.get(date, cum_vac)) * 100 / population_map.get(district)), 2)
 
         final_data.append((date,
                            daily_cases_list.get(date, 0),
@@ -300,8 +300,8 @@ if __name__ == '__main__':
     #
     #         ALWAYS RUN update_population_map() BEFORE when you run update_district_data("district_name")
 
-    # update_district_list()
-    # update_district_population()
+    update_district_list()
+    update_district_population()
     update_all_district_data()
     # update_population_map()
     # update_district_data("Münster")
