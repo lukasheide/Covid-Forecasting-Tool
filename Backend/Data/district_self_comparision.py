@@ -94,7 +94,15 @@ def create_district_data(district):
     all_district_data['value'] = pd.to_numeric(all_district_data['value'])
 
 
-create_district_data('Münster')
+# create_district_data('Münster')
+
+@app.callback(
+    Output(component_id='attr-list-dropdown', component_property='value'),
+    Input(component_id='district-dropdown', component_property='value'),
+)
+def update_graphs(district):
+    create_district_data(district)
+    return ['vacc_percentage', 'seven_day_infec']
 
 @app.callback(
     Output(component_id='attr-graph', component_property='figure'),

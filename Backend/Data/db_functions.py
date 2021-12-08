@@ -81,14 +81,14 @@ def update_db(table_name, dataframe):
     dataframe.to_sql(table_name, engine, if_exists='replace', index=False)
 
 
-def update_district_matrices(table_name, definition,  dataframe):
+def update_district_matrices(table_name, definition,  dataframe, index_label):
 
     table_name = format_name(table_name)
     table_name = 'cor_matrix_' + definition + '_' + table_name
     # prepare_table(table_name)
     engine = get_engine()
 
-    dataframe.to_sql(table_name, engine, if_exists='replace', index=True, index_label='district_name')
+    dataframe.to_sql(table_name, engine, if_exists='replace', index=True, index_label=index_label)
 
 
 def evaluate_and_joining_dates(date1, date2):
@@ -142,6 +142,14 @@ def get_table_data(table, date1, date2, attributes, with_index):
     else:
         return pd.read_sql(query_sql, engine)
 
+
+def get_filtered_table_data(table, result_attr, cond_attr, con_value):
+    table_name = format_name(table)
+    engine = get_engine()
+
+    query_str = 'SELECT ' + result_attr + ' FROM ' + table_name + ' WHERE ' + cond_attr + ' = ' + con_value
+
+    return pd.read_sql(query_str, engine)
 
 # def generate_incidents_correlation():
 
