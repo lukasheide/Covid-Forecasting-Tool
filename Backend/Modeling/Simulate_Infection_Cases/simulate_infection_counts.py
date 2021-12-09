@@ -51,3 +51,16 @@ def set_starting_values(y_train):
     S0 = 300_000 - I0 - V0 - R0
 
     return S0, E0, I0, R0, V0
+
+
+def set_starting_values_e0_fitted(y_train):
+    gamma = params_SEIRV_fixed['gamma']
+    delta = params_SEIRV_fixed['delta']
+
+    I0 = y_train[0] / gamma
+    V0 = 150_000
+    R0 = 17_500
+
+    N = 300_000
+
+    return N, I0, R0, V0
