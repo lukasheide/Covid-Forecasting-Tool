@@ -17,7 +17,7 @@ def seirv_model_pipeline(y_train: np.array, start_vals_fitting: tuple, len_pred_
     Procedure:
     1) Model fitting
     - Input:
-    -- start_vals (S0, E0, I0, R0)
+    -- start_vals (S0, E0, I0, R0, V0)
     - Output:
     -- end_vals (St, Et, It, Rt)
     -- beta_t
@@ -43,7 +43,7 @@ def seirv_model_pipeline(y_train: np.array, start_vals_fitting: tuple, len_pred_
 
     # Fit parameters:
     opt_params, success = leastsq(
-        func=fit_model,
+        func=get_weighted_residuals,
         x0=fit_params_start_guess,
         args=(t_grid_train, y0_train, y_train)
     )
@@ -79,11 +79,52 @@ def seirv_model_pipeline(y_train: np.array, start_vals_fitting: tuple, len_pred_
     S_pred, E_pred, I_pred, R_pred, V_pred, cum_infections_fitted, daily_infections_fitted = solve_ode(y0=y0_predict,
                                                                                                    t=t_grid_train,
                                                                                                    params=fitted_and_fixed_params_predict)
-
     return daily_infections_fitted
 
 
-def fit_model(params_to_fit, t_grid, start_vals, y_true):
+
+def fit_seirv_model(y_train: np.array, start_vals: tuple) -> tuple:
+
+    ## 1) Create variables needed for applying the model fitting part:
+    # Compute length of train_data:
+    num_days_train = len(y_train) - 1
+
+    # Create a grid of time points (in days)
+    t_grid_train = np.linspace(0, num_days_train, num_days_train + 1)
+
+    # Add 0 to starting values for tracking the cumulated number of infections in the model run:
+    # Start_vals always refers to the number of individuals per compartment at time t.
+    # y_t also includes cumulated infections.
+    y0_train = start_vals + (0,)
+
+    ## 2) Get start guess for parameters that are fitted as a tuple:
+    fit_params_start_guess = (params_SEIRV_fit['beta'], 1234)
+
+
+    ## 3) Call fitting function:
+    opt_params, success = leastsq(
+        func=get_weighted_residuals,
+        x0=fit_params_start_guess,
+        args=(t_grid_train, y0_train, y_train)
+    )
+
+    ## 4) Apply fitted parameters to get the end values for all compartments:
+    fixed_params = [param for param in params_SEIRV_fixed.values()]
+    fitted_and_fixed_params = tuple(opt_params) + tuple(fixed_params)
+
+    # Retrieve values for each compartment over time:
+    S, E, I, R, V, cum_infections_fitted, daily_infections_fitted = solve_ode(y0=y0_train,
+                                                                              t=t_grid_train,
+                                                                              params=fitted_and_fixed_params)
+
+    # Pack retrieved values for each compartment over time into one tuple:
+    compartment_series = (S, E, I, R, V)
+
+    return opt_params, compartment_series
+
+
+
+def get_weighted_residuals(params_to_fit, t_grid, start_vals, y_true):
     fit_result = solve_ode_and_return_estimates_only(start_vals, t_grid, params_to_fit)
 
     # add value at t=0 to fit_result:

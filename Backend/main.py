@@ -8,8 +8,10 @@ from Backend.Visualization.modeling_results import plot_train_and_fitted_infecti
 
 import matplotlib.pyplot as plt
 
+
 def main():
 
+    ### Insert import data part here: ###
     rki_data = pd.read_csv('./Assets/Data/rki_data_161121.csv', index_col=0)
 
     # Get simulated infection cases:
@@ -18,7 +20,7 @@ def main():
     # Get starting values for compartmental model (Should come from the data pipeline later on)
     start_vals = set_starting_values(simulated_inf_cases)
 
-    # Call model pipeline:
+    # Call seirv_model pipeline:
     y_pred = seirv_model_pipeline(simulated_inf_cases, start_vals)
 
     # Visualize model pipeline run:
