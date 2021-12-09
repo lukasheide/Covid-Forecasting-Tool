@@ -6,7 +6,7 @@ from Backend.Modeling.Differential_Equation_Modeling.model_params import params_
 
 def produce_simulated_infection_counts():
     # fake infection cases for 28 days:
-    inf_cases = [1000]
+    inf_cases = [100]
     inc_factor = 1.03
     noise_sd = 0.01
     num_days = 28
@@ -55,7 +55,6 @@ def set_starting_values(y_train):
 
 def set_starting_values_e0_fitted(y_train):
     gamma = params_SEIRV_fixed['gamma']
-    delta = params_SEIRV_fixed['delta']
 
     I0 = y_train[0] / gamma
     V0 = 150_000

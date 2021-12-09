@@ -21,7 +21,8 @@ def main():
     start_vals = set_starting_values_e0_fitted(simulated_inf_cases)
 
     # Call seirv_model pipeline:
-    y_pred = seirv_pipeline(y_train=simulated_inf_cases, start_vals_fixed=start_vals)
+    pipeline_result = seirv_pipeline(y_train=simulated_inf_cases, start_vals_fixed=start_vals)
+    y_pred = pipeline_result['y_pred']
 
     # Visualize model pipeline run:
     plot_train_and_fitted_infections(y_train=simulated_inf_cases, y_pred=y_pred)

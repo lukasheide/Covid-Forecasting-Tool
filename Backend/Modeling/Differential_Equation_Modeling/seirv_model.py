@@ -4,7 +4,7 @@ from Backend.Modeling.Differential_Equation_Modeling.model_params import params_
 from Backend.Modeling.Differential_Equation_Modeling.optimization_functions import weigh_residuals
 from scipy.optimize import curve_fit, leastsq
 import matplotlib.pyplot as plt
-from Backend.Visualization.modeling_results import plot_train_and_val_infections
+from Backend.Visualization.modeling_results import plot_train_and_val_infections, plot_train_and_fitted_infections
 
 
 def seirv_pipeline(y_train: np.array, start_vals_fixed: tuple, forecast_horizon=14):
@@ -36,7 +36,7 @@ def seirv_pipeline(y_train: np.array, start_vals_fixed: tuple, forecast_horizon=
 
     ## 3) Bundling up results:
     results_dict = {
-        'pred_daily_infections': pred_daily_infections,
+        'y_pred': pred_daily_infections,
         'model_params': model_params,
         'model_start_vals': start_vals
     }
@@ -121,7 +121,7 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple) -> dict:
     fitting_results = {
         'fitted_params': fitted_params,
         'compartment_time_series': compartment_time_series,
-        'daily_infections':daily_infections_fitted,
+        'daily_infections': daily_infections_fitted,
         'end_vals': end_vals
     }
 
