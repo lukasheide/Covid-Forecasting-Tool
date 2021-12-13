@@ -2,6 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+def plot_train_infections(y_train: np.array):
+    plt.plot(y_train)
+    plt.show()
+
+
 def plot_train_and_fitted_infections(y_train: np.array, y_pred: np.array):
     len_train = len(y_train)
     len_pred = len(y_pred)
@@ -19,11 +24,15 @@ def plot_train_and_fitted_infections(y_train: np.array, y_pred: np.array):
 
 def plot_train_and_val_infections(y_train:np.array, y_val:np.array):
 
-    assert len(y_train) == len(y_val)
-    len_total = len(y_train)
+    if len(y_val) > len(y_train):
+        plt.plot(y_train)
+        plt.plot(y_val[1:])
+        plt.show()
 
-    plt.plot(y_train)
-    plt.plot(y_val)
-    plt.show()
+    else:
+        plt.plot(y_train)
+        plt.plot(y_val)
+        plt.show()
+
 
     pass

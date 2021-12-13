@@ -4,7 +4,7 @@ import numpy as np
 from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_model_pipeline_DEPRECATED, fit_seirv_model, seirv_pipeline
 from Backend.Modeling.Simulate_Infection_Cases.simulate_infection_counts import produce_simulated_infection_counts, set_starting_values, set_starting_values_e0_fitted
 from Backend.Evaluation.metrics import compute_evaluation_metrics
-from Backend.Visualization.modeling_results import plot_train_and_fitted_infections
+from Backend.Visualization.modeling_results import plot_train_and_fitted_infections, plot_train_infections
 
 import matplotlib.pyplot as plt
 
