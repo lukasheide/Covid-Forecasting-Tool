@@ -1,5 +1,6 @@
 import datetime
 import time
+import urllib
 
 import pandas as pd
 import requests
@@ -30,7 +31,7 @@ def get_data_by_date_and_attr(table, date1, date2, attributes):
 
 
 def update_population_map():
-    pop_list = get_table_data("district_population", 0, 0, ["district", "population"], False)
+    pop_list = get_table_data("district_details", 0, 0, ["district", "population"], False)
 
     global population_map
     for index, row in pop_list.iterrows():
@@ -304,7 +305,7 @@ def update_district_list():
     update_db('district_list', df)
 
 
-def update_district_population():
+def update_district_details():
     headers = {
         'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2MzcwNzU4MzksImp0aSI6ImV3Tk96Z0M4ZEJXdmYtc'
                          '2wybDJfdS10NFY1Q0hySjlNamlsRElnVVdfODQifQ.q_YvSVMAed7MMZUi8om0UWla5YkPlCmckqGs_RHclfs'}
@@ -315,12 +316,26 @@ def update_district_population():
     populations = response.json()
     district_list = []
     for rec in populations['result']['records']:
-        district_list.append((rec['bundesland'], rec['kreis'], rec['kr_ew_19']))
+
+        address = rec['kreis']
+        if rec['kreis'] == 'Kreisfreie Stadt Frankfurt am Main':
+            address = 'Stadt Frankfurt am Main'
+        if rec['kreis'] == 'Kreisfreie Stadt Kassel':
+            address = 'Stadt Kassel'
+        if rec['kreis'] == 'Würzburg, Kreis':
+            address = 'Bayern Würzburg'
+        url = 'https://nominatim.openstreetmap.org/search/' + urllib.parse.quote(address) + '?format=json'
+        response = requests.get(url).json()
+        print(rec['bundesland'], rec['kreis'])
+        print((rec['kr_ew_19'], response[0]["lat"], response[0]["lon"]))
+        district_list.append((rec['bundesland'], rec['kreis'], rec['kr_ew_19'], response[0]["lat"], response[0]["lon"]))
+        time.sleep(0.5)
+
     district_list = list(set(district_list))
     df = pd.DataFrame(district_list)
-    df.columns = ['state', 'district', 'population']
+    df.columns = ['state', 'district', 'population', 'latitude', 'longitude']
     # df.to_csv('../../Assets/Data/district_list.csv')
-    update_db('district_population', df)
+    update_db('district_details', df)
 
 
 if __name__ == '__main__':
@@ -331,9 +346,9 @@ if __name__ == '__main__':
     #         update_district_data("district_name")
 
     # update_district_list()
-    # update_district_population()
+    update_district_details()
     # update_population_map()
-    update_all_district_data()
+    # update_all_district_data()
     # update_district_data("Münster")
     # result_df = get_data_by_date_and_attr('Rhein-Neckar-Kreis', 20210101, 20211031, ["daily_infec", "daily_deaths"])
     # print(result_df)

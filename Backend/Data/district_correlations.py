@@ -112,7 +112,7 @@ def dist_incidents_vacc_corre():
         counter = 0
 
         for value in vacc_array:
-            if float(value) > 0.0 and previous_val > 30.0:
+            if float(value) > 0.0 and previous_val > 00.0:
                 counter = counter+1
                 previous_val = float(value)
                 break
@@ -127,7 +127,7 @@ def dist_incidents_vacc_corre():
         if math.isnan(correl_coef):
             # need to decide a value here
             correl_coef = 0.0
-        if previous_val > 30.0:
+        if previous_val > 00.0:
             dist_correl_values[district] = correl_coef
 
     all_data_df = pd.DataFrame(dist_correl_values, index=[0])
@@ -153,7 +153,7 @@ def dist_incidents_vacc_corre():
         color='correlation',
         hover_name='district',
         hover_data=['correlation'],
-        title="Correlation By Incident Number",
+        title="District wise of Incident to Vaccination Percentage",
         mapbox_style="carto-positron",
         center={"lat": 51.1657, "lon": 10.4515},
         zoom=4.8,
@@ -173,7 +173,7 @@ if __name__ == '__main__':
     dist_incidents_vacc_corre()
 
     # df = get_table_data('cor_matrix_vac_to_incidents_date', 0, 0, True, False)
-    # fig = px.line(df, x="date", y="correlation", title='correlation incidents and vaccination percentage')
+    # fig = px.line(df, x="date", y="correlation", title='correlation of incidents to vaccination percentage')
     # fig.show()
 
     # all_districts_correlation = all_data_df.corr(method='pearson')
