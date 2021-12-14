@@ -22,7 +22,7 @@ def main():
     # Instead simulated data was used for building the model pipeline.   #
     ######################################################################
 
-    
+
     # Get simulated infection cases:
     simulated_inf_cases = produce_simulated_infection_counts()
 
