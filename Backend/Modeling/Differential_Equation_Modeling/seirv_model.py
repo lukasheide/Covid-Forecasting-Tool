@@ -8,7 +8,6 @@ from Backend.Visualization.modeling_results import plot_train_and_val_infections
 
 
 def seirv_pipeline(y_train: np.array, start_vals_fixed: tuple, forecast_horizon=14):
-
     """
     Takes as input a numpy array containing daily infection counts for the training period and a tuple containing
     the population size N and fixed starting values for each compartment: I0, R0 and V0. E0 and S0 are fitted.
@@ -31,7 +30,7 @@ def seirv_pipeline(y_train: np.array, start_vals_fixed: tuple, forecast_horizon=
     model_params = setup_model_params(fitted_model_params=fitting_result['fitted_params'])
 
     # Run forecasting:
-    pred_daily_infections = forecast_seirv(all_model_params=model_params, y0=fitting_result['end_vals']+(0,))
+    pred_daily_infections = forecast_seirv(all_model_params=model_params, y0=fitting_result['end_vals'] + (0,))
 
     ## 3) Bundling up results:
     results_dict = {
@@ -44,7 +43,6 @@ def seirv_pipeline(y_train: np.array, start_vals_fixed: tuple, forecast_horizon=
 
 
 def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple) -> dict:
-
     """
     Takes as input a numpy array with the daily new infections and a tuple containing the population size N and fixed
     starting values for each compartment: I0, R0 and V0. E0 and S0 are fitted.
@@ -67,10 +65,8 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple) -> dict:
     # Create a grid of time points (in days)
     t_grid_train = np.linspace(0, num_days_train, num_days_train + 1)
 
-
     ## 2) Get start guess for parameters that are fitted as a tuple:
-    fit_params_start_guess = (params_SEIRV_fit['beta'], 1234, 2345)
-
+    fit_params_start_guess = (params_SEIRV_fit['beta'], 678, 789)
 
     ## 3) Call fitting function:
     ret = least_squares(
@@ -85,7 +81,6 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple) -> dict:
     # get optimal parameters from least squares result:
     opt_params = tuple(ret.x)
 
-
     ## 4) Prepare model parameters and start values to run the model again:
     # Model params:
     fixed_model_params = [param for param in params_SEIRV_fixed.values()]
@@ -95,25 +90,26 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple) -> dict:
     N = start_vals_fixed[0]
     E0 = opt_params[1]
     I0 = opt_params[2]
+    U0 = E0 * params_SEIRV_fixed['rho'] / (1 - params_SEIRV_fixed['rho'])
     R0 = start_vals_fixed[1]
     V0 = start_vals_fixed[2]
     S0 = N - E0 - I0 - R0 - V0
 
     # pack all together and add start value 0 for cumulated infections:
-    y0_train = (S0, E0, I0, R0, V0, 0)
+    y0_train = (S0, E0, I0, U0, R0, V0, 0)
 
     ## 5) Apply fitted parameters to get the end values for all compartments:
     # Retrieve values for each compartment over time:
-    S, E, I, R, V, cum_infections_fitted, daily_infections_fitted = solve_ode(y0=y0_train,
-                                                                              t=t_grid_train,
-                                                                              params=fitted_and_fixed_model_params)
+    S, E, I, U, R, V, cum_infections_fitted, daily_infections_fitted = solve_ode(y0=y0_train,
+                                                                                 t=t_grid_train,
+                                                                                 params=fitted_and_fixed_model_params)
 
     ## 6) Prepare results for returning them
     # Pack retrieved values for each compartment over time into one tuple:
-    compartment_time_series = (S, E, I, R, V)
+    compartment_time_series = (S, E, I, U, R, V)
 
     # Compute end values:
-    end_vals = (S[-1], E[-1], I[-1], R[-1], V[-1])
+    end_vals = (S[-1], E[-1], I[-1], U[-1], R[-1], V[-1])
 
     # Fit params:
     fitted_params = {
@@ -121,7 +117,6 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple) -> dict:
         'E0': opt_params[1],
         'I0': opt_params[2]
     }
-
 
     # Bundle them all up in one dictionary:
     fitting_results = {
@@ -140,12 +135,10 @@ def forecast_seirv(all_model_params: tuple, y0: np.array, forecast_horizon=14) -
     t_grid = np.linspace(0, forecast_horizon, forecast_horizon + 1)
 
     ## 2) Apply values to produce forecast:
-    S_pred, E_pred, I_pred, R_pred, V_pred, cum_infections, daily_infections = \
+    S_pred, E_pred, I_pred, U_pred, R_pred, V_pred, cum_infections, daily_infections = \
         solve_ode(y0=y0, t=t_grid, params=all_model_params)
 
-
     return daily_infections
-
 
 
 def merge_fitted_and_fixed_start_vals(fitted_start_vals, tot_pop_size, fixed_start_vals) -> tuple:
@@ -172,11 +165,13 @@ def setup_model_params(fitted_model_params):
     """
 
     beta = fitted_model_params['beta']
-    gamma = params_SEIRV_fixed['gamma']
+    gamma_I = params_SEIRV_fixed['gamma_I']
+    gamma_U = params_SEIRV_fixed['gamma_U']
     delta = params_SEIRV_fixed['delta']
     theta = params_SEIRV_fixed['theta']
+    rho = params_SEIRV_fixed['rho']
 
-    return beta, gamma, delta, theta
+    return beta, gamma_I, gamma_U, delta, theta, rho
 
 
 def compute_weighted_residuals(params_to_fit, t_grid, start_vals, y_true):
@@ -200,32 +195,37 @@ def solve_ode_for_fitting_partly_fitted_y0(fixed_start_vals, t_grid, fit_params)
     E0 = fit_params[1]
     I0 = fit_params[2]
 
-    ## 2) Setup
-    #  2a) Get y0:
+    ## 2) Setup other parameters:
+    # 2a) Get fixed model params:
+    gamma_I = params_SEIRV_fixed['gamma_I']
+    gamma_U = params_SEIRV_fixed['gamma_U']
+    delta = params_SEIRV_fixed['delta']
+    theta = params_SEIRV_fixed['theta']
+    rho = params_SEIRV_fixed['rho']
+
+    #  2b) Get y0:
     #  Starting values for I, R and V are given. E0 is fitted and S0 is then computed as the last missing value.
     N = fixed_start_vals[0]
     R0 = fixed_start_vals[1]
     V0 = fixed_start_vals[2]
-    S0 = N - E0 - I0 - R0 - V0
+
+    # Compute U0 and S0:
+    # Expected number of individuals in undetected compartment: Depends on "Dunkelziffer" factor
+    U0 = E0 * rho / (1 - rho)
+    S0 = N - E0 - I0 - U0 - R0 - V0
 
     # pack all together and add cumulated infections:
-    y0 = (S0, E0, I0, R0, V0, 0)
-
-    # 2b) Get fixed model params:
-    gamma = params_SEIRV_fixed['gamma']
-    delta = params_SEIRV_fixed['delta']
-    theta = params_SEIRV_fixed['theta']
+    y0 = (S0, E0, I0, U0, R0, V0, 0)
 
     # lambda function as shown here: https://www.kaggle.com/baiyanren/modified-seir-model-for-covid-19-prediction-in-us
     # this circumvents issues with the scipy odeint function, which can only handle a predefined number of params
-    seir_ode = lambda y0, t: ode_seirv(y0, t, beta, gamma, delta, theta)
+    seir_ode = lambda y0, t: ode_seirv(y0, t, beta, gamma_I, gamma_U, delta, theta, rho)
 
     ode_result = odeint(func=seir_ode, y0=y0, t=t_grid).T
 
-    predicted_daily_infections = compute_daily_infections(ode_result[5, :])
+    predicted_daily_infections = compute_daily_infections(ode_result[6, :])
 
     return predicted_daily_infections  # return only Infection counts
-
 
 
 def solve_ode_for_fitting_fixed_y0(y0, t_grid, fit_params):
@@ -249,7 +249,7 @@ def solve_ode(y0, t, params):
     ode_result = odeint(func=ode_seirv, y0=y0, t=t, args=params).T
 
     # cumulated infections:
-    cum_infections = ode_result[5, :]
+    cum_infections = ode_result[6, :]
 
     # compute daily new infections from cumulated infections:
     daily_infections = compute_daily_infections(cum_infections)
@@ -263,37 +263,42 @@ def solve_ode(y0, t, params):
     return result
 
 
-def ode_seirv(y0, t, beta, gamma, delta, theta):
-    S, E, I, R, V, V_cum = y0
-    N = S + E + I + R + V
+def ode_seirv(y0, t, beta, gamma_I, gamma_U, delta, theta, rho):
+    S, E, I, U, R, V, V_cum = y0
+    N = S + E + I + U + R + V
 
     ## Differential equations:
     # Susceptible:
-    dSdt = -beta / N * S * I
+    dSdt = -beta / N * S * (I + U)
 
     # Exposed:
-    dEdt = beta / N * S * I + theta * beta / N * V * I - delta * E
+    dEdt = beta / N * S * (I + U) + \
+           theta * beta / N * V * (I + U) - \
+           delta * E
 
-    # Infectious:
-    dIdt = delta * E - gamma * I
+    # Infectious - Detected:
+    dIdt = (1 - rho) * delta * E - gamma_I * I
+
+    # Infectious - Undetected:
+    dUdt = rho * delta * E - gamma_U * U
 
     # Recovered:
-    dRdt = gamma * I
+    dRdt = gamma_I * I + gamma_U * U
 
     # Vaccinated:
-    dVdt = - theta * beta / N * V * I
+    dVdt = - theta * beta / N * V * (I + U)
 
-    ## Cumulated Infection Counts:
-    dICumdt = delta * E
+    ## Cumulated Detected Infection Counts:
+    dICumdt = (1 - rho) * delta * E
 
-    return dSdt, dEdt, dIdt, dRdt, dVdt, dICumdt
+    return dSdt, dEdt, dIdt, dUdt, dRdt, dVdt, dICumdt
 
 
-def compute_daily_infections(cumulated_infections:np.array) -> np.array:
+def compute_daily_infections(cumulated_infections: np.array) -> np.array:
     return np.diff(cumulated_infections)
 
 
-def seirv_model_pipeline_DEPRECATED(y_train: np.array, start_vals_fitting: tuple, len_pred_period = 14):
+def seirv_model_pipeline_DEPRECATED(y_train: np.array, start_vals_fitting: tuple, len_pred_period=14):
     """
     Pipeline functions first calls a fitting function to obtain the optimal set of parameters that are fitted to the data.
     Having obtained the optimal parameters the differential equation system is solved again to obtain the number of
@@ -342,7 +347,6 @@ def seirv_model_pipeline_DEPRECATED(y_train: np.array, start_vals_fitting: tuple
                                                                               t=t_grid_train,
                                                                               params=fitted_and_fixed_params)
 
-
     ## FORECASTING: Applying fitted model
 
     # Retrieve start_values for each compartment from results of previous model run:
@@ -353,15 +357,13 @@ def seirv_model_pipeline_DEPRECATED(y_train: np.array, start_vals_fitting: tuple
     fixed_params_predict = [param for param in params_SEIRV_fixed.values()]
     fitted_and_fixed_params_predict = tuple(opt_params) + tuple(fixed_params)
 
-
     ### For debugging:
     plot_train_and_val_infections(y_train=y_train, y_val=np.append(y_train[0], daily_infections_fitted))
-
 
     # Set up t_grid:
     t_grid_train = np.linspace(0, len_pred_period, len_pred_period + 1)
 
     S_pred, E_pred, I_pred, R_pred, V_pred, cum_infections_fitted, daily_infections_fitted = solve_ode(y0=y0_predict,
-                                                                                                   t=t_grid_train,
-                                                                                                   params=fitted_and_fixed_params_predict)
+                                                                                                       t=t_grid_train,
+                                                                                                       params=fitted_and_fixed_params_predict)
     return daily_infections_fitted
