@@ -16,6 +16,13 @@ def main():
     ### Insert import data part here: ###
     rki_data = pd.read_csv('./Assets/Data/rki_data_161121.csv', index_col=0)
 
+
+    ######################################################################
+    # Currently the SEIRV model is not connected with the data pipeline. #
+    # Instead simulated data was used for building the model pipeline.   #
+    ######################################################################
+
+    
     # Get simulated infection cases:
     simulated_inf_cases = produce_simulated_infection_counts()
 
