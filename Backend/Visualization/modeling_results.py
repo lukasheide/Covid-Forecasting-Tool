@@ -12,8 +12,8 @@ def plot_train_and_fitted_infections(y_train: np.array, y_pred: np.array):
     len_pred = len(y_pred)
     len_total = len_train + len_pred
     t_grid_train = np.linspace(1, len_train, len_train)
-    t_grid_pred = np.linspace(1 + len_train, len_pred+len_train, len_pred)
-    t_grid_total = np.linspace(1, len_total, len_total)
+    t_grid_pred = np.linspace(len_train, len_pred+len_train-1, len_pred)
+    t_grid_total = np.linspace(1, len_total-1, len_total-1)
 
     plt.plot(t_grid_train, y_train)
     plt.plot(t_grid_pred, y_pred)
