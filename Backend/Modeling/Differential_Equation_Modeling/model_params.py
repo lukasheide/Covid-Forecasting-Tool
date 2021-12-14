@@ -1,6 +1,6 @@
 params_SEIRV_fixed = {
+    'gamma': 1 / 7,             # mean infectious period
     'delta': 1 / 6.8,           # mean incubation time
-    'gamma': 1 / 7,           # mean infectious period
     'theta': 0.1
 }
 
@@ -10,5 +10,5 @@ params_SEIRV_fit = {
 
 
 LEAST_SQUARES_WEIGHT = {
-    'lambda' : 0.05                # exponential decay
+    'lambda' : 0.01                # exponential decay
 }

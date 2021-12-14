@@ -2,7 +2,7 @@ import numpy as np
 from scipy.integrate import odeint
 from Backend.Modeling.Differential_Equation_Modeling.model_params import params_SEIRV_fixed, params_SEIRV_fit
 from Backend.Modeling.Differential_Equation_Modeling.optimization_functions import weigh_residuals
-from scipy.optimize import curve_fit, leastsq
+from scipy.optimize import curve_fit, leastsq, least_squares
 import matplotlib.pyplot as plt
 from Backend.Visualization.modeling_results import plot_train_and_val_infections, plot_train_and_fitted_infections
 
@@ -26,19 +26,18 @@ def seirv_pipeline(y_train: np.array, start_vals_fixed: tuple, forecast_horizon=
     # Run model fitting:
     fitting_result = fit_seirv_model(y_train, start_vals_fixed)
 
-    ## 2) Model application
+    ## 2) Model application / forecasting:
     # Set up starting values and model parameters used for applying the model in the next step:
-    start_vals = merge_fitted_and_fixed_start_vals(fitted_start_vals=fitting_result['fitted_params'], fixed_start_vals=fitting_result['end_vals'])
     model_params = setup_model_params(fitted_model_params=fitting_result['fitted_params'])
 
     # Run forecasting:
-    pred_daily_infections = forecast_seirv(all_model_params=model_params, y0=start_vals)
+    pred_daily_infections = forecast_seirv(all_model_params=model_params, y0=fitting_result['end_vals']+(0,))
 
     ## 3) Bundling up results:
     results_dict = {
         'y_pred': pred_daily_infections,
         'model_params': model_params,
-        'model_start_vals': start_vals
+        'model_start_vals': fitting_result['end_vals']
     }
 
     return results_dict
@@ -70,15 +69,21 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple) -> dict:
 
 
     ## 2) Get start guess for parameters that are fitted as a tuple:
-    fit_params_start_guess = (params_SEIRV_fit['beta'], 1234)
+    fit_params_start_guess = (params_SEIRV_fit['beta'], 1234, 2345)
 
 
     ## 3) Call fitting function:
-    opt_params, success = leastsq(
-        func=get_weighted_residuals,
+    ret = least_squares(
+        fun=compute_weighted_residuals,
         x0=fit_params_start_guess,
-        args=(t_grid_train, start_vals_fixed, y_train)
+        args=(t_grid_train, start_vals_fixed, y_train),
+        method='lm',
+        ftol=1e-10,
+        xtol=1e-10
     )
+
+    # get optimal parameters from least squares result:
+    opt_params = tuple(ret.x)
 
 
     ## 4) Prepare model parameters and start values to run the model again:
@@ -89,9 +94,9 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple) -> dict:
     # Compute starting values for each compartment:
     N = start_vals_fixed[0]
     E0 = opt_params[1]
-    I0 = start_vals_fixed[1]
-    R0 = start_vals_fixed[2]
-    V0 = start_vals_fixed[3]
+    I0 = opt_params[2]
+    R0 = start_vals_fixed[1]
+    V0 = start_vals_fixed[2]
     S0 = N - E0 - I0 - R0 - V0
 
     # pack all together and add start value 0 for cumulated infections:
@@ -113,7 +118,8 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple) -> dict:
     # Fit params:
     fitted_params = {
         'beta': opt_params[0],
-        'E0': opt_params[1]
+        'E0': opt_params[1],
+        'I0': opt_params[2]
     }
 
 
@@ -128,7 +134,7 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple) -> dict:
     return fitting_results
 
 
-def forecast_seirv(all_model_params:tuple, y0:np.array, forecast_horizon=14) -> np.array:
+def forecast_seirv(all_model_params: tuple, y0: np.array, forecast_horizon=14) -> np.array:
     ## 1) Set up variables needed for applying the model:
     # Create a grid of time points (in days)
     t_grid = np.linspace(0, forecast_horizon, forecast_horizon + 1)
@@ -142,17 +148,17 @@ def forecast_seirv(all_model_params:tuple, y0:np.array, forecast_horizon=14) -> 
 
 
 
-def merge_fitted_and_fixed_start_vals(fitted_start_vals, fixed_start_vals) -> tuple:
+def merge_fitted_and_fixed_start_vals(fitted_start_vals, tot_pop_size, fixed_start_vals) -> tuple:
     """
     Combines fitted and fixed starting_values so that they can be forwarded as one tuple containing all starting values.
     """
 
-    N = fixed_start_vals[0]
+    N = tot_pop_size
 
     E0 = fitted_start_vals['E0']
-    I0 = fixed_start_vals[1]
-    R0 = fixed_start_vals[2]
-    V0 = fixed_start_vals[3]
+    I0 = fitted_start_vals['I0']
+    R0 = fixed_start_vals[3]
+    V0 = fixed_start_vals[4]
 
     S0 = N - E0 - I0 - R0 - V0
 
@@ -173,7 +179,7 @@ def setup_model_params(fitted_model_params):
     return beta, gamma, delta, theta
 
 
-def get_weighted_residuals(params_to_fit, t_grid, start_vals, y_true):
+def compute_weighted_residuals(params_to_fit, t_grid, start_vals, y_true):
     fit_result = solve_ode_for_fitting_partly_fitted_y0(start_vals, t_grid, params_to_fit)
 
     # add value at t=0 to fit_result:
@@ -192,14 +198,14 @@ def solve_ode_for_fitting_partly_fitted_y0(fixed_start_vals, t_grid, fit_params)
     ## 1) Pull apart fitting params:
     beta = fit_params[0]
     E0 = fit_params[1]
+    I0 = fit_params[2]
 
     ## 2) Setup
     #  2a) Get y0:
     #  Starting values for I, R and V are given. E0 is fitted and S0 is then computed as the last missing value.
     N = fixed_start_vals[0]
-    I0 = fixed_start_vals[1]
-    R0 = fixed_start_vals[2]
-    V0 = fixed_start_vals[3]
+    R0 = fixed_start_vals[1]
+    V0 = fixed_start_vals[2]
     S0 = N - E0 - I0 - R0 - V0
 
     # pack all together and add cumulated infections:
@@ -322,7 +328,7 @@ def seirv_model_pipeline_DEPRECATED(y_train: np.array, start_vals_fitting: tuple
 
     # Fit parameters:
     opt_params, success = leastsq(
-        func=get_weighted_residuals,
+        func=compute_weighted_residuals,
         x0=fit_params_start_guess,
         args=(t_grid_train, y0_train, y_train)
     )

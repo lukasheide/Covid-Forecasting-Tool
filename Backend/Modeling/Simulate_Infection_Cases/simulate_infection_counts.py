@@ -63,3 +63,13 @@ def set_starting_values_e0_fitted(y_train):
     N = 300_000
 
     return N, I0, R0, V0
+
+
+def set_starting_values_e0_and_i0_fitted(y_train):
+
+    V0 = 150_000
+    R0 = 17_500
+
+    N = 300_000
+
+    return N, R0, V0
