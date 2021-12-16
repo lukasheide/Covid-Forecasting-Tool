@@ -8,13 +8,13 @@ def produce_simulated_infection_counts():
     # fake infection cases for 28 days:
     inf_cases = [100]
     inc_factor = 1.03
-    noise_sd = 0.01
+    noise_sd = 0.01*3
     num_days = 28
 
     decrease_factor = 0.001
 
     # set seed for drawing random numbers:
-    np.random.seed(1)
+    np.random.seed(1234)
 
     # create list with infection cases for 28 days
     for d in range(num_days-1):

@@ -6,7 +6,7 @@ from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_mo
 from Backend.Modeling.Simulate_Infection_Cases.simulate_infection_counts import produce_simulated_infection_counts, \
     set_starting_values, set_starting_values_e0_fitted, set_starting_values_e0_and_i0_fitted
 from Backend.Evaluation.metrics import compute_evaluation_metrics
-from Backend.Visualization.modeling_results import plot_train_and_fitted_infections, plot_train_infections
+from Backend.Visualization.modeling_results import plot_train_and_fitted_infections_line_plot, plot_train_and_fitted_infections_bar_plot, plot_train_infections
 
 import matplotlib.pyplot as plt
 
@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 def main():
 
     ### Insert import data part here: ###
-    rki_data = pd.read_csv('./Assets/Data/rki_data_161121.csv', index_col=0)
+    rki_data = pd.read_csv('./Assets/Data/rki_data_161221.csv', index_col=0)
 
 
     ######################################################################
@@ -34,7 +34,7 @@ def main():
     y_pred = pipeline_result['y_pred']
 
     # Visualize model pipeline run:
-    plot_train_and_fitted_infections(y_train=simulated_inf_cases, y_pred=y_pred)
+    plot_train_and_fitted_infections_bar_plot(y_train=simulated_inf_cases, y_pred=y_pred)
 
     # Compute metrics:
     scores = compute_evaluation_metrics(y_pred=y_pred, y_true=simulated_inf_cases)

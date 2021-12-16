@@ -4,7 +4,7 @@ from Backend.Modeling.Differential_Equation_Modeling.model_params import params_
 from Backend.Modeling.Differential_Equation_Modeling.optimization_functions import weigh_residuals
 from scipy.optimize import curve_fit, leastsq, least_squares
 import matplotlib.pyplot as plt
-from Backend.Visualization.modeling_results import plot_train_and_val_infections, plot_train_and_fitted_infections
+from Backend.Visualization.modeling_results import plot_train_and_val_infections, plot_train_and_fitted_infections_line_plot
 
 
 def seirv_pipeline(y_train: np.array, start_vals_fixed: tuple, forecast_horizon=14):
@@ -17,7 +17,7 @@ def seirv_pipeline(y_train: np.array, start_vals_fixed: tuple, forecast_horizon=
 
     The obtained fitted parameters are then applied to the desired forecasting period.
 
-    The result dicitonary contains the predicted daily infections, the model parameters and starting values for the
+    The result dictionary contains the predicted daily infections, the model parameters and starting values for the
     forecasting step.
     """
 
@@ -45,7 +45,7 @@ def seirv_pipeline(y_train: np.array, start_vals_fixed: tuple, forecast_horizon=
 
     ## 3) Bundling up results:
     results_dict = {
-        'y_pred': pred_daily_infections,
+        'y_pred': pred_daily_infections_from_start,
         'model_params': model_params,
         'model_start_vals': fitting_result['end_vals']
     }
