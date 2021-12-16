@@ -26,11 +26,22 @@ def seirv_pipeline(y_train: np.array, start_vals_fixed: tuple, forecast_horizon=
     fitting_result = fit_seirv_model(y_train, start_vals_fixed)
 
     ## 2) Model application / forecasting:
-    # Set up starting values and model parameters used for applying the model in the next step:
-    model_params = setup_model_params(fitted_model_params=fitting_result['fitted_params'])
+    # 2.1) Set up starting values and model parameters used for applying the model in the next step:
+    model_params = setup_model_params_for_forecasting_after_fitting(fitted_model_params=fitting_result['fitted_params'])
 
-    # Run forecasting:
-    pred_daily_infections = forecast_seirv(all_model_params=model_params, y0=fitting_result['end_vals'] + (0,))
+    # 2.2.a)
+    # Run forecasting - Starting point: after training period
+    pred_daily_infections = forecast_seirv(all_model_params=model_params,
+                                           y0=fitting_result['end_vals'] + (0,),
+                                           forecast_horizon=forecast_horizon)
+    # 2.2.b)
+    # Run forecasting - Starting point: beginning of training period
+    pred_daily_infections_from_start = forecast_seirv(all_model_params=model_params,
+                                                      y0=fitting_result['start_vals'] + (0,),
+                                                      forecast_horizon=forecast_horizon+len(y_train)-1)
+
+    # The results for options a) and b) should provide the same results.
+
 
     ## 3) Bundling up results:
     results_dict = {
@@ -110,6 +121,7 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple) -> dict:
 
     # Compute end values:
     end_vals = (S[-1], E[-1], I[-1], U[-1], R[-1], V[-1])
+    start_vals = (S0, E0, I0, U0, R0, V0)
 
     # Fit params:
     fitted_params = {
@@ -123,7 +135,8 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple) -> dict:
         'fitted_params': fitted_params,
         'compartment_time_series': compartment_time_series,
         'daily_infections': daily_infections_fitted,
-        'end_vals': end_vals
+        'end_vals': end_vals,
+        'start_vals': start_vals
     }
 
     return fitting_results
@@ -159,7 +172,7 @@ def merge_fitted_and_fixed_start_vals(fitted_start_vals, tot_pop_size, fixed_sta
     return S0, E0, I0, R0, V0, 0
 
 
-def setup_model_params(fitted_model_params):
+def setup_model_params_for_forecasting_after_fitting(fitted_model_params):
     """
     Combines fitted and fixed model parameter into one tuple.
     """
