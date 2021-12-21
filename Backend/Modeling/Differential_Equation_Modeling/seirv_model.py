@@ -84,9 +84,10 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple) -> dict:
         fun=compute_weighted_residuals,
         x0=fit_params_start_guess,
         args=(t_grid_train, start_vals_fixed, y_train),
-        method='lm',
+        method='trf',
         ftol=1e-10,
-        xtol=1e-10
+        xtol=1e-10,
+        bounds=(0, np.inf)
     )
 
     # get optimal parameters from least squares result:
@@ -224,7 +225,7 @@ def solve_ode_for_fitting_partly_fitted_y0(fixed_start_vals, t_grid, fit_params)
 
     # Compute U0 and S0:
     # Expected number of individuals in undetected compartment: Depends on "Dunkelziffer" factor
-    U0 = E0 * rho / (1 - rho)
+    U0 = I0 * rho / (1 - rho)
     S0 = N - E0 - I0 - U0 - R0 - V0
 
     # pack all together and add cumulated infections:
@@ -236,6 +237,7 @@ def solve_ode_for_fitting_partly_fitted_y0(fixed_start_vals, t_grid, fit_params)
 
     ode_result = odeint(func=seir_ode, y0=y0, t=t_grid).T
 
+    # compute predicted daily infections from estimated cumulated number of infections:
     predicted_daily_infections = compute_daily_infections(ode_result[6, :])
 
     return predicted_daily_infections  # return only Infection counts

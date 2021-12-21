@@ -53,7 +53,7 @@ def update_population_map():
             population_map[row['district']] = int(row['population'])
 
     # special name changes
-    population_map['München, Landeshauptstadt'] = population_map.pop('München, Stadt')
+    population_map['München, Stadt'] = population_map.pop('München, Landeshauptstadt')
     population_map['Leipzig, Kreis'], population_map['Leipzig, Stadt'] = population_map['Leipzig, Stadt'], population_map['Leipzig, Kreis']
 
 
@@ -64,7 +64,7 @@ def update_all_district_data():
 
     for district in district_list['district']:
         update_district_data(district)
-        time.sleep(1)
+        time.sleep(0.1)
 
 
 def update_district_data(district):
@@ -301,7 +301,7 @@ def update_district_list():
     district_list = list(set(district_list))
     df = pd.DataFrame(district_list)
     df.columns = ['state', 'district']
-    df.to_csv('../../Assets/Data/district_list.csv')
+    df.to_csv('../Assets/Data/district_list.csv')
     update_db('district_list', df)
 
 
@@ -329,7 +329,7 @@ def update_district_details():
         print(rec['bundesland'], rec['kreis'])
         print((rec['kr_ew_19'], response[0]["lat"], response[0]["lon"]))
         district_list.append((rec['bundesland'], rec['kreis'], rec['kr_ew_19'], response[0]["lat"], response[0]["lon"]))
-        time.sleep(0.5)
+        time.sleep(0.1)
 
     district_list = list(set(district_list))
     df = pd.DataFrame(district_list)
@@ -346,9 +346,9 @@ if __name__ == '__main__':
     #         update_district_data("district_name")
 
     # update_district_list()
-    update_district_details()
-    # update_population_map()
+    # update_district_details()
+    update_population_map()
     # update_all_district_data()
-    # update_district_data("Münster")
+    update_district_data("Münster")
     # result_df = get_data_by_date_and_attr('Rhein-Neckar-Kreis', 20210101, 20211031, ["daily_infec", "daily_deaths"])
     # print(result_df)

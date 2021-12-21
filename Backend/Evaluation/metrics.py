@@ -1,23 +1,23 @@
 import numpy as np
 import pandas as pd
 import math
-from sklearn.metrics import mean_squared_error, mean_absolute_percentage_error
+from sklearn.metrics import mean_squared_error, mean_absolute_percentage_error, mean_absolute_error
 
 
-def compute_evaluation_metrics(y_true, y_pred):
-    actual = y_true.copy()
+def compute_evaluation_metrics(y_val, y_pred):
+    actual = y_val.copy()
     pred = y_pred.copy()
 
     if len(actual) != len(pred):
-        # handle case in which y_true also contains starting value in t=0 and y_pred doesn't.
-        if len(actual) - 1 == len(y_pred):
-            # crop first value:
-            actual = actual[1:]
+        # use only predictions for past n days:
+        pred = pred[-len(actual):]
+
 
     # Compute metrics:
     metrics = {
         'rmse': mean_squared_error(y_true=actual, y_pred=pred),
-        'mape': mean_absolute_percentage_error(y_true=actual, y_pred=pred)
+        'mape': mean_absolute_percentage_error(y_true=actual, y_pred=pred),
+        'mae': mean_absolute_error(y_true=actual, y_pred=pred)
     }
 
     return metrics

@@ -16,9 +16,9 @@ def weigh_residuals(residuals: np.array) -> np.array:
     weights = list(np.divide(weights, weights[0]))
 
     # Plot for debugging purposes:
-    # plt.plot(weights)
-    # plt.show()
-    # pass
+    plt.plot(weights)
+    plt.show()
+    pass
 
     resid = residuals.copy()
 

@@ -6,7 +6,7 @@ from datetime import datetime
 
 
 def get_engine():
-    engine = sqlalchemy.create_engine('sqlite:///../../Assets/Data/opendaten.db')
+    engine = sqlalchemy.create_engine('sqlite:///Assets/Data/opendaten.db')
     return engine
 
 
@@ -70,7 +70,7 @@ def format_name(table_name):
 
 
 def get_db_connection():
-    return sqlite3.connect('../../Assets/Data/opendaten.db')
+    return sqlite3.connect('../Assets/Data/opendaten.db')
 
 
 def update_db(table_name, dataframe):

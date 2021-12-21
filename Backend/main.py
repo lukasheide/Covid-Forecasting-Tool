@@ -1,43 +1,47 @@
 import pandas as pd
 import numpy as np
 
-from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_model_pipeline_DEPRECATED, \
-    fit_seirv_model, seirv_pipeline
+from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_pipeline
 from Backend.Modeling.Simulate_Infection_Cases.simulate_infection_counts import produce_simulated_infection_counts, \
     set_starting_values, set_starting_values_e0_fitted, set_starting_values_e0_and_i0_fitted
 from Backend.Evaluation.metrics import compute_evaluation_metrics
-from Backend.Visualization.modeling_results import plot_train_and_fitted_infections_line_plot, plot_train_and_fitted_infections_bar_plot, plot_train_infections
+from Backend.Visualization.modeling_results import plot_train_and_fitted_infections_line_plot, \
+    plot_train_and_fitted_infections_bar_plot, plot_train_infections, plot_train_fitted_and_validation
+
+from Backend.Data.db_functions import get_table_data
 
 import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.interactive(True)
 
 
 def main():
 
     ### Insert import data part here: ###
-    rki_data = pd.read_csv('./Assets/Data/rki_data_161221.csv', index_col=0)
+    end_date = 20210804
+    start_date = 20210901
 
+    muenster_last_28_days = get_table_data(table='Essen', date1=end_date, date2=start_date, attributes=['date', 'seven_day_infec'], with_index=False)
 
-    ######################################################################
-    # Currently the SEIRV model is not connected with the data pipeline. #
-    # Instead simulated data was used for building the model pipeline.   #
-    ######################################################################
-
+    # Split into train and validation set:
+    y_train_actual = np.array(muenster_last_28_days['seven_day_infec'])[0:15]
+    y_val_actual = np.array(muenster_last_28_days['seven_day_infec'])[15:]
 
     # Get simulated infection cases:
-    simulated_inf_cases = produce_simulated_infection_counts()
+    y_train_simulation = produce_simulated_infection_counts()
 
     # Get starting values for compartmental model (Should come from the data pipeline later on)
-    start_vals = set_starting_values_e0_and_i0_fitted(simulated_inf_cases)
+    start_vals = set_starting_values_e0_and_i0_fitted()
 
     # Call seirv_model pipeline:
-    pipeline_result = seirv_pipeline(y_train=simulated_inf_cases, start_vals_fixed=start_vals)
+    pipeline_result = seirv_pipeline(y_train=y_train_actual, start_vals_fixed=start_vals)
     y_pred = pipeline_result['y_pred']
 
     # Visualize model pipeline run:
-    plot_train_and_fitted_infections_bar_plot(y_train=simulated_inf_cases, y_pred=y_pred)
+    plot_train_fitted_and_validation(y_train=y_train_actual, y_val=y_val_actual, y_pred=y_pred)
 
     # Compute metrics:
-    scores = compute_evaluation_metrics(y_pred=y_pred, y_true=simulated_inf_cases)
+    scores = compute_evaluation_metrics(y_pred=y_pred, y_val=y_val_actual)
 
 
 
