@@ -29,7 +29,7 @@ def diff_eq_model_validation_pipeline(end_date: date, duration: int, districts: 
 
         ## 2) Run model_pipeline
 
-        pipeline_result = seirv_pipeline(y_train=y_train_actual, start_vals_fixed=start_vals)
+        pipeline_result = seirv_pipeline(y_train=y_train, start_vals_fixed=start_vals)
         y_pred = pipeline_result['y_pred']
 
             # returned:
@@ -41,10 +41,10 @@ def diff_eq_model_validation_pipeline(end_date: date, duration: int, districts: 
         ## 3) Evaluate the results
 
             # 3a) Visualize results (mainly for debugging)
-        plot_train_fitted_and_validation(y_train=y_train_actual, y_val=y_val_actual, y_pred=y_pred)
+        plot_train_fitted_and_validation(y_train=y_train, y_val=y_val, y_pred=y_pred)
 
             # 3b) Compute metrics (RMSE, MAPE, ...)
-        scores = compute_evaluation_metrics(y_pred=y_pred, y_val=y_val_actual)
+        scores = compute_evaluation_metrics(y_pred=y_pred, y_val=y_val)
 
         ## 4) Store results in database:
 
