@@ -7,9 +7,11 @@ from Backend.Modeling.Simulate_Infection_Cases.simulate_infection_counts import 
 from Backend.Evaluation.metrics import compute_evaluation_metrics
 from Backend.Visualization.modeling_results import plot_train_and_fitted_infections_line_plot, \
     plot_train_and_fitted_infections_bar_plot, plot_train_infections, plot_train_fitted_and_validation
+from Backend.Modeling.model_validation_pipeline import diff_eq_model_validation_pipeline
 
 from Backend.Data.db_functions import get_table_data
 
+from datetime import date, time, datetime
 import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.interactive(True)
@@ -17,7 +19,21 @@ matplotlib.interactive(True)
 
 def main():
 
-    ### Insert import data part here: ###
+    end_date = date(year=2021, month=12, day=20)
+    time_frame_train_and_validation = 28
+    forecasting_horizon = 14
+    districts = ['Essen']
+
+    # Call differential equation model validation pipeline:
+    diff_eq_model_validation_pipeline(end_date=end_date,
+                                      duration=time_frame_train_and_validation,
+                                      districts=districts,
+                                      validation_duration=forecasting_horizon,
+                                      visualize=True,
+                                      verbose=False)
+
+
+    ##### Stuff below will be refactored soon #####
     end_date = 20210804
     start_date = 20210901
 
