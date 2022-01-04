@@ -8,7 +8,7 @@ from Backend.Visualization.modeling_results import plot_train_fitted_and_validat
 import matplotlib.pyplot as plt
 
 #reading csv file including date, cases, class
-df = pd.read_csv("data_smoothed.csv")
+df = pd.read_csv("data_long_older.csv")
 print(df.shape)
 print(df.info())
 
@@ -77,19 +77,17 @@ def plot_model(train_array, test_array, predictions: int):
     len_train = len(train_array)
     len_test = len(test_array)
     len_total = len_train + len_test
-    t_grid_train = np.linspace(1, len_train, len_train)
     t_grid_total = np.linspace(1, len_total, len_total)
-
 
     pred_array = np.concatenate((train_array, predictions))
     val_array = np.concatenate((train_array, test_array))
-    plt.plot(t_grid_total, pred_array, 'b--', )
+    plt.plot(t_grid_total, pred_array, 'b--')
     plt.plot(t_grid_total, val_array, 'g')
-
+    print(pred_array)
     plt.show()
 
 def run_model():
-    r = 2000
+    m = 2000
     i = 1
 
     #iteration to find the best fitting length of a season
@@ -102,14 +100,14 @@ def run_model():
         print(RMSE)
 
         #save best fitting model
-        if MAPE < r:
+        if MAPE < m:
             m = mean_absolute_percentage_error(test.Cases, predictions)
             r = root_mean_square_error(test.Cases, predictions)
             final_model = arima_model
         i +=1
 
     print(final_model.summary())
-    print(predictions)
+    print(final_model.predict(len(test)))
     print('MAPE = ', m)
     print('RMSE = ', r)
     plot_model(train_array, test_array, final_model.predict(len(test)))
