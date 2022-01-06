@@ -79,6 +79,8 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple) -> dict:
     # Create a grid of time points (in days)
     t_grid_train = np.linspace(0, num_days_train, num_days_train + 1)
 
+    TEST_VARIABLE={'t_grid_train':t_grid_train}
+
     ## 2) Get start guess for parameters that are fitted as a tuple:
     fit_params_start_guess = (params_SEIRV_fit['beta'], 678, 789)
 
@@ -86,7 +88,7 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple) -> dict:
     ret = least_squares(
         fun=compute_weighted_residuals,
         x0=fit_params_start_guess,
-        args=(t_grid_train, start_vals_fixed, y_train),
+        args=(TEST_VARIABLE, start_vals_fixed, y_train),
         method='trf',
         ftol=1e-10,
         xtol=1e-10,
