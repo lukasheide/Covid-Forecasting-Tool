@@ -3,7 +3,7 @@ params_SEIRV_fixed = {
     'gamma_U': 1 / 6,           # mean infectious period undetected cases
     'delta': 1 / 6.8,           # mean incubation time
     'theta': 0.1,
-    'rho': 0.25
+    'rho': 0.5                 # probability related to ratio of undetected cases
 }
 
 params_SEIRV_fit = {

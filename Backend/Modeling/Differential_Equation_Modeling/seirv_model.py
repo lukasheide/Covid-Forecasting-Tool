@@ -5,6 +5,7 @@ from Backend.Modeling.Differential_Equation_Modeling.optimization_functions impo
 from scipy.optimize import curve_fit, leastsq, least_squares
 import matplotlib.pyplot as plt
 from Backend.Visualization.modeling_results import plot_train_and_val_infections, plot_train_and_fitted_infections_line_plot
+from Backend.Modeling.Util.pipeline_util import models_params_to_dictionary, models_compartment_values_to_dictionary
 
 
 def seirv_pipeline(y_train: np.array, start_vals_fixed: tuple, forecast_horizon=14):
@@ -41,12 +42,14 @@ def seirv_pipeline(y_train: np.array, start_vals_fixed: tuple, forecast_horizon=
                                                       forecast_horizon=forecast_horizon+len(y_train)-1)
 
     # The results for options a) and b) should provide the same results.
-
+    model_params_as_dictionary = models_params_to_dictionary(model_params)
+    mmodel_start_vals_as_dictionary = models_compartment_values_to_dictionary(fitting_result['end_vals'])
 
     ## 3) Bundling up results:
     results_dict = {
-        'y_pred': pred_daily_infections_from_start,
-        'model_params': model_params,
+        'y_pred_including_train_period': pred_daily_infections_from_start,
+        'y_pred_without_train_period': pred_daily_infections,
+        'model_params': model_params_as_dictionary,
         'model_start_vals': fitting_result['end_vals']
     }
 
