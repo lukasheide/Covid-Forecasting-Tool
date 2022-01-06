@@ -16,7 +16,7 @@ def get_db_connection():
     return sqlite3.connect('../Assets/Data/opendaten.db')
 
 
-def update_db_without_index(table_name, dataframe):
+def update_db(table_name, dataframe):
     table_name = format_name(table_name)
     # prepare_table(table_name) this will not need to be used
     engine = get_engine()
@@ -122,6 +122,11 @@ def get_district_data(district, attributes=None):
                 ' WHERE district == ' + '"' + district + '"'
 
     return pd.read_sql(query_sql, engine)
+
+
+def get_all_table_data(table_name):
+    engine = get_engine()
+    return pd.read_sql(table_name, engine)
 
 
 if __name__ == '__main__':
