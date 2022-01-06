@@ -79,16 +79,26 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple) -> dict:
     # Create a grid of time points (in days)
     t_grid_train = np.linspace(0, num_days_train, num_days_train + 1)
 
-    TEST_VARIABLE={'t_grid_train':t_grid_train}
-
     ## 2) Get start guess for parameters that are fitted as a tuple:
     fit_params_start_guess = (params_SEIRV_fit['beta'], 678, 789)
 
-    ## 3) Call fitting function:
+    ## 3) Get values for fixed model parameters:
+    fixed_params = {
+        't_grid': t_grid_train,
+        'fixed_model_params': {
+            'gamma_I': params_SEIRV_fixed['gamma_I'],
+            'gamma_U': params_SEIRV_fixed['gamma_U'],
+            'delta': params_SEIRV_fixed['delta'],
+            'theta': params_SEIRV_fixed['theta'],
+            'rho': params_SEIRV_fixed['rho']
+        }
+    }
+
+    ## 4) Call fitting function:
     ret = least_squares(
         fun=compute_weighted_residuals,
         x0=fit_params_start_guess,
-        args=(TEST_VARIABLE, start_vals_fixed, y_train),
+        args=(fixed_params, start_vals_fixed, y_train),
         method='trf',
         ftol=1e-10,
         xtol=1e-10,
@@ -98,10 +108,10 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple) -> dict:
     # get optimal parameters from least squares result:
     opt_params = tuple(ret.x)
 
-    ## 4) Prepare model parameters and start values to run the model again:
+    ## 5) Prepare model parameters and start values to run the model again:
     # Model params:
-    fixed_model_params = [param for param in params_SEIRV_fixed.values()]
-    fitted_and_fixed_model_params = tuple(opt_params[:1]) + tuple(fixed_model_params)
+    fixed_params = [param for param in params_SEIRV_fixed.values()]
+    fitted_and_fixed_model_params = tuple(opt_params[:1]) + tuple(fixed_params)
 
     # Compute starting values for each compartment:
     N = start_vals_fixed[0]
@@ -115,13 +125,13 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple) -> dict:
     # pack all together and add start value 0 for cumulated infections:
     y0_train = (S0, E0, I0, U0, R0, V0, 0)
 
-    ## 5) Apply fitted parameters to get the end values for all compartments:
+    ## 6) Apply fitted parameters to get the end values for all compartments:
     # Retrieve values for each compartment over time:
     S, E, I, U, R, V, cum_infections_fitted, daily_infections_fitted = solve_ode(y0=y0_train,
                                                                                  t=t_grid_train,
                                                                                  params=fitted_and_fixed_model_params)
 
-    ## 6) Prepare results for returning them
+    ## 7) Prepare results for returning them
     # Pack retrieved values for each compartment over time into one tuple:
     compartment_time_series = (S, E, I, U, R, V)
 
@@ -208,21 +218,24 @@ def compute_weighted_residuals(params_to_fit, t_grid, start_vals, y_true):
     return weighted_residuals
 
 
-def solve_ode_for_fitting_partly_fitted_y0(fixed_start_vals, t_grid, fit_params):
+def solve_ode_for_fitting_partly_fitted_y0(fixed_start_vals, fixed_params, fit_params):
     ## 1) Pull apart fitting params:
     beta = fit_params[0]
     E0 = fit_params[1]
     I0 = fit_params[2]
 
     ## 2) Setup other parameters:
-    # 2a) Get fixed model params:
-    gamma_I = params_SEIRV_fixed['gamma_I']
-    gamma_U = params_SEIRV_fixed['gamma_U']
-    delta = params_SEIRV_fixed['delta']
-    theta = params_SEIRV_fixed['theta']
-    rho = params_SEIRV_fixed['rho']
+    # 2a) Get time grid:
+    t_grid = fixed_params['t_grid']
 
-    #  2b) Get y0:
+    # 2b) Get fixed model params:
+    gamma_I = fixed_params['fixed_model_params']['gamma_I']
+    gamma_U = fixed_params['fixed_model_params']['gamma_U']
+    delta = fixed_params['fixed_model_params']['delta']
+    theta = fixed_params['fixed_model_params']['theta']
+    rho = fixed_params['fixed_model_params']['rho']
+
+    #  2c) Get y0:
     #  Starting values for I, R and V are given. E0 is fitted and S0 is then computed as the last missing value.
     N = fixed_start_vals[0]
     R0 = fixed_start_vals[1]
