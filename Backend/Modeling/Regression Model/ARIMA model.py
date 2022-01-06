@@ -8,7 +8,7 @@ from Backend.Visualization.modeling_results import plot_train_fitted_and_validat
 import matplotlib.pyplot as plt
 
 #reading csv file including date, cases, class
-df = pd.read_csv("data_long_older.csv")
+df = pd.read_csv("data_smoothed.csv")
 print(df.shape)
 print(df.info())
 
@@ -86,16 +86,17 @@ def plot_model(train_array, test_array, predictions: int):
     print(pred_array)
     plt.show()
 
-def run_model():
+#model execution
+def run_model(train_array, test_array):
     m = 2000
     i = 1
 
     #iteration to find the best fitting length of a season
-    while i < 12:
+    while i < 15:
         arima_model = sarimamodel(train_array, i)
-        predictions = arima_model.predict(len(test))
-        MAPE = mean_absolute_percentage_error(test.Cases, predictions)
-        RMSE = root_mean_square_error(test.Cases, predictions)
+        predictions = arima_model.predict(len(test_array))
+        MAPE = mean_absolute_percentage_error(test_array, predictions)
+        RMSE = root_mean_square_error(test_array, predictions)
         print(MAPE)
         print(RMSE)
 
@@ -112,4 +113,5 @@ def run_model():
     print('RMSE = ', r)
     plot_model(train_array, test_array, final_model.predict(len(test)))
 
-model = run_model()
+model = run_model(train_array, test_array)
+
