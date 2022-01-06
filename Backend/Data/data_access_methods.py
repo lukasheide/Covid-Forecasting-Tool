@@ -20,7 +20,7 @@ def get_starting_values(district, train_start_date):
                                         district_status[Column.CUM_RECOVERIES.value].to_list()[0], \
                                         district_details[Column.POPULATION.value].to_list()[0]
 
-    return vaccinated, recovered, population
+    return population, vaccinated, recovered
 
 
 if __name__ == '__main__':
