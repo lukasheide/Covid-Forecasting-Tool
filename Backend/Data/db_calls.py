@@ -130,7 +130,7 @@ def get_all_table_data(table_name):
 
 
 if __name__ == '__main__':
-    get_table_data_by_duration('Bremen', '2020-10-22', '2020-11-22', attributes=[Column.ADJ_ACT_CASES.value,
+    get_table_data_by_duration('Bremen', '2020-10-25', '2020-11-22', attributes=[Column.ADJ_ACT_CASES.value,
                                                                                  Column.VACCINATION_PERCENTAGE.value,
                                                                                  Column.CURRENT_INFECTIOUS.value])
     # get_table_data_by_duration()
