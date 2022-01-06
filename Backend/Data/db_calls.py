@@ -124,6 +124,11 @@ def get_district_data(district, attributes=None):
     return pd.read_sql(query_sql, engine)
 
 
+def get_all_table_data(table_name):
+    engine = get_engine()
+    return pd.read_sql(table_name, engine)
+
+
 if __name__ == '__main__':
     get_table_data_by_duration('Bremen', '2020-10-22', '2020-11-22', attributes=[Column.ADJ_ACT_CASES.value,
                                                                                  Column.VACCINATION_PERCENTAGE.value,
