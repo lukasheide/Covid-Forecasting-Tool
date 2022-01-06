@@ -15,7 +15,8 @@ from Backend.Data.db_functions import get_table_data
 def diff_eq_model_validation_pipeline(end_date: date, duration: int, districts: list, validation_duration: int,
                                       visualize=False, verbose=False) -> None:
     # iterate over districts(list) of interest
-    for district in districts:
+    results_dict = []
+    for i, district in enumerate(districts):
         ## 1) Import Data
         # 1a) get_smoothed_infection_counts() -> directly from Database
         smoothen_cases = get_smoothen_cases(district, end_date, duration)
@@ -25,7 +26,7 @@ def diff_eq_model_validation_pipeline(end_date: date, duration: int, districts: 
                                           validation_duration=validation_duration)
 
         # 1c) get_starting_values() -> N=population, R0=recovered to-the-date, V0=vaccinated to-the-date
-        train_start_date = date_int_str(y_train[Column.DATE.value][0])
+        train_start_date = date_int_str(smoothen_cases[Column.DATE.value][0])
         start_vals = get_starting_values(district, train_start_date)
 
         ## 2) Run model_pipeline
@@ -41,21 +42,29 @@ def diff_eq_model_validation_pipeline(end_date: date, duration: int, districts: 
         ## 3) Evaluate the results
 
         # 3a) Visualize results (mainly for debugging)
-        plot_train_fitted_and_validation(y_train=y_train, y_val=y_val, y_pred=y_pred)
+        if visualize:
+            plot_train_fitted_and_validation(y_train=y_train, y_val=y_val, y_pred=y_pred)
 
         # 3b) Compute metrics (RMSE, MAPE, ...)
         scores = compute_evaluation_metrics(y_pred=y_pred, y_val=y_val)
 
-        ## 4) Store results in database:
+        # collecting pipeline results to a list to be used in step four
+        results_dict.append({
+            'district': district,
+            'pipeline_results': pipeline_result,
+            'scores': scores,
+        })
 
-        ## 4a) Meta parameters
-        # 1) which model?
-        # 2) what period?
-        # 3) with what parameters?
+    ## 4) Store results in database:
+    pass
+    ## 4a) Meta parameters
+    # 1) which model?
+    # 2) what period?
+    # 3) with what parameters?
 
-        ## 4b) Predictions
+    ## 4b) Predictions
 
-        # -> basically all parameters that are set
+    # -> basically all parameters that are set
 
 
 if __name__ == '__main__':

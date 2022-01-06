@@ -53,7 +53,7 @@ def update_population_map():
             population_map[row['district']] = int(row['population'])
 
     # special name changes
-    population_map['München, Stadt'] = population_map.pop('München, Landeshauptstadt')
+    # population_map['München, Stadt'] = population_map.pop('München, Landeshauptstadt')
     population_map['Leipzig, Kreis'], population_map['Leipzig, Stadt'] = population_map['Leipzig, Stadt'], population_map['Leipzig, Kreis']
 
 
@@ -345,8 +345,8 @@ if __name__ == '__main__':
     #         ALWAYS execute update_population_map() in the line BEFORE you run
     #         update_district_data("district_name")
 
-    update_district_list()
-    update_district_details()
+    # update_district_list()
+    # update_district_details()
     # update_population_map()
     update_all_district_data()
     # update_district_data("Münster")
