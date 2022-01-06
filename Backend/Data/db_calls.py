@@ -16,7 +16,7 @@ def get_db_connection():
     return sqlite3.connect('../Assets/Data/opendaten.db')
 
 
-def update_db_without_index(table_name, dataframe):
+def update_db(table_name, dataframe):
     table_name = format_name(table_name)
     # prepare_table(table_name) this will not need to be used
     engine = get_engine()
