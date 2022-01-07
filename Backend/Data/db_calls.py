@@ -13,10 +13,10 @@ def get_engine():
 
 
 def get_db_connection():
-    return sqlite3.connect('../Assets/Data/opendaten.db')
+    return sqlite3.connect('Assets/Data/opendaten.db')
 
 
-def update_db_without_index(table_name, dataframe):
+def update_db(table_name, dataframe):
     table_name = format_name(table_name)
     # prepare_table(table_name) this will not need to be used
     engine = get_engine()
@@ -124,8 +124,13 @@ def get_district_data(district, attributes=None):
     return pd.read_sql(query_sql, engine)
 
 
+def get_all_table_data(table_name):
+    engine = get_engine()
+    return pd.read_sql(table_name, engine)
+
+
 if __name__ == '__main__':
-    get_table_data_by_duration('Bremen', '2020-10-22', '2020-11-22', attributes=[Column.ADJ_ACT_CASES.value,
+    get_table_data_by_duration('Bremen', '2020-10-25', '2020-11-22', attributes=[Column.ADJ_ACT_CASES.value,
                                                                                  Column.VACCINATION_PERCENTAGE.value,
                                                                                  Column.CURRENT_INFECTIOUS.value])
     # get_table_data_by_duration()

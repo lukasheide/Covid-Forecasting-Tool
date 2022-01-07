@@ -5,7 +5,7 @@ from Backend.Data.db_calls import get_table_data_by_duration, get_table_data_by_
 def get_smoothen_cases(district, end_date, duration):
     data_result = get_table_data_by_duration(table=district,
                                              end_date=end_date,
-                                             duration=duration,
+                                             duration=duration-1,       # otherwise for a duration of two days we would get data from e.g. 15th Dec - 17th Dec
                                              attributes=[Column.DATE.value, Column.SEVEN_DAY_SMOOTHEN.value])
 
     return data_result
@@ -20,7 +20,7 @@ def get_starting_values(district, train_start_date):
                                         district_status[Column.CUM_RECOVERIES.value].to_list()[0], \
                                         district_details[Column.POPULATION.value].to_list()[0]
 
-    return vaccinated, recovered, population
+    return population, vaccinated, recovered
 
 
 if __name__ == '__main__':

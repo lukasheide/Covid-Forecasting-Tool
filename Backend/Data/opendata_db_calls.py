@@ -14,7 +14,7 @@ population_map = {}
 def get_data_by_date_and_attr(table, date1, date2, attributes):
     """
 
-    :param table: 'table_name' as mentioned in district_list(../../Assets/Data/district_list.csv)
+    :param table: 'table_name' as mentioned in district_list(Assets/Data/district_list.csv)
     generated from update_district_list().
     :param date1: from date in YYYYMMDD format. 20200301 is the starting date
     :param date2: to date in YYYYMMDD format.
@@ -53,7 +53,7 @@ def update_population_map():
             population_map[row['district']] = int(row['population'])
 
     # special name changes
-    population_map['München, Stadt'] = population_map.pop('München, Landeshauptstadt')
+    # population_map['München, Stadt'] = population_map.pop('München, Landeshauptstadt')
     population_map['Leipzig, Kreis'], population_map['Leipzig, Stadt'] = population_map['Leipzig, Stadt'], population_map['Leipzig, Kreis']
 
 
@@ -301,7 +301,7 @@ def update_district_list():
     district_list = list(set(district_list))
     df = pd.DataFrame(district_list)
     df.columns = ['state', 'district']
-    df.to_csv('../Assets/Data/district_list.csv')
+    df.to_csv('Assets/Data/district_list.csv')
     update_db('district_list', df)
 
 
@@ -334,7 +334,7 @@ def update_district_details():
     district_list = list(set(district_list))
     df = pd.DataFrame(district_list)
     df.columns = ['state', 'district', 'population', 'latitude', 'longitude']
-    # df.to_csv('../../Assets/Data/district_list.csv')
+    # df.to_csv('Assets/Data/district_list.csv')
     update_db('district_details', df)
 
 
@@ -347,8 +347,8 @@ if __name__ == '__main__':
 
     # update_district_list()
     # update_district_details()
-    update_population_map()
-    # update_all_district_data()
-    update_district_data("Münster")
+    # update_population_map()
+    update_all_district_data()
+    # update_district_data("Münster")
     # result_df = get_data_by_date_and_attr('Rhein-Neckar-Kreis', 20210101, 20211031, ["daily_infec", "daily_deaths"])
     # print(result_df)
