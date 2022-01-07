@@ -13,7 +13,7 @@ def plot_train_fitted_and_validation(y_train: np.array, y_val: np.array, y_pred:
     len_val = len(y_val)
     len_pred = len(y_pred)
 
-    # split y_pred into train and val period:
+    # Split y_pred into train and val period:
     y_pred_train = y_pred[:len_train-1]
     y_pred_val = y_pred[len_train-1:]
     y_pred_val_plus_one = y_pred[len_train-2:]

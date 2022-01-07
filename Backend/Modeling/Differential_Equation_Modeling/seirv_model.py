@@ -80,17 +80,17 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple) -> dict:
     t_grid_train = np.linspace(0, num_days_train, num_days_train + 1)
 
     ## 2) Get start guess for parameters that are fitted as a tuple:
-    fit_params_start_guess = (params_SEIRV_fit['beta'], 678, 789)
+    fit_params_start_guess = (params_SEIRV_fit['beta']['mean'], 678, 789)
 
     ## 3) Get values for fixed model parameters:
     fixed_params = {
         't_grid': t_grid_train,
         'fixed_model_params': {
-            'gamma_I': params_SEIRV_fixed['gamma_I'],
-            'gamma_U': params_SEIRV_fixed['gamma_U'],
-            'delta': params_SEIRV_fixed['delta'],
-            'theta': params_SEIRV_fixed['theta'],
-            'rho': params_SEIRV_fixed['rho']
+            'gamma_I': params_SEIRV_fixed['gamma_I']['mean'],
+            'gamma_U': params_SEIRV_fixed['gamma_U']['mean'],
+            'delta': params_SEIRV_fixed['delta']['mean'],
+            'theta': params_SEIRV_fixed['theta']['mean'],
+            'rho': params_SEIRV_fixed['rho']['mean']
         }
     }
 
@@ -110,14 +110,14 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple) -> dict:
 
     ## 5) Prepare model parameters and start values to run the model again:
     # Model params:
-    fixed_params = [param for param in params_SEIRV_fixed.values()]
+    fixed_params = [param['mean'] for param in params_SEIRV_fixed.values()]
     fitted_and_fixed_model_params = tuple(opt_params[:1]) + tuple(fixed_params)
 
     # Compute starting values for each compartment:
     N = start_vals_fixed[0]
     E0 = opt_params[1]
     I0 = opt_params[2]
-    U0 = E0 * params_SEIRV_fixed['rho'] / (1 - params_SEIRV_fixed['rho'])
+    U0 = E0 * params_SEIRV_fixed['rho']['mean'] / (1 - params_SEIRV_fixed['rho']['mean'])
     R0 = start_vals_fixed[1]
     V0 = start_vals_fixed[2]
     S0 = N - E0 - I0 - R0 - V0
@@ -194,11 +194,11 @@ def setup_model_params_for_forecasting_after_fitting(fitted_model_params):
     """
 
     beta = fitted_model_params['beta']
-    gamma_I = params_SEIRV_fixed['gamma_I']
-    gamma_U = params_SEIRV_fixed['gamma_U']
-    delta = params_SEIRV_fixed['delta']
-    theta = params_SEIRV_fixed['theta']
-    rho = params_SEIRV_fixed['rho']
+    gamma_I = params_SEIRV_fixed['gamma_I']['mean']
+    gamma_U = params_SEIRV_fixed['gamma_U']['mean']
+    delta = params_SEIRV_fixed['delta']['mean']
+    theta = params_SEIRV_fixed['theta']['mean']
+    rho = params_SEIRV_fixed['rho']['mean']
 
     return beta, gamma_I, gamma_U, delta, theta, rho
 
@@ -263,9 +263,9 @@ def solve_ode_for_fitting_partly_fitted_y0(fixed_start_vals, fixed_params, fit_p
 
 def solve_ode_for_fitting_fixed_y0(y0, t_grid, fit_params):
     beta = fit_params[0]
-    gamma = params_SEIRV_fixed['gamma']
-    delta = params_SEIRV_fixed['delta']
-    theta = params_SEIRV_fixed['theta']
+    gamma = params_SEIRV_fixed['gamma']['mean']
+    delta = params_SEIRV_fixed['delta']['mean']
+    theta = params_SEIRV_fixed['theta']['mean']
 
     # lambda function as shown here: https://www.kaggle.com/baiyanren/modified-seir-model-for-covid-19-prediction-in-us
     # this circumvents issues with the scipy odeint function, which can only handle a predefined number of params
@@ -362,7 +362,7 @@ def seirv_model_pipeline_DEPRECATED(y_train: np.array, start_vals_fitting: tuple
     y0_train = start_vals_fitting + (0,)
 
     # Get start guess for parameters that are fitted as a tuple:
-    fit_params_start_guess = (params_SEIRV_fit['beta'],)
+    fit_params_start_guess = (params_SEIRV_fit['beta']['mean'],)
 
     # Fit parameters:
     opt_params, success = leastsq(
