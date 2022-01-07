@@ -3,7 +3,7 @@ import numpy as np
 params_SEIRV_fixed = {
     'gamma_I': { # mean infectious period detected cases
        'mean': 1 / 7,
-        'sd': 0.1,
+        'sd': 1 / 7 / 10,
         'upper_lim': 2,
         'lower_lim': 0,
         'distribution': "normal"
@@ -11,7 +11,7 @@ params_SEIRV_fixed = {
 
     'gamma_U': {  # mean infectious period undetected cases
         'mean': 1 / 6,
-        'sd': 0.1,
+        'sd': 1 / 6 / 10,
         'upper_lim': 2,
         'lower_lim': 0,
         'distribution': "normal"
@@ -19,7 +19,7 @@ params_SEIRV_fixed = {
 
     'delta': {  # mean incubation time
         'mean': 1 / 6.8,
-        'sd': 0.1,
+        'sd': 1 / 6.8 / 10,
         'upper_lim': 2,
         'lower_lim': 0,
         'distribution': "normal"

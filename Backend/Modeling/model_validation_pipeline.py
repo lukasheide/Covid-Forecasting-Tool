@@ -30,10 +30,8 @@ def diff_eq_model_validation_pipeline(end_date: date, duration: int, districts: 
         start_vals = get_starting_values(district, train_start_date)
 
         ## 2) Run model_pipeline
-
-        pipeline_result = seirv_pipeline(y_train=y_train, start_vals_fixed=start_vals)
+        pipeline_result = seirv_pipeline(y_train=y_train, start_vals_fixed=start_vals, allow_randomness_fixed_beta=True, random_runs=100)
         y_pred_without_train_period = pipeline_result['y_pred_without_train_period']
-        y_pred_including_train_period = pipeline_result['y_pred_including_train_period']
 
         # returned:
         # I) y_pred for both training and validation period,
@@ -44,7 +42,9 @@ def diff_eq_model_validation_pipeline(end_date: date, duration: int, districts: 
 
         # 3a) Visualize results (mainly for debugging)
         if visualize:
-            plot_train_fitted_and_validation(y_train=y_train, y_val=y_val, y_pred=y_pred_including_train_period)
+            plot_train_fitted_and_validation(y_train=y_train, y_val=y_val, y_pred=pipeline_result['y_pred_including_train_period'],
+                                             y_pred_upper = pipeline_result['y_pred_without_train_period_upper_bound'],
+                                             y_pred_lower = pipeline_result['y_pred_without_train_period_lower_bound'])
 
         # 3b) Compute metrics (RMSE, MAPE, ...)
         scores = compute_evaluation_metrics(y_pred=y_pred_without_train_period, y_val=y_val)
