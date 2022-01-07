@@ -98,3 +98,17 @@ def plot_train_and_val_infections(y_train:np.array, y_val:np.array):
         plt.plot(y_train)
         plt.plot(y_val)
         plt.show()
+
+#create line plot for SARIMA visualization
+def plot_sarima_model_line_plot(train_array, test_array, predictions: int):
+    len_train = len(train_array)
+    len_test = len(test_array)
+    len_total = len_train + len_test
+    t_grid_total = np.linspace(1, len_total, len_total)
+
+    pred_array = np.concatenate((train_array, predictions))
+    val_array = np.concatenate((train_array, test_array))
+    plt.plot(t_grid_total, pred_array, 'b--')
+    plt.plot(t_grid_total, val_array, 'g')
+    print(pred_array)
+    plt.show()
