@@ -10,6 +10,7 @@ from Backend.Modeling.Util.pipeline_util import train_test_split
 from Backend.Visualization.modeling_results import plot_train_and_fitted_infections_line_plot, \
     plot_train_and_fitted_infections_bar_plot, plot_train_infections, plot_train_fitted_and_validation
 from Backend.Data.db_functions import get_table_data
+#from Backend.Modeling.Regression Model.ARIMA import sarima_pipeline
 
 
 def diff_eq_model_validation_pipeline(end_date: date, duration: int, districts: list, validation_duration: int,
@@ -32,6 +33,9 @@ def diff_eq_model_validation_pipeline(end_date: date, duration: int, districts: 
         ## 2) Run model_pipeline
         pipeline_result = seirv_pipeline(y_train=y_train, start_vals_fixed=start_vals, allow_randomness_fixed_beta=True, random_runs=100)
         y_pred_without_train_period = pipeline_result['y_pred_without_train_period']
+
+        #Run Sarima model
+        #sarima_result = sarima_pipeline(y_train, y_val)
 
         # returned:
         # I) y_pred for both training and validation period,

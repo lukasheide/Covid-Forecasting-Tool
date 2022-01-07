@@ -4,7 +4,8 @@ import pmdarima as pmd
 from statsmodels.tsa.stattools import adfuller
 from sklearn.metrics import mean_squared_error
 from math import sqrt
-from Backend.Visualization.modeling_results import plot_train_fitted_and_validation
+from Backend.Visualization.modeling_results import plot_sarima_model_line_plot
+from Backend.Evaluation.metrics import compute_evaluation_metrics
 import matplotlib.pyplot as plt
 
 #reading csv file including date, cases, class
@@ -72,22 +73,10 @@ def mean_absolute_percentage_error(y_true, y_pred):
 def root_mean_square_error(y_true, y_pred):
     return sqrt(mean_squared_error(y_true, y_pred))
 
-#create plot for visualization
-def plot_model(train_array, test_array, predictions: int):
-    len_train = len(train_array)
-    len_test = len(test_array)
-    len_total = len_train + len_test
-    t_grid_total = np.linspace(1, len_total, len_total)
 
-    pred_array = np.concatenate((train_array, predictions))
-    val_array = np.concatenate((train_array, test_array))
-    plt.plot(t_grid_total, pred_array, 'b--')
-    plt.plot(t_grid_total, val_array, 'g')
-    print(pred_array)
-    plt.show()
 
 #model execution
-def run_model(train_array, test_array):
+def sarima_pipeline(train_array, test_array):
     m = 2000
     i = 1
 
@@ -95,6 +84,8 @@ def run_model(train_array, test_array):
     while i < 15:
         arima_model = sarimamodel(train_array, i)
         predictions = arima_model.predict(len(test_array))
+        evaluations = compute_evaluation_metrics(test_array, predictions)
+        print(evaluations)
         MAPE = mean_absolute_percentage_error(test_array, predictions)
         RMSE = root_mean_square_error(test_array, predictions)
         print(MAPE)
@@ -111,6 +102,7 @@ def run_model(train_array, test_array):
     print(final_model.predict(len(test)))
     print('MAPE = ', m)
     print('RMSE = ', r)
-    plot_model(train_array, test_array, final_model.predict(len(test)))
+    plot_sarima_model_line_plot(train_array, test_array, final_model.predict(len(test)))
+    return predictions
 
-model = run_model(train_array, test_array)
+model = sarima_pipeline(train_array, test_array)
