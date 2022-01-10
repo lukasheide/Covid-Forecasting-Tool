@@ -58,7 +58,7 @@ def diff_eq_model_validation_pipeline(end_date: date, duration: int, districts: 
 
     ## 4) Store results in database:
     pass
-    
+
     ## 4a) Meta parameters
     # 1) which model?
     # 2) what period?

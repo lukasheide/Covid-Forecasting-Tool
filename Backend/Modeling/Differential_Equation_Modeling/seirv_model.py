@@ -102,8 +102,8 @@ def seirv_pipeline(y_train: np.array, start_vals_fixed: tuple, forecast_horizon=
         'y_pred_without_train_period': pred_daily_infections,
         'y_pred_without_train_period_upper_bound': pred_daily_infections_upper_quantile,       # None if randomness was excluded!
         'y_pred_without_train_period_lower_bound': pred_daily_infections_lower_quantile,       # None if randomness was excluded!
-        'model_params': model_params_as_dictionary,
-        'model_start_vals': model_start_vals_as_dictionary
+        'model_params_forecast_period': model_params_as_dictionary,
+        'model_start_vals_forecast_period': model_start_vals_as_dictionary
     }
 
     return results_dict

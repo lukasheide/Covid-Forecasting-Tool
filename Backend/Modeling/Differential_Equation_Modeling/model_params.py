@@ -55,7 +55,7 @@ params_SEIRV_fit = {
 
 
 LEAST_SQUARES_WEIGHT = {
-    'lambda': 0.03                # exponential decay
+    'lambda': 0.05                # exponential decay
 }
 
 

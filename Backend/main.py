@@ -22,7 +22,7 @@ def main():
     end_date = '2021-12-15'
     time_frame_train_and_validation = 28
     forecasting_horizon = 14
-    districts = ['Essen', 'Münster', 'Herne', 'Bielefeld']
+    districts = ['Essen', 'Münster', 'Herne', 'Bielefeld', 'Dortmund', 'Leipzig', 'Berlin']
 
     # Call differential equation model validation pipeline:
     diff_eq_model_validation_pipeline(end_date=end_date,
@@ -31,6 +31,8 @@ def main():
                                       validation_duration=forecasting_horizon,
                                       visualize=True,
                                       verbose=False)
+
+
 
 
     ##### Stuff below will be refactored soon #####
