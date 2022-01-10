@@ -166,8 +166,8 @@ def clean_create_model_store():
 
     create_prediction_sql = "CREATE TABLE IF NOT EXISTS prediction( " \
                             "prediction_id INTEGER PRIMARY KEY," \
-                            "district_name TEXT NOT NULL," \
                             "pipeline_id INTEGER NOT NULL," \
+                            "district_name TEXT NOT NULL," \
                             "date TEXT NOT NULL," \
                             "cases REAL NOT NULL," \
                             "FOREIGN KEY(district_name, pipeline_id) " \
@@ -199,8 +199,8 @@ def insert_param_and_start_vals(pipeline_id, district_name, start_vals, model_pa
     param_list = [pipeline_id, district_name] + list(start_vals) + list(model_params.values())
 
     sql_srt = 'INSERT INTO param_and_start_vals (' \
-              'district_name, ' \
               'pipeline_id,' \
+              'district_name, ' \
               'population,' \
               'vaccinated,' \
               'recovered,' \
@@ -216,14 +216,15 @@ def insert_param_and_start_vals(pipeline_id, district_name, start_vals, model_pa
     connection.close()
 
 
-def insert_prediction_vals(pipeline_id, district_name, predictions, end_date):
+def insert_prediction_vals(pipeline_id, district_name, predictions, train_end_date):
     connection = get_db_connection()
     cursor = connection.cursor()
-    current_day = datetime.datetime.strptime(end_date, '%Y-%m-%d')
+    current_day = datetime.datetime.strptime(train_end_date, '%Y-%m-%d')
+    # next day is the validation/prediction start date
     predictions = pd.DataFrame(data=predictions)
 
     for i, cases in predictions.iterrows():
-        current_day = current_day + datetime.timedelta(days=i)
+        current_day = current_day + datetime.timedelta(days=1)
         current_day_str = current_day.strftime('%Y-%m-%d')
         # prepare the list
         param_list = ()

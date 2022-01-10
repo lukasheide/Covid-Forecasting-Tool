@@ -19,7 +19,7 @@ from Backend.Data.db_functions import get_table_data
 def diff_eq_pipeline(train_end_date: date, duration: int, districts: list, validation_duration: int,
                      visualize=False, verbose=False, validate=True) -> None:
     # iterate over districts(list) of interest
-    results_dict = []
+    # results_dict = []
     # store pipeline data in the DB
     pipeline_id = start_pipeline(train_end_date, validation_duration, visualize, verbose)
 
@@ -31,19 +31,16 @@ def diff_eq_pipeline(train_end_date: date, duration: int, districts: list, valid
             val_end_date = compute_end_date_of_validation_period(train_end_date, validation_duration)
             smoothen_cases = get_smoothen_cases(district, val_end_date, duration)
             # 1b) split_into_train_and_validation()
-            y_train, y_val = train_test_split(data=smoothen_cases,
+            y_train, y_val = train_test_split(data=smoothen_cases[Column.SEVEN_DAY_SMOOTHEN.value],
                                               validation_duration=validation_duration)
+            train_start_date = date_int_str(smoothen_cases[Column.DATE.value][0])
 
         else:
             y_train = get_smoothen_cases(district, train_end_date, duration)
+            train_start_date = date_int_str(y_train[Column.DATE.value][0])
+            y_train = y_train[Column.SEVEN_DAY_SMOOTHEN.value]
 
         # 1c) get_starting_values() -> N=population, R0=recovered to-the-date, V0=vaccinated to-the-date
-        if validate:
-            train_start_date = date_int_str(smoothen_cases[Column.DATE.value][0])
-        else:
-            train_start_date = date_int_str(y_train[Column.DATE.value][0])
-        val_start_date = date_int_str(y_train[Column.DATE.value][0])
-        y_train, y_val = y_train[Column.SEVEN_DAY_SMOOTHEN.value], y_val[Column.SEVEN_DAY_SMOOTHEN.value]
         start_vals = get_starting_values(district, train_start_date)
 
         ## 2) Run model_pipeline
@@ -69,19 +66,20 @@ def diff_eq_pipeline(train_end_date: date, duration: int, districts: list, valid
                                              y_pred_lower=pipeline_result['y_pred_without_train_period_lower_bound'])
 
         # 3b) Compute metrics (RMSE, MAPE, ...)
-        scores = compute_evaluation_metrics(y_pred=y_pred_without_train_period, y_val=y_val)
+        if validate:
+            scores = compute_evaluation_metrics(y_pred=y_pred_without_train_period, y_val=y_val)
 
-        # collecting pipeline results to a list to be used in step four
-        results_dict.append({
-            'district': district,
-            'pipeline_results': pipeline_result,
-            'scores': scores,
-        })
+            # collecting pipeline results to a list to be used in step four
+            # results_dict.append({
+            #     'district': district,
+            #     'pipeline_results': pipeline_result,
+            #     'scores': scores,
+            # })
 
-        # store district data in the DB
+        # 4) Store results in database:
         insert_param_and_start_vals(pipeline_id, district, start_vals, pipeline_result['model_params'])
-        insert_prediction_vals(pipeline_id, district, pipeline_result['y_pred_without_train_period'], val_start_date)
-    ## 4) Store results in database:
+        insert_prediction_vals(pipeline_id, district, pipeline_result['y_pred_without_train_period'], train_end_date)
+
     pass
 
     ## 4a) Meta parameters
