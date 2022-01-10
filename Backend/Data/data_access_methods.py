@@ -21,6 +21,12 @@ def get_starting_values(district, train_start_date):
                                         district_details[Column.POPULATION.value].to_list()[0]
 
     return population, vaccinated, recovered
+#
+#
+# # should only be executed once
+# def prepare_model_store():
+#
+#     clean_create_model_store()
 
 
 if __name__ == '__main__':

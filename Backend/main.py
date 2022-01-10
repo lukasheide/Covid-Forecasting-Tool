@@ -7,37 +7,38 @@ from Backend.Modeling.Simulate_Infection_Cases.simulate_infection_counts import 
 from Backend.Evaluation.metrics import compute_evaluation_metrics
 from Backend.Visualization.modeling_results import plot_train_and_fitted_infections_line_plot, \
     plot_train_and_fitted_infections_bar_plot, plot_train_infections, plot_train_fitted_and_validation
-from Backend.Modeling.model_validation_pipeline import diff_eq_model_validation_pipeline
+from Backend.Modeling.model_validation_pipeline import diff_eq_pipeline
 
 from Backend.Data.db_functions import get_table_data
 
 from datetime import date, time, datetime
 import matplotlib.pyplot as plt
 import matplotlib
+
 matplotlib.interactive(True)
 
 
 def main():
-
-    end_date = '2021-12-15'
+    end_date = '2021-12-14'
     time_frame_train_and_validation = 28
     forecasting_horizon = 14
     districts = ['Essen', 'Münster', 'Herne', 'Bielefeld']
 
     # Call differential equation model validation pipeline:
-    diff_eq_model_validation_pipeline(end_date=end_date,
-                                      duration=time_frame_train_and_validation,
-                                      districts=districts,
-                                      validation_duration=forecasting_horizon,
-                                      visualize=True,
-                                      verbose=False)
-
+    diff_eq_pipeline(train_end_date=end_date,
+                     duration=time_frame_train_and_validation,
+                     districts=districts,
+                     validation_duration=forecasting_horizon,
+                     visualize=True,
+                     verbose=False,
+                     validate=True)
 
     ##### Stuff below will be refactored soon #####
     end_date = 20210804
     start_date = 20210901
 
-    muenster_last_28_days = get_table_data(table='Essen', date1=end_date, date2=start_date, attributes=['date', 'seven_day_infec'], with_index=False)
+    muenster_last_28_days = get_table_data(table='Essen', date1=end_date, date2=start_date,
+                                           attributes=['date', 'seven_day_infec'], with_index=False)
 
     # Split into train and validation set:
     y_train_actual = np.array(muenster_last_28_days['seven_day_infec'])[0:15]
@@ -51,7 +52,7 @@ def main():
 
     # Call seirv_model pipeline:
     pipeline_result = seirv_pipeline(y_train=y_train_actual, start_vals_fixed=start_vals)
-    y_pred = pipeline_result['y_pred']
+    y_pred = pipeline_result['y_pred_without_train_period']
 
     # Visualize model pipeline run:
     plot_train_fitted_and_validation(y_train=y_train_actual, y_val=y_val_actual, y_pred=y_pred)
@@ -59,12 +60,7 @@ def main():
     # Compute metrics:
     scores = compute_evaluation_metrics(y_pred=y_pred, y_val=y_val_actual)
 
-
-
     print('end reached')
-
-
-
 
 
 if __name__ == '__main__':
