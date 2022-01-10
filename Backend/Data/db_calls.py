@@ -8,12 +8,12 @@ from Backend.Data.data_util import format_name, date_str_to_int, validate_dates_
 
 
 def get_engine():
-    engine = sqlalchemy.create_engine('sqlite:///Assets/Data/opendaten.db')
+    engine = sqlalchemy.create_engine('sqlite:///../Assets/Data/opendaten.db')
     return engine
 
 
 def get_db_connection():
-    return sqlite3.connect('Assets/Data/opendaten.db')
+    return sqlite3.connect('../Assets/Data/opendaten.db')
 
 
 def update_db(table_name, dataframe):
@@ -129,8 +129,119 @@ def get_all_table_data(table_name):
     return pd.read_sql(table_name, engine)
 
 
+def clean_create_model_store():
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    # clean
+    cursor.executescript('DROP TABLE IF EXISTS prediction;')
+    cursor.executescript('DROP TABLE IF EXISTS param_and_start_vals;')
+    cursor.executescript('DROP TABLE IF EXISTS pipeline;')
+
+    create_pipeline_sql = "CREATE TABLE IF NOT EXISTS pipeline( " \
+                          "pipeline_id INTEGER PRIMARY KEY, " \
+                          "end_date TEXT NOT NULL," \
+                          "val_duration INTEGER NOT NULL," \
+                          "visualize BOOLEAN NOT NULL," \
+                          "verbose BOOLEAN NOT NULL," \
+                          "started_on TEXT NOT NULL);"
+    cursor.executescript(create_pipeline_sql)
+
+    create_param_sql = "CREATE TABLE IF NOT EXISTS param_and_start_vals( " \
+                       "pipeline_id INTEGER NOT NULL," \
+                       "district_name TEXT NOT NULL," \
+                       "population INTEGER NOT NULL," \
+                       "vaccinated INTEGER NOT NULL," \
+                       "recovered INTEGER NOT NULL," \
+                       "beta REAL NOT NULL," \
+                       "gamma_I REAL NOT NULL," \
+                       "gamma_U REAL NOT NULL," \
+                       "delta REAL NOT NULL," \
+                       "theta REAL NOT NULL," \
+                       "rho REAL NOT NULL," \
+                       "PRIMARY KEY (district_name, pipeline_id)" \
+                       "FOREIGN KEY(pipeline_id) " \
+                       "REFERENCES pipeline(pipeline_id));"
+    cursor.execute(create_param_sql)
+
+    create_prediction_sql = "CREATE TABLE IF NOT EXISTS prediction( " \
+                            "prediction_id INTEGER PRIMARY KEY," \
+                            "district_name TEXT NOT NULL," \
+                            "pipeline_id INTEGER NOT NULL," \
+                            "date TEXT NOT NULL," \
+                            "cases REAL NOT NULL," \
+                            "FOREIGN KEY(district_name, pipeline_id) " \
+                            "REFERENCES param_and_start_vals(district_name, pipeline_id));"
+    cursor.executescript(create_prediction_sql)
+
+    connection.close()
+
+
+def start_pipeline(end_date, validation_duration, visualize, verbose):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    sql_srt = 'INSERT INTO pipeline (end_date, val_duration, visualize, verbose, started_on) values (?, ?, ?, ?, ?)'
+    cursor.execute(sql_srt, (end_date, validation_duration, visualize, verbose, datetime.datetime.now().strftime("%d-%b-%Y (%H:%M:%S.%f)")))
+    cursor.execute('SELECT MAX(pipeline_id) FROM pipeline;')
+    pipeline_id = cursor.fetchone()[0]
+
+    connection.commit()
+    connection.close()
+
+    return pipeline_id
+
+
+def insert_param_and_start_vals(pipeline_id, district_name, start_vals, model_params):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    # prepare the list
+    param_list = [pipeline_id, district_name] + list(start_vals) + list(model_params.values())
+
+    sql_srt = 'INSERT INTO param_and_start_vals (' \
+              'district_name, ' \
+              'pipeline_id,' \
+              'population,' \
+              'vaccinated,' \
+              'recovered,' \
+              'beta,' \
+              'gamma_I,' \
+              'gamma_U,' \
+              'delta,' \
+              'theta,' \
+              'rho) ' \
+              'values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    cursor.execute(sql_srt, param_list)
+    connection.commit()
+    connection.close()
+
+
+def insert_prediction_vals(pipeline_id, district_name, predictions, end_date):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    current_day = datetime.datetime.strptime(end_date, '%Y-%m-%d')
+    predictions = pd.DataFrame(data=predictions)
+
+    for i, cases in predictions.iterrows():
+        current_day = current_day + datetime.timedelta(days=i)
+        current_day_str = current_day.strftime('%Y-%m-%d')
+        # prepare the list
+        param_list = ()
+
+        sql_srt = 'INSERT INTO prediction (' \
+                  'district_name, ' \
+                  'pipeline_id,' \
+                  'date,' \
+                  'cases) ' \
+                  'values (?, ?, ?, ?)'
+        cursor.execute(sql_srt, (district_name, pipeline_id, current_day_str, cases[0]))
+    connection.commit()
+    connection.close()
+
+
 if __name__ == '__main__':
-    get_table_data_by_duration('Bremen', '2020-10-25', '2020-11-22', attributes=[Column.ADJ_ACT_CASES.value,
-                                                                                 Column.VACCINATION_PERCENTAGE.value,
-                                                                                 Column.CURRENT_INFECTIOUS.value])
+    # get_table_data_by_duration('Bremen', '2020-10-25', '2020-11-22', attributes=[Column.ADJ_ACT_CASES.value,
+    #                                                                              Column.VACCINATION_PERCENTAGE.value,
+    #                                                                              Column.CURRENT_INFECTIOUS.value])
     # get_table_data_by_duration()
+    clean_create_model_store()
