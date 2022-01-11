@@ -29,38 +29,38 @@ def main():
                      duration=time_frame_train_and_validation,
                      districts=districts,
                      validation_duration=forecasting_horizon,
-                     visualize=True,
+                     visualize=False,
                      verbose=False,
-                     validate=True)
+                     validate=False)
 
 
 
     ##### Stuff below will be refactored soon #####
-    end_date = 20210804
-    start_date = 20210901
-
-    muenster_last_28_days = get_table_data(table='Essen', date1=end_date, date2=start_date,
-                                           attributes=['date', 'seven_day_infec'], with_index=False)
-
-    # Split into train and validation set:
-    y_train_actual = np.array(muenster_last_28_days['seven_day_infec'])[0:15]
-    y_val_actual = np.array(muenster_last_28_days['seven_day_infec'])[15:]
-
-    # Get simulated infection cases:
-    y_train_simulation = produce_simulated_infection_counts()
-
-    # Get starting values for compartmental model (Should come from the data pipeline later on)
-    start_vals = set_starting_values_e0_and_i0_fitted()
-
-    # Call seirv_model pipeline:
-    pipeline_result = seirv_pipeline(y_train=y_train_actual, start_vals_fixed=start_vals)
-    y_pred = pipeline_result['y_pred_without_train_period']
-
-    # Visualize model pipeline run:
-    plot_train_fitted_and_validation(y_train=y_train_actual, y_val=y_val_actual, y_pred=y_pred)
-
-    # Compute metrics:
-    scores = compute_evaluation_metrics(y_pred=y_pred, y_val=y_val_actual)
+    # end_date = 20210804
+    # start_date = 20210901
+    #
+    # muenster_last_28_days = get_table_data(table='Essen', date1=end_date, date2=start_date,
+    #                                        attributes=['date', 'seven_day_infec'], with_index=False)
+    #
+    # # Split into train and validation set:
+    # y_train_actual = np.array(muenster_last_28_days['seven_day_infec'])[0:15]
+    # y_val_actual = np.array(muenster_last_28_days['seven_day_infec'])[15:]
+    #
+    # # Get simulated infection cases:
+    # y_train_simulation = produce_simulated_infection_counts()
+    #
+    # # Get starting values for compartmental model (Should come from the data pipeline later on)
+    # start_vals = set_starting_values_e0_and_i0_fitted()
+    #
+    # # Call seirv_model pipeline:
+    # pipeline_result = seirv_pipeline(y_train=y_train_actual, start_vals_fixed=start_vals)
+    # y_pred = pipeline_result['y_pred_without_train_period']
+    #
+    # # Visualize model pipeline run:
+    # plot_train_fitted_and_validation(y_train=y_train_actual, y_val=y_val_actual, y_pred=y_pred)
+    #
+    # # Compute metrics:
+    # scores = compute_evaluation_metrics(y_pred=y_pred, y_val=y_val_actual)
 
     print('end reached')
 
