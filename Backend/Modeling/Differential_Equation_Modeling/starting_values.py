@@ -260,8 +260,13 @@ def get_vaccination_breakthrough(df_vaccination, df_recovered, district):
     df_rec_and_vacc = df_rec_and_vacc.fillna(0)
     #calculation
     df_rec_and_vacc['share_vacc_in_rec'] = 0
+    # df_rec_and_vacc['share_vacc_in_rec'] = df_rec_and_vacc.apply(
+    #     lambda x: (x['vaccination_rate'] * 0.005) * number_inhabitants / x['active_cases'], axis=1)
+    # insert new formula
     df_rec_and_vacc['share_vacc_in_rec'] = df_rec_and_vacc.apply(
-        lambda x: (x['vaccination_rate'] * 0.005) * number_inhabitants / x['active_cases'], axis=1)
+        lambda x : x['vaccination_rate']/(x['vaccination_rate'] + (1 - x['vaccination_rate'])*15.9296), axis=1)
+        #     lambda x: (x['vaccination_rate'] * 0.005) * number_inhabitants / x['active_cases'], axis=1)
+
 
 
     #calculate number of people that are vaccinated and recovered
