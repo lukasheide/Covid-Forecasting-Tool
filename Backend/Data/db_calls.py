@@ -143,6 +143,7 @@ def clean_create_model_store():
                           "end_date TEXT NOT NULL," \
                           "val_duration INTEGER NOT NULL," \
                           "visualize BOOLEAN NOT NULL," \
+                          "validate BOOLEAN NOT NULL," \
                           "verbose BOOLEAN NOT NULL," \
                           "started_on TEXT NOT NULL);"
     cursor.executescript(create_pipeline_sql)
@@ -177,11 +178,16 @@ def clean_create_model_store():
     connection.close()
 
 
-def start_pipeline(end_date, validation_duration, visualize, verbose):
+def start_pipeline(end_date, validation_duration, visualize, validate, verbose):
     connection = get_db_connection()
     cursor = connection.cursor()
-    sql_srt = 'INSERT INTO pipeline (end_date, val_duration, visualize, verbose, started_on) values (?, ?, ?, ?, ?)'
-    cursor.execute(sql_srt, (end_date, validation_duration, visualize, verbose, datetime.datetime.now().strftime("%d-%b-%Y (%H:%M:%S.%f)")))
+    sql_srt = 'INSERT INTO pipeline (end_date, ' \
+              'val_duration, ' \
+              'visualize, ' \
+              'verbose, ' \
+              'validate, ' \
+              'started_on) values (?, ?, ?, ?, ?, ?)'
+    cursor.execute(sql_srt, (end_date, validation_duration, visualize, validate, verbose, datetime.datetime.now().strftime("%d-%b-%Y (%H:%M:%S.%f)")))
     cursor.execute('SELECT MAX(pipeline_id) FROM pipeline;')
     pipeline_id = cursor.fetchone()[0]
 

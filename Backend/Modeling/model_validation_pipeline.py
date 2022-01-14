@@ -21,7 +21,7 @@ def diff_eq_pipeline(train_end_date: date, duration: int, districts: list, valid
     # iterate over districts(list) of interest
     # results_dict = []
     # store pipeline data in the DB
-    pipeline_id = start_pipeline(train_end_date, validation_duration, visualize, verbose)
+    pipeline_id = start_pipeline(train_end_date, validation_duration, visualize, validate, verbose)
 
     for i, district in enumerate(districts):
         # 1) Import Data
@@ -78,7 +78,7 @@ def diff_eq_pipeline(train_end_date: date, duration: int, districts: list, valid
 
         # 4) Store results in database:
         if store_results_to_db:
-            insert_param_and_start_vals(pipeline_id, district, start_vals, pipeline_result['model_params'])
+            insert_param_and_start_vals(pipeline_id, district, start_vals, pipeline_result['model_params_forecast_period'])
             insert_prediction_vals(pipeline_id, district, pipeline_result['y_pred_without_train_period'], train_end_date)
 
 
