@@ -31,7 +31,8 @@ def main():
                      validation_duration=forecasting_horizon,
                      visualize=False,
                      verbose=False,
-                     validate=False)
+                     validate=False,
+                     store_results_to_db=False)
 
 
 

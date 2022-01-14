@@ -17,7 +17,7 @@ from Backend.Data.db_functions import get_table_data
 
 
 def diff_eq_pipeline(train_end_date: date, duration: int, districts: list, validation_duration: int,
-                     visualize=False, verbose=False, validate=True) -> None:
+                     visualize=False, verbose=False, validate=True, store_results_to_db=True) -> None:
     # iterate over districts(list) of interest
     # results_dict = []
     # store pipeline data in the DB
@@ -77,10 +77,10 @@ def diff_eq_pipeline(train_end_date: date, duration: int, districts: list, valid
             # })
 
         # 4) Store results in database:
-        insert_param_and_start_vals(pipeline_id, district, start_vals, pipeline_result['model_params'])
-        insert_prediction_vals(pipeline_id, district, pipeline_result['y_pred_without_train_period'], train_end_date)
+        if store_results_to_db:
+            insert_param_and_start_vals(pipeline_id, district, start_vals, pipeline_result['model_params'])
+            insert_prediction_vals(pipeline_id, district, pipeline_result['y_pred_without_train_period'], train_end_date)
 
-    pass
 
     ## 4a) Meta parameters
     # 1) which model?
