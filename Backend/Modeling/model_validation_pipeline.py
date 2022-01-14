@@ -7,7 +7,7 @@ from Backend.Data.data_util import Column, date_int_str, compute_end_date_of_val
 from Backend.Data.db_calls import start_pipeline, insert_param_and_start_vals, insert_prediction_vals
 from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_pipeline
 from Backend.Evaluation.metrics import compute_evaluation_metrics
-from Backend.Modeling.Util.pipeline_util import train_test_split
+from Backend.Modeling.Util.pipeline_util import train_test_split, get_list_of_random_dates, get_list_of_random_districts
 from Backend.Visualization.modeling_results import plot_train_and_fitted_infections_line_plot, \
     plot_train_and_fitted_infections_bar_plot, plot_train_infections, plot_train_fitted_and_validation
 from Backend.Data.db_functions import get_table_data
@@ -22,6 +22,9 @@ def diff_eq_pipeline(train_end_date: date, duration: int, districts: list, valid
     # results_dict = []
     # store pipeline data in the DB
     pipeline_id = start_pipeline(train_end_date, validation_duration, visualize, verbose)
+
+    # set up results dictionary:
+    results_dict = {}
 
     for i, district in enumerate(districts):
         # 1) Import Data
@@ -44,7 +47,7 @@ def diff_eq_pipeline(train_end_date: date, duration: int, districts: list, valid
         start_vals = get_starting_values(district, train_start_date)
 
         ## 2) Run model_pipeline
-        pipeline_result = seirv_pipeline(y_train=y_train, start_vals_fixed=start_vals, allow_randomness_fixed_beta=True,
+        pipeline_result = seirv_pipeline(y_train=y_train, start_vals_fixed=start_vals, allow_randomness_fixed_beta=False,
                                          random_runs=100)
         y_pred_without_train_period = pipeline_result['y_pred_without_train_period']
 
@@ -81,15 +84,86 @@ def diff_eq_pipeline(train_end_date: date, duration: int, districts: list, valid
             insert_param_and_start_vals(pipeline_id, district, start_vals, pipeline_result['model_params'])
             insert_prediction_vals(pipeline_id, district, pipeline_result['y_pred_without_train_period'], train_end_date)
 
+        #  5) Append results to dictionary:
+        results_dict[district] = {
+            'scores':scores
+        }
 
-    ## 4a) Meta parameters
-    # 1) which model?
-    # 2) what period?
-    # 3) with what parameters?
+    return results_dict
 
-    ## 4b) Predictions
 
-    # -> basically all parameters that are set
+
+def diff_eq_pipeline_wrapper(**kwargs):
+
+    end_date = '2021-12-14'
+    time_frame_train_and_validation = 28
+    forecasting_horizon = 14
+    districts = ['Essen', 'Münster', 'Herne', 'Bielefeld', 'Dortmund', 'Leipzig_Stadt', 'Berlin']
+
+    SEED = 42
+
+    random_train_end_dates = get_list_of_random_dates(num=20, lower_bound='2020-03-15', upper_bound='2021-12-15', seed=SEED)
+    random_districts = get_list_of_random_districts(num=10, seed=SEED)
+
+
+    ####################################################################
+    ### Part below is for finding optimal length of training period: ###
+    ####################################################################
+
+    duration_param_grid = [7, 10, 14, 18, 21, 28]
+
+    results_level1 = []
+    ## Iterate over duration_param_grid:
+    for round_lvl1, train_period_length in enumerate(duration_param_grid):
+
+        ## Iterate over train dates:
+        # set_up dictionary for storing results at run time:
+        results_lvl2 = []
+        for round_lvl2,random_train_end_date in enumerate(random_train_end_dates):
+            res = diff_eq_pipeline(train_end_date=random_train_end_date,
+                                   duration=train_period_length+forecasting_horizon,
+                                   districts=random_districts,
+                                   validation_duration=forecasting_horizon,
+                                   visualize=False,
+                                   verbose=False,
+                                   validate=True,
+                                   store_results_to_db=False)
+
+            # Print progess:
+            print(f'Round {1+round_lvl2+round_lvl1*len(random_train_end_dates)} / '
+                  f'{len(duration_param_grid) * len(random_train_end_dates)} completed!')
+
+            results_lvl2.append({
+                'date': random_train_end_date,
+                'pipeline_results':res
+            })
+
+        results_level1.append({
+            'train_period_length':train_period_length,
+            'dict':results_lvl2
+        })
+
+    # build dataframe from results:
+    results_transformed = []
+
+    for lvl1 in results_level1:
+        for lvl2 in lvl1['dict']:
+            for city, result in lvl2['pipeline_results'].items():
+                    results_transformed.append({
+                        'train_length':lvl1['train_period_length'],
+                        'training_end_date':lvl2['date'],
+                        'city':city,
+                        'rmse':result['scores']['rmse'],
+                        'mape':result['scores']['mape'],
+                        'mae':result['scores']['mae'],
+                    })
+
+    results_df = pd.DataFrame(results_transformed)
+
+    grouped_df = results_df.groupby('train_length')
+    temp = grouped_df[['rmse', 'mae', 'mape']].median()
+
+    pass
 
 
 if __name__ == '__main__':

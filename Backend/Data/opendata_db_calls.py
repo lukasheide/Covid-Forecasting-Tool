@@ -305,6 +305,23 @@ def update_district_list():
     update_db('district_list', df)
 
 
+def get_list_of_districts():
+    headers = {
+        'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2MzcwNzU4MzksImp0aSI6ImV3Tk96Z0M4ZEJXdmYtc'
+                         '2wybDJfdS10NFY1Q0hySjlNamlsRElnVVdfODQifQ.q_YvSVMAed7MMZUi8om0UWla5YkPlCmckqGs_RHclfs'}
+    response = requests.get('https://www.corona-datenplattform.de/api/3/action/datastore_search?limit=1000&resource_id='
+                            'af5ad86a-5c10-48e0-a232-1e3464ae4270'
+                            , headers=headers)
+    cases = response.json()
+    district_list = []
+    for rec in cases['result']['records']:
+        district_list.append(rec['kreis'])
+    district_list = list(set(district_list))
+
+    return district_list
+
+
+
 def update_district_details():
     headers = {
         'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2MzcwNzU4MzksImp0aSI6ImV3Tk96Z0M4ZEJXdmYtc'
