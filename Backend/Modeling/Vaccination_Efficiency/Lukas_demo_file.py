@@ -135,7 +135,7 @@ def demo_real_data():
     # Description: Rolling rolls is a sliding window approach that rolls over the 30 previous entries:
     # This means that here the previous 30 days, including the current day are considered and their sum is computed.
     # minus 1 month = last month
-    df['SecVaccStatus_minus_1_month_cohort'] = df['SecVaccStatus'].rolling(7).sum()
+    df['SecVaccStatus_minus_1_month_cohort'] = df['SecVaccStatus'].rolling(30).sum()
 
     # Now the the next cohort needs to be delayed by 7 days:
     df['SecVaccStatus_minus_2_month_cohort'] = df['SecVaccStatus'].shift(30, fill_value=0).rolling(30).sum()
@@ -234,4 +234,5 @@ def get_efficiencies_per_cohort():
 
 
 if __name__ == '__main__':
+    demo()
     demo_real_data()
