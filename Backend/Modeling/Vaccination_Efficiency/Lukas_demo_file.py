@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import time
 
 from Backend.Modeling.Vaccination_Efficiency.get_vaccination_efficiency import get_vaccination_number
 
@@ -122,6 +123,8 @@ def demo_real_data():
     # 1) Import District Vaccination Data from API:
     df = get_vaccination_number('Münster')
 
+    start = time.time()
+
     # 2) Create variable with lagged second vaccinations:
     df['SecVaccStatus'] = df['daily_sec_vacc'].shift(14, fill_value=0)
 
@@ -218,7 +221,8 @@ def demo_real_data():
     df.fillna(0, inplace=True)
 
     ## 8)
-
+    end = time.time()
+    print("The time of execution of above program is :", end - start)
     pass
 
 
