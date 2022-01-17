@@ -105,6 +105,7 @@ def date_int_str(date_int):
 
     return date
 
+
 def get_correct_district_name(wrong_name):
     if wrong_name == 'Flensburg':
         return 'Flensburg, Stadt'
@@ -183,7 +184,7 @@ def get_correct_district_name(wrong_name):
     elif wrong_name == 'Zweibrücken':
         return 'Stadt Zweibrücken'
     elif wrong_name == 'Kaiserslautern, Landkreis':
-        return 'Stadt Kaiserslautern'
+        return 'Kaiserslautern'
     elif wrong_name == 'Heilbronn, Landkreis':
         return 'Heilbronn, Kreis'
     elif wrong_name == 'Karlsruhe, Landkreis':

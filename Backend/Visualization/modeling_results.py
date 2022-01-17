@@ -46,15 +46,19 @@ def plot_train_and_fitted_infections_line_plot(y_train: np.array, y_pred: np.arr
     len_train = len(y_train)
     len_pred = len(y_pred)
 
+    corrected_train_length = min(len_train, len_pred)
+
     y_train_copy = y_train.copy()
+    y_pred_copy = y_pred.copy()
 
-    if len_train > len_pred:
-        y_train_copy = y_train_copy[1:]
+    if len_train != len_pred:
+        y_train_copy = y_train_copy[0:corrected_train_length]
+        y_pred_copy = y_pred_copy[0:corrected_train_length]
 
-    t_grid = np.linspace(1, len_pred, len_pred)
+    t_grid = np.linspace(0, corrected_train_length-1, corrected_train_length)
 
     plt.scatter(x=t_grid, y=y_train_copy, s=40, color='#0f0f0f', zorder=10)
-    plt.plot(t_grid, y_pred, color='#2077b4', zorder=5, linewidth=2.5)
+    plt.plot(t_grid, y_pred_copy, color='#2077b4', zorder=5, linewidth=2.5)
 
     plt.show()
 
