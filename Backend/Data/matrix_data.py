@@ -270,6 +270,21 @@ def get_weekly_beta(district, start_date, debug=True):
     return weekly_beta_values, weekly_infections
 
 
+def create_complete_matrix_data():
+    districts = get_all_table_data(table_name='district_list')
+    districts_list = districts['district'].tolist()
+
+    final_df = pd.DataFrame([])
+
+    for district in districts_list:
+        district_df = get_all_table_data(table_name='matrix_' + district)
+        district_df['district'] = district
+        final_df = pd.concat([final_df, district_df])
+
+    final_df.fillna(0)
+    final_df.to_csv('../Assets/Data/all_matrix_data.csv')
+    # update_db('all_matrix_data', final_df)
+
 if __name__ == '__main__':
     # mob_data = get_all_table_data(table_name='destatis_mobility_data')
     # mob_data_dist = mob_data['Kreisname'].to_list()
@@ -289,5 +304,6 @@ if __name__ == '__main__':
     # create_weekly_matrix()
     # get_weekly_variant_data('2020-03-01')
     # weekly_mobility_dict = get_weekly_mobility_data('Stadt Neustadt a.d. W.', get_all_table_data(table_name='destatis_mobility_data'),  '2020-03-01')
-    create_weekly_matrix()
+    # create_weekly_matrix()
+    create_complete_matrix_data()
     # get_weekly_beta('Münster','2021-02-01')
