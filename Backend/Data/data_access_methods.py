@@ -25,16 +25,18 @@ def get_starting_values(district, train_start_date):
 
 
 def get_model_params(district, train_start_date):
-
+    # Get theta for train_start_date from db:
+    theta = get_table_data_by_day(table=district, date=train_start_date,
+                          attributes=[Column.VACCINATION_EFFICIENCY.value])
+    theta = theta[Column.VACCINATION_EFFICIENCY.value].tolist()[0]
     model_params = {
         # Get fixed model params:
         'gamma_I': params_SEIRV_fixed['gamma_I']['mean'],
         'gamma_U': params_SEIRV_fixed['gamma_U']['mean'],
         'delta': params_SEIRV_fixed['delta']['mean'],
         'rho': params_SEIRV_fixed['rho']['mean'],
-        # Get theta for train_start_date from db:
-        'theta': get_table_data_by_day(table=district, date=train_start_date,
-                                       attributes=[Column.VACCINATION_EFFICIENCY.value])}
+
+        'theta': theta}
 
     return model_params
 

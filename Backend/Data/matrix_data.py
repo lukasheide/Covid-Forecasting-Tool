@@ -3,7 +3,7 @@ from math import floor
 import pandas as pd
 import datetime
 from meteostat import Point, Daily
-from Backend.Data.data_access_methods import get_starting_values
+from Backend.Data.data_access_methods import get_starting_values, get_model_params
 from Backend.Data.data_util import Column, date_int_str
 from Backend.Data.db_calls import get_all_table_data, get_district_data, get_table_data_by_duration, update_db
 
@@ -250,7 +250,9 @@ def get_weekly_beta(district, start_date, debug=True):
             train_start_date = date_int_str(all_smoothen_cases[Column.DATE.value][break_start])
             y_train = y_train[Column.SEVEN_DAY_SMOOTHEN.value].reset_index(drop=True)
             start_vals = get_starting_values(district, train_start_date)
+            fixed_model_params = get_model_params(district, train_start_date)
             pipeline_result = seirv_pipeline(y_train=y_train, start_vals_fixed=start_vals,
+                                             fixed_model_params=fixed_model_params,
                                              allow_randomness_fixed_beta=False, random_runs=100)
 
             # Plots for debugging:

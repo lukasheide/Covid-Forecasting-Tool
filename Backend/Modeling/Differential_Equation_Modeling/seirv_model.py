@@ -196,7 +196,7 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple, fixed_model_para
 
 
     #### Debugging ####
-    plot_train_and_fitted_infections_line_plot(y_train, daily_infections_fitted)
+    # plot_train_and_fitted_infections_line_plot(y_train, daily_infections_fitted)
 
 
     ## 7) Prepare results for returning them
