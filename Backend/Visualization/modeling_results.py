@@ -52,8 +52,12 @@ def plot_train_and_fitted_infections_line_plot(y_train: np.array, y_pred: np.arr
     y_pred_copy = y_pred.copy()
 
     if len_train != len_pred:
-        y_train_copy = y_train_copy[0:corrected_train_length]
-        y_pred_copy = y_pred_copy[0:corrected_train_length]
+        if len_pred == len_train-1:
+            y_train_copy = y_train_copy[1:len_train]
+            y_pred_copy = y_pred_copy[0:len_pred]
+        else:
+            y_train_copy = y_train_copy[0:corrected_train_length]
+            y_pred_copy = y_pred_copy[0:corrected_train_length]
 
     t_grid = np.linspace(0, corrected_train_length-1, corrected_train_length)
 

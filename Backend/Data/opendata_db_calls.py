@@ -65,9 +65,10 @@ def update_all_district_data():
     district_list = get_table_data("district_list", 0, 0, "district", False)
     update_population_map()
 
-    for district in district_list['district']:
+    for i, district in enumerate(district_list['district']):
         update_district_data(district)
         # time.sleep(0.1)
+        print('progress: ' + str((i+1)/400))
 
 
 def update_district_data(district):
@@ -336,7 +337,6 @@ def get_list_of_districts():
     district_list = list(set(district_list))
 
     return district_list
-
 
 
 def update_district_details():

@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 
+from Backend.Data.db_calls import get_all_table_data
 from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_pipeline
 from Backend.Modeling.Simulate_Infection_Cases.simulate_infection_counts import produce_simulated_infection_counts, \
     set_starting_values, set_starting_values_e0_fitted, set_starting_values_e0_and_i0_fitted
@@ -19,12 +20,16 @@ matplotlib.interactive(True)
 
 
 def main(run_diff_eq_wrapper = False, run_diff_eq_pipeline=True, run_sarima_pipeline=False):
+    # Call wrapper function used for finding optimal training period length:
+    # diff_eq_pipeline_wrapper()
 
     # Call differential equation model validation pipeline:
     end_date = '2021-12-14'
     time_frame_train_and_validation = 28
     forecasting_horizon = 14
-    districts = ['Essen', 'Münster', 'Herne', 'Bielefeld', 'Dortmund', 'Leipzig, Stadt', 'Berlin']
+    opendata = get_all_table_data(table_name='district_list')
+    districts = opendata['district'].tolist()
+    # districts = ['Essen', 'Münster', 'Herne', 'Bielefeld', 'Dortmund', 'Leipzig, Stadt', 'Berlin']
 
     # Call SARIMA validation pipeline:
     if run_sarima_pipeline:
