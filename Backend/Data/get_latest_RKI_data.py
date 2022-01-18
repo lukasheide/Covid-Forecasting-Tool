@@ -23,7 +23,7 @@ def create_csv_with_latest_rki_data():
 
     datetime.today().strftime('%d%m%y')
 
-    dataRKI.to_csv('./../Assets/Data/rki_data_'+datetime.today().strftime('%d%m%y')+'.csv')
+    dataRKI.to_csv('Assets/Data/rki_data_'+datetime.today().strftime('%d%m%y')+'.csv')
 
 
 if __name__ == '__main__':

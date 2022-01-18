@@ -38,8 +38,8 @@ def produce_simulated_infection_counts():
 
 
 def set_starting_values(y_train):
-    gamma = params_SEIRV_fixed['gamma']
-    delta = params_SEIRV_fixed['delta']
+    gamma = params_SEIRV_fixed['gamma']['mean']
+    delta = params_SEIRV_fixed['delta']['mean']
 
     I0 = y_train[0] / gamma
     V0 = 150_000
@@ -54,7 +54,7 @@ def set_starting_values(y_train):
 
 
 def set_starting_values_e0_fitted(y_train):
-    gamma = params_SEIRV_fixed['gamma']
+    gamma = params_SEIRV_fixed['gamma']['mean']
 
     I0 = y_train[0] / gamma
     V0 = 150_000

@@ -1,3 +1,5 @@
 /my_env
 *.csv
 *.db
+*.pptx
+/Backend/Data/DatabaseSharing/confidentials.py

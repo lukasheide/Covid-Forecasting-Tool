@@ -1,4 +1,5 @@
 import datetime
+import os
 import time
 import urllib
 
@@ -7,6 +8,7 @@ import requests
 import re
 
 from Backend.Data.db_functions import update_db, get_table_data
+from Backend.Modeling.Vaccination_Efficiency.get_vaccination_effectiveness_fast import get_vaccination_effectiveness
 
 population_map = {}
 
@@ -14,7 +16,7 @@ population_map = {}
 def get_data_by_date_and_attr(table, date1, date2, attributes):
     """
 
-    :param table: 'table_name' as mentioned in district_list(../../Assets/Data/district_list.csv)
+    :param table: 'table_name' as mentioned in district_list(Assets/Data/district_list.csv)
     generated from update_district_list().
     :param date1: from date in YYYYMMDD format. 20200301 is the starting date
     :param date2: to date in YYYYMMDD format.
@@ -53,7 +55,7 @@ def update_population_map():
             population_map[row['district']] = int(row['population'])
 
     # special name changes
-    population_map['München, Stadt'] = population_map.pop('München, Landeshauptstadt')
+    # population_map['München, Stadt'] = population_map.pop('München, Landeshauptstadt')
     population_map['Leipzig, Kreis'], population_map['Leipzig, Stadt'] = population_map['Leipzig, Stadt'], population_map['Leipzig, Kreis']
 
 
@@ -64,7 +66,7 @@ def update_all_district_data():
 
     for district in district_list['district']:
         update_district_data(district)
-        time.sleep(0.1)
+        # time.sleep(0.1)
 
 
 def update_district_data(district):
@@ -113,6 +115,7 @@ def update_district_data(district):
     cum_recoveries_list = {}
 
     daily_vacc_list = {}
+    daily_booster_list = {}
     cum_vacc_list = {}
 
     daily_incidents_rate = {}
@@ -192,9 +195,11 @@ def update_district_data(district):
     cum_vac = 0
     for rec in vaccination['result']['records']:
         date_obj = datetime.datetime.strptime(rec['datum'], '%Y-%m-%d')
-        date_obj = date_obj + datetime.timedelta(days=14)
+        date_obj_14 = date_obj + datetime.timedelta(days=14)
+        date_14 = 'd' + date_obj_14.strftime('%Y%m%d')
         date = 'd' + date_obj.strftime('%Y%m%d')
-        daily_vacc_list[date] = rec['kr_zweitimpf']
+        daily_vacc_list[date_14] = rec['kr_zweitimpf']
+        daily_booster_list[date] = rec['kr_drittimpf']
         # cum_vac = cum_vac + rec['kr_zweitimpf']
         # cum_vacc_list[date] = cum_vac
 
@@ -231,14 +236,14 @@ def update_district_data(district):
             adjusted_active_cases = adjusted_active_cases - (
                     int(cum_daily_cases_after14d.get(date, 0)) - int(cum_deaths_list.get(date, 0)))
 
-        seven_day_avg = 0
-        for day in range(0, 7):
-            current_day = datetime.datetime.strptime(str(date).replace("d", ""), '%Y%m%d')
-            current_day = current_day - datetime.timedelta(days=day)
-            date_key = 'd' + current_day.strftime('%Y%m%d')
-            seven_day_avg = seven_day_avg + int(daily_cases_list.get(date_key, 0))
-
-        seven_day_avg = round(seven_day_avg / 7)
+        # seven_day_avg = 0
+        # for day in range(0, 7):
+        #     current_day = datetime.datetime.strptime(str(date).replace("d", ""), '%Y%m%d')
+        #     current_day = current_day - datetime.timedelta(days=day)
+        #     date_key = 'd' + current_day.strftime('%Y%m%d')
+        #     seven_day_avg = seven_day_avg + int(daily_cases_list.get(date_key, 0))
+        #
+        # seven_day_avg = round(seven_day_avg / 7)
         vacc_percentage = round(int(cum_vacc_list.get(date, cum_vac)) * 100 / int(population_map.get(district)), 2)
 
         current_day1 = datetime.datetime.strptime(str(date).replace("d", ""), '%Y%m%d')
@@ -251,7 +256,7 @@ def update_district_data(district):
         final_data.append((date,
                            daily_cases_list.get(date, 0),
                            curr_infectious,
-                           seven_day_avg,
+                           # seven_day_avg,
                            cum_cases_list.get(date, 0),
                            daily_deaths_list.get(date, 0),
                            cum_deaths_list.get(date, 0),
@@ -263,6 +268,7 @@ def update_district_data(district):
                            adjusted_active_cases,
                            daily_incidents_rate.get(date, 0),
                            daily_vacc_list.get(date, 0),
+                           daily_booster_list.get(date, 0),
                            cum_vacc_list.get(date, cum_vac),
                            vacc_percentage))
 
@@ -270,7 +276,7 @@ def update_district_data(district):
     df.columns = ['date',
                   'daily_infec',
                   'curr_infectious',
-                  'seven_day_infec',
+                  # 'seven_day_infec',
                   'cum_infec',
                   'daily_deaths',
                   'cum_deaths',
@@ -280,9 +286,18 @@ def update_district_data(district):
                   'adjusted_active_cases',
                   'daily_incidents_rate',
                   'daily_vacc',
+                  'daily_booster',
                   'cum_vacc',
                   'vacc_percentage']
     df['date'] = df['date'].apply(lambda x: x.replace('d', ''))
+
+
+    # Compute 7 day cases:
+    df['seven_day_infec'] = df['daily_infec'].rolling(7).mean()
+    df['seven_day_infec'].fillna(value=0, inplace=True)
+
+    # Compute vaccination effectiveness:
+    df = get_vaccination_effectiveness(df)
 
     update_db(district, df)
 
@@ -303,6 +318,23 @@ def update_district_list():
     df.columns = ['state', 'district']
     df.to_csv('../Assets/Data/district_list.csv')
     update_db('district_list', df)
+
+
+def get_list_of_districts():
+    headers = {
+        'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2MzcwNzU4MzksImp0aSI6ImV3Tk96Z0M4ZEJXdmYtc'
+                         '2wybDJfdS10NFY1Q0hySjlNamlsRElnVVdfODQifQ.q_YvSVMAed7MMZUi8om0UWla5YkPlCmckqGs_RHclfs'}
+    response = requests.get('https://www.corona-datenplattform.de/api/3/action/datastore_search?limit=1000&resource_id='
+                            'af5ad86a-5c10-48e0-a232-1e3464ae4270'
+                            , headers=headers)
+    cases = response.json()
+    district_list = []
+    for rec in cases['result']['records']:
+        district_list.append(rec['kreis'])
+    district_list = list(set(district_list))
+
+    return district_list
+
 
 
 def update_district_details():
@@ -334,7 +366,7 @@ def update_district_details():
     district_list = list(set(district_list))
     df = pd.DataFrame(district_list)
     df.columns = ['state', 'district', 'population', 'latitude', 'longitude']
-    # df.to_csv('../../Assets/Data/district_list.csv')
+    # df.to_csv('Assets/Data/district_list.csv')
     update_db('district_details', df)
 
 
@@ -347,8 +379,8 @@ if __name__ == '__main__':
 
     # update_district_list()
     # update_district_details()
-    update_population_map()
-    # update_all_district_data()
-    update_district_data("Münster")
+    # update_population_map()
+    update_all_district_data()
+    # update_district_data("Münster")
     # result_df = get_data_by_date_and_attr('Rhein-Neckar-Kreis', 20210101, 20211031, ["daily_infec", "daily_deaths"])
     # print(result_df)

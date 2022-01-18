@@ -6,7 +6,7 @@ from datetime import datetime
 
 
 def get_engine():
-    engine = sqlalchemy.create_engine('sqlite:///Assets/Data/opendaten.db')
+    engine = sqlalchemy.create_engine('sqlite:///../Assets/Data/opendaten.db')
     return engine
 
 
@@ -79,6 +79,7 @@ def update_db(table_name, dataframe):
     engine = get_engine()
 
     dataframe.to_sql(table_name, engine, if_exists='replace', index=False)
+    # dataframe.to_sql(table_name, engine, if_exists='append', index=False)
 
 
 def update_district_matrices(table_name, definition,  dataframe, index_label):

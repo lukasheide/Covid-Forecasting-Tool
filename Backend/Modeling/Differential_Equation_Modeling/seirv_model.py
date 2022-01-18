@@ -1,13 +1,16 @@
 import numpy as np
 from scipy.integrate import odeint
-from Backend.Modeling.Differential_Equation_Modeling.model_params import params_SEIRV_fixed, params_SEIRV_fit
+from Backend.Modeling.Differential_Equation_Modeling.model_params import params_SEIRV_fixed, params_SEIRV_fit, \
+    draw_value_from_param_distribution, draw_random_beta
 from Backend.Modeling.Differential_Equation_Modeling.optimization_functions import weigh_residuals
 from scipy.optimize import curve_fit, leastsq, least_squares
 import matplotlib.pyplot as plt
-from Backend.Visualization.modeling_results import plot_train_and_val_infections, plot_train_and_fitted_infections_line_plot
+from Backend.Visualization.modeling_results import plot_train_and_val_infections, plot_train_and_fitted_infections_line_plot, plot_train_fitted_and_validation
+from Backend.Modeling.Util.pipeline_util import models_params_to_dictionary, models_compartment_values_to_dictionary
 
 
-def seirv_pipeline(y_train: np.array, start_vals_fixed: tuple, forecast_horizon=14):
+def seirv_pipeline(y_train: np.array, start_vals_fixed: tuple, forecast_horizon=14,
+                   allow_randomness_fixed_params=False, allow_randomness_fixed_beta=False, random_runs=100, pred_quantile=0.9):
     """
     Takes as input a numpy array containing daily infection counts for the training period and a tuple containing
     the population size N and fixed starting values for each compartment: I0, R0 and V0. E0 and S0 are fitted.
@@ -26,28 +29,81 @@ def seirv_pipeline(y_train: np.array, start_vals_fixed: tuple, forecast_horizon=
     fitting_result = fit_seirv_model(y_train, start_vals_fixed)
 
     ## 2) Model application / forecasting:
-    # 2.1) Set up starting values and model parameters used for applying the model in the next step:
-    model_params = setup_model_params_for_forecasting_after_fitting(fitted_model_params=fitting_result['fitted_params'])
 
-    # 2.2.a)
-    # Run forecasting - Starting point: after training period
-    pred_daily_infections = forecast_seirv(all_model_params=model_params,
-                                           y0=fitting_result['end_vals'] + (0,),
-                                           forecast_horizon=forecast_horizon)
-    # 2.2.b)
-    # Run forecasting - Starting point: beginning of training period
+    ## 2.1 Model Run with fixed parameters derived from fitting:
+    # 2.1.1 Set up starting values and model parameters used for applying the model in the next step:
+    model_params = setup_model_params_for_forecasting_after_fitting(fitted_model_params=fitting_result['fitted_params'],
+                                                                    random_draw_fixed_params=allow_randomness_fixed_params)
+    # 2.1.2 Run forecasting - Starting point: beginning of training period
     pred_daily_infections_from_start = forecast_seirv(all_model_params=model_params,
                                                       y0=fitting_result['start_vals'] + (0,),
-                                                      forecast_horizon=forecast_horizon+len(y_train)-1)
+                                                      forecast_horizon=forecast_horizon + len(y_train) - 1)
 
-    # The results for options a) and b) should provide the same results.
+    # 2.2.1) No Randomness:
+    if not allow_randomness_fixed_params and not allow_randomness_fixed_beta:
 
+        # Run forecasting - Starting point: after training period
+        pred_daily_infections = forecast_seirv(all_model_params=model_params,
+                                               y0=fitting_result['end_vals'] + (0,),
+                                               forecast_horizon=forecast_horizon)
+
+    # 2.2.2) Random Runs:
+    else:
+        results_list = []
+        for run in range(random_runs):
+            # 2.2.2.1) Set up starting values and model parameters used for applying the model in the next step:
+            model_params_randomness = setup_model_params_for_forecasting_after_fitting(
+                fitted_model_params=fitting_result['fitted_params'], random_draw_fixed_params=allow_randomness_fixed_params, random_draw_beta=allow_randomness_fixed_beta)
+
+            # 2.2.2.2)
+            # Run forecasting - Starting point: after training period
+            pred_daily_infections = forecast_seirv(all_model_params=model_params_randomness,
+                                                   y0=fitting_result['end_vals'] + (0,),
+                                                   forecast_horizon=forecast_horizon)
+            # 2.2.2.3)
+            # Push results to list:
+            results_list.append({
+                'model_params':model_params_randomness,
+                'pred_daily_infections':pred_daily_infections
+            })
+
+        ## Computations based on multiple runs:
+        # Setup numpy array:
+        all_pred_daily_infections = np.array([model_run['pred_daily_infections'] for model_run in results_list])
+
+        # Compute average prediction:
+        pred_daily_infections_mean = np.mean(all_pred_daily_infections, axis=0)
+
+        # 90% Quantile:
+        pred_daily_infections_upper_quantile = np.quantile(all_pred_daily_infections, q=pred_quantile, axis=0)
+        # 10% Quantile:
+        pred_daily_infections_lower_quantile = np.quantile(all_pred_daily_infections, q=1-pred_quantile, axis=0)
+
+        # FOR DEBUGGING:
+        # plt.plot(pred_daily_infections_mean)
+        # plt.plot(pred_daily_infections_upper_quantile)
+        # plt.plot(pred_daily_infections_lower_quantile)
+        # plt.show()
+
+
+    ## Prepare everything for return:
+    # Handle randomness:
+    if not allow_randomness_fixed_params and not allow_randomness_fixed_beta:
+        pred_daily_infections_upper_quantile = None
+        pred_daily_infections_lower_quantile = None
+
+    # Bundle up model params and start vals to dictionaries to return them:
+    model_params_as_dictionary = models_params_to_dictionary(model_params)
+    model_start_vals_as_dictionary = models_compartment_values_to_dictionary(fitting_result['end_vals'])
 
     ## 3) Bundling up results:
     results_dict = {
-        'y_pred': pred_daily_infections_from_start,
-        'model_params': model_params,
-        'model_start_vals': fitting_result['end_vals']
+        'y_pred_including_train_period': pred_daily_infections_from_start,
+        'y_pred_without_train_period': pred_daily_infections,
+        'y_pred_without_train_period_upper_bound': pred_daily_infections_upper_quantile,       # None if randomness was excluded!
+        'y_pred_without_train_period_lower_bound': pred_daily_infections_lower_quantile,       # None if randomness was excluded!
+        'model_params_forecast_period': model_params_as_dictionary,
+        'model_start_vals_forecast_period': model_start_vals_as_dictionary
     }
 
     return results_dict
@@ -77,13 +133,25 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple) -> dict:
     t_grid_train = np.linspace(0, num_days_train, num_days_train + 1)
 
     ## 2) Get start guess for parameters that are fitted as a tuple:
-    fit_params_start_guess = (params_SEIRV_fit['beta'], 678, 789)
+    fit_params_start_guess = (params_SEIRV_fit['beta']['mean'], 678, 789)
 
-    ## 3) Call fitting function:
+    ## 3) Get values for fixed model parameters:
+    fixed_params = {
+        't_grid': t_grid_train,
+        'fixed_model_params': {
+            'gamma_I': params_SEIRV_fixed['gamma_I']['mean'],
+            'gamma_U': params_SEIRV_fixed['gamma_U']['mean'],
+            'delta': params_SEIRV_fixed['delta']['mean'],
+            'theta': params_SEIRV_fixed['theta']['mean'],
+            'rho': params_SEIRV_fixed['rho']['mean']
+        }
+    }
+
+    ## 4) Call fitting function:
     ret = least_squares(
         fun=compute_weighted_residuals,
         x0=fit_params_start_guess,
-        args=(t_grid_train, start_vals_fixed, y_train),
+        args=(fixed_params, start_vals_fixed, y_train),
         method='trf',
         ftol=1e-10,
         xtol=1e-10,
@@ -93,16 +161,16 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple) -> dict:
     # get optimal parameters from least squares result:
     opt_params = tuple(ret.x)
 
-    ## 4) Prepare model parameters and start values to run the model again:
+    ## 5) Prepare model parameters and start values to run the model again:
     # Model params:
-    fixed_model_params = [param for param in params_SEIRV_fixed.values()]
-    fitted_and_fixed_model_params = tuple(opt_params[:1]) + tuple(fixed_model_params)
+    fixed_params = [param['mean'] for param in params_SEIRV_fixed.values()]
+    fitted_and_fixed_model_params = tuple(opt_params[:1]) + tuple(fixed_params)
 
     # Compute starting values for each compartment:
     N = start_vals_fixed[0]
     E0 = opt_params[1]
     I0 = opt_params[2]
-    U0 = E0 * params_SEIRV_fixed['rho'] / (1 - params_SEIRV_fixed['rho'])
+    U0 = I0 * params_SEIRV_fixed['rho']['mean'] / (1 - params_SEIRV_fixed['rho']['mean'])
     R0 = start_vals_fixed[1]
     V0 = start_vals_fixed[2]
     S0 = N - E0 - I0 - R0 - V0
@@ -110,13 +178,18 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple) -> dict:
     # pack all together and add start value 0 for cumulated infections:
     y0_train = (S0, E0, I0, U0, R0, V0, 0)
 
-    ## 5) Apply fitted parameters to get the end values for all compartments:
+    ## 6) Apply fitted parameters to get the end values for all compartments:
     # Retrieve values for each compartment over time:
     S, E, I, U, R, V, cum_infections_fitted, daily_infections_fitted = solve_ode(y0=y0_train,
                                                                                  t=t_grid_train,
                                                                                  params=fitted_and_fixed_model_params)
 
-    ## 6) Prepare results for returning them
+
+    #### Debugging ####
+    plot_train_and_fitted_infections_line_plot(y_train, daily_infections_fitted)
+
+
+    ## 7) Prepare results for returning them
     # Pack retrieved values for each compartment over time into one tuple:
     compartment_time_series = (S, E, I, U, R, V)
 
@@ -173,17 +246,35 @@ def merge_fitted_and_fixed_start_vals(fitted_start_vals, tot_pop_size, fixed_sta
     return S0, E0, I0, R0, V0, 0
 
 
-def setup_model_params_for_forecasting_after_fitting(fitted_model_params):
+def setup_model_params_for_forecasting_after_fitting(fitted_model_params, random_draw_fixed_params=False, random_draw_beta=False):
     """
     Combines fitted and fixed model parameter into one tuple.
     """
+    ## Beta:
+    if not random_draw_beta:
+        beta = fitted_model_params['beta']
 
-    beta = fitted_model_params['beta']
-    gamma_I = params_SEIRV_fixed['gamma_I']
-    gamma_U = params_SEIRV_fixed['gamma_U']
-    delta = params_SEIRV_fixed['delta']
-    theta = params_SEIRV_fixed['theta']
-    rho = params_SEIRV_fixed['rho']
+    else:
+        beta = draw_random_beta(
+            beta_estimate=fitted_model_params['beta'],
+            sd_passed=False
+        )
+
+    ## Fixed Params:
+    if not random_draw_fixed_params:
+        gamma_I = params_SEIRV_fixed['gamma_I']['mean']
+        gamma_U = params_SEIRV_fixed['gamma_U']['mean']
+        delta = params_SEIRV_fixed['delta']['mean']
+        theta = params_SEIRV_fixed['theta']['mean']
+        rho = params_SEIRV_fixed['rho']['mean']
+
+    else:
+        gamma_I = draw_value_from_param_distribution('gamma_I')
+        gamma_U = draw_value_from_param_distribution('gamma_U')
+        delta = draw_value_from_param_distribution('delta')
+        theta = draw_value_from_param_distribution('theta')
+        rho = draw_value_from_param_distribution('rho')
+
 
     return beta, gamma_I, gamma_U, delta, theta, rho
 
@@ -200,24 +291,30 @@ def compute_weighted_residuals(params_to_fit, t_grid, start_vals, y_true):
     # weight residuals:
     weighted_residuals = weigh_residuals(residual)
 
+    #### Debugging ####
+    # plot_train_and_fitted_infections_line_plot(y_true, y_fit)
+
     return weighted_residuals
 
 
-def solve_ode_for_fitting_partly_fitted_y0(fixed_start_vals, t_grid, fit_params):
+def solve_ode_for_fitting_partly_fitted_y0(fixed_start_vals, fixed_params, fit_params):
     ## 1) Pull apart fitting params:
     beta = fit_params[0]
     E0 = fit_params[1]
     I0 = fit_params[2]
 
     ## 2) Setup other parameters:
-    # 2a) Get fixed model params:
-    gamma_I = params_SEIRV_fixed['gamma_I']
-    gamma_U = params_SEIRV_fixed['gamma_U']
-    delta = params_SEIRV_fixed['delta']
-    theta = params_SEIRV_fixed['theta']
-    rho = params_SEIRV_fixed['rho']
+    # 2a) Get time grid:
+    t_grid = fixed_params['t_grid']
 
-    #  2b) Get y0:
+    # 2b) Get fixed model params:
+    gamma_I = fixed_params['fixed_model_params']['gamma_I']
+    gamma_U = fixed_params['fixed_model_params']['gamma_U']
+    delta = fixed_params['fixed_model_params']['delta']
+    theta = fixed_params['fixed_model_params']['theta']
+    rho = fixed_params['fixed_model_params']['rho']
+
+    #  2c) Get y0:
     #  Starting values for I, R and V are given. E0 is fitted and S0 is then computed as the last missing value.
     N = fixed_start_vals[0]
     R0 = fixed_start_vals[1]
@@ -245,9 +342,9 @@ def solve_ode_for_fitting_partly_fitted_y0(fixed_start_vals, t_grid, fit_params)
 
 def solve_ode_for_fitting_fixed_y0(y0, t_grid, fit_params):
     beta = fit_params[0]
-    gamma = params_SEIRV_fixed['gamma']
-    delta = params_SEIRV_fixed['delta']
-    theta = params_SEIRV_fixed['theta']
+    gamma = params_SEIRV_fixed['gamma']['mean']
+    delta = params_SEIRV_fixed['delta']['mean']
+    theta = params_SEIRV_fixed['theta']['mean']
 
     # lambda function as shown here: https://www.kaggle.com/baiyanren/modified-seir-model-for-covid-19-prediction-in-us
     # this circumvents issues with the scipy odeint function, which can only handle a predefined number of params
@@ -344,7 +441,7 @@ def seirv_model_pipeline_DEPRECATED(y_train: np.array, start_vals_fitting: tuple
     y0_train = start_vals_fitting + (0,)
 
     # Get start guess for parameters that are fitted as a tuple:
-    fit_params_start_guess = (params_SEIRV_fit['beta'],)
+    fit_params_start_guess = (params_SEIRV_fit['beta']['mean'],)
 
     # Fit parameters:
     opt_params, success = leastsq(
