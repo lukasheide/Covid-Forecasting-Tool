@@ -9,6 +9,7 @@ import re
 
 from Backend.Data.db_functions import update_db, get_table_data
 from Backend.Modeling.Vaccination_Efficiency.get_vaccination_effectiveness_fast import get_vaccination_effectiveness
+from Backend.Modeling.Differential_Equation_Modeling.starting_values import get_starting_values
 
 population_map = {}
 
@@ -298,6 +299,7 @@ def update_district_data(district):
 
     # Compute vaccination effectiveness:
     df = get_vaccination_effectiveness(df)
+    df = get_starting_values(df, district)
 
     update_db(district, df)
 
@@ -377,10 +379,10 @@ if __name__ == '__main__':
     #         ALWAYS execute update_population_map() in the line BEFORE you run
     #         update_district_data("district_name")
 
-    # update_district_list()
+    update_district_list()
     # update_district_details()
-    # update_population_map()
-    update_all_district_data()
-    # update_district_data("Münster")
+    update_population_map()
+    # update_all_district_data()
+    update_district_data("Bremen")
     # result_df = get_data_by_date_and_attr('Rhein-Neckar-Kreis', 20210101, 20211031, ["daily_infec", "daily_deaths"])
     # print(result_df)
