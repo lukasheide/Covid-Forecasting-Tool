@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from datetime import date, time, datetime
 
-from Backend.Data.data_access_methods import get_smoothen_cases, get_starting_values
+from Backend.Data.data_access_methods import get_smoothen_cases, get_starting_values, get_model_params
 from Backend.Data.data_util import Column, date_int_str, compute_end_date_of_validation_period
 from Backend.Data.db_calls import start_pipeline, insert_param_and_start_vals, insert_prediction_vals
 from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_pipeline
@@ -48,8 +48,8 @@ def diff_eq_pipeline(train_end_date: date, duration: int, districts: list, valid
         start_vals = get_starting_values(district, train_start_date)
 
         ## 2) Run model_pipeline
-        pipeline_result = seirv_pipeline(y_train=y_train, start_vals_fixed=start_vals, allow_randomness_fixed_beta=False,
-                                         random_runs=100)
+        pipeline_result = seirv_pipeline(y_train=y_train, start_vals_fixed=start_vals,
+                                         allow_randomness_fixed_beta=False, random_runs=100)
         y_pred_without_train_period = pipeline_result['y_pred_without_train_period']
 
         # Run Sarima model
