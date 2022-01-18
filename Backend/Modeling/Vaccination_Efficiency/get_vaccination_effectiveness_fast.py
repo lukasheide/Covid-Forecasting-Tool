@@ -125,6 +125,7 @@ def get_vaccination_effectiveness(data):
     end = time.time()
 
     # print("The time of execution of above program is :", end - start)
+    # test
     data['vacc_eff'] = district_data['vacc_eff']
     return data
 
