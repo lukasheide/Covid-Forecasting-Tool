@@ -23,6 +23,9 @@ def get_starting_values(district, train_start_date):
     return population, vaccinated, recovered
 
 
+def get_model_params(district, train_start_date):
+    pass
+
 
 
 #

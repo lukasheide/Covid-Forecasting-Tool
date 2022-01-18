@@ -1,0 +1,299 @@
+Index: Backend/Evaluation/Evaluation_runs.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Backend/Evaluation/Evaluation_runs.py b/Backend/Evaluation/Evaluation_runs.py
+--- a/Backend/Evaluation/Evaluation_runs.py	(revision ecf478d503a8df3781dd355f7763e3f00a20a395)
++++ b/Backend/Evaluation/Evaluation_runs.py	(revision 3f4dd1fb5853ce302b1f920c1ad7a3f973ebc256)
+@@ -1,27 +1,56 @@
+ from Backend.Modeling.model_validation_pipeline import sarima_pipeline
+ import matplotlib
+ matplotlib.interactive(True)
++import matplotlib.pyplot as plt
++import pandas as pd
++from Backend.Visualization.modeling_results import plot_evaluation_metrics
+ 
+ 
+ def generalization_evaluation(dates, districts, forecasting_horizon):
+-
+-    # 7 days runs
+-    for i in range(len(dates)):
+-        end_date = dates[i]
+-        time_frame_train_and_validation = 28 + forecasting_horizon
+-        # Call sarima model validation pipeline:
+-        sarima_pipeline(train_end_date=end_date,
+-                         duration=time_frame_train_and_validation,
+-                         districts=districts,
+-                         validation_duration=forecasting_horizon,
+-                         visualize=True,
+-                         verbose=False,
+-                         validate=True)
++        metrics = []
++        # 7 days runs
++        for i in range(len(dates)):
++            end_date = dates[i]
++            time_frame_train_and_validation = 28 + forecasting_horizon
++            # Call sarima model validation pipeline:
++            metrics.append(sarima_pipeline(train_end_date=end_date,
++                             duration=time_frame_train_and_validation,
++                             districts=districts,
++                             validation_duration=forecasting_horizon,
++                             visualize=False,
++                             verbose=False,
++                             validate=True,
++                             evaluate=True))
+ 
+-    print('ende')
++        print(metrics)
++        df = pd.DataFrame(metrics, index=dates)
++        df_t = df.transpose()
++        df_t.insert(0, 'district', districts, True)
++        #df_t.plot(x='district', y='2021-11-15', kind='hist')
++        #df_t.hist(figsize=(15,15))
++        #plt.show
++        compare_metrics(df_t)
++        df_t.to_csv("evaluation.csv")
++        print('ende')
+ 
++def compare_metrics(dataframe):
++    count = 0
++    dates = dataframe.columns
++    print(dataframe)
++    for j in range(len(dates)-1):
++        rmse = dataframe[dates[j+1]]
++        print(rmse)
++        for i in range(len(districts)):
++            plot_evaluation_metrics(rmse[i], dataframe['district'], i, dates[j+1])
++            count += 1
++
++    print(rmse)
++
+ #if __name__ == '__generalization_evaluation__':
+ districts = ['Essen', 'Münster', 'Herne', 'Bielefeld']
+-dates = ['2021-11-15', '2021-12-08', '2021-06-20']
++#districts = ['Essen', 'Münster']
++dates = ['2020-06-20', '2021-06-20', '2021-11-15', '2021-12-08']
++#compare_metrics(districts, dates)
+ generalization_evaluation(dates, districts, 14)
+ 
++#dates = ['2021-11-15', '2021-12-08', '2021-06-20']
+\ No newline at end of file
+Index: Backend/Modeling/Differential_Equation_Modeling/machine_learning.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Backend/Modeling/Differential_Equation_Modeling/machine_learning.py b/Backend/Modeling/Differential_Equation_Modeling/machine_learning.py
+--- a/Backend/Modeling/Differential_Equation_Modeling/machine_learning.py	(revision ecf478d503a8df3781dd355f7763e3f00a20a395)
++++ b/Backend/Modeling/Differential_Equation_Modeling/machine_learning.py	(revision 3f4dd1fb5853ce302b1f920c1ad7a3f973ebc256)
+@@ -1,20 +1,36 @@
++import pandas as pd
++import numpy as np
+ from sklearn import linear_model, svm, tree
+-from sklearn.model_selection import cross_val_score
+-from sklearn.datasets import load_iris
+-from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
+-from sklearn.preprocessing import StandardScaler
++from sklearn.neural_network import MLPRegressor
++from sklearn.model_selection import train_test_split
++from sklearn.ensemble import AdaBoostRegressor, RandomForestRegressor
+ from Backend.Evaluation.metrics import compute_evaluation_metrics
+ 
+-def create_tuple(start_tuple, y):
++def create_tuple(infl_factors, y):
++    # 1) extend infl_factors with 2 rows, so including beta_t-1 is easier
++        #df.loc[-1] = [2, 3, 4]  # adding a row
++        #df.index = df.index + 1  # shifting index
++        #df = df.sort_index()  # sorting by index
++    # 2)insert a new column in a dataframe:
++    #infl_factors.insert(2, 'beta_t-1', y_t-1, True)
++
++    # 3) create new list X and y, starting in row 2
++    #x = infl_factors.drop([0])
++
+     x = [0, 0]
+     i = 1
+-    while i < len(start_tuple):
+-        x[i-1] = [start_tuple[i][0], start_tuple[i][1], y[i-1]]
++    while i < len(infl_factors):
++        x[i-1] = [infl_factors[i][0], infl_factors[i][1], y[i-1]]
+         i += 1
++    y_new = [0, 0]
+     for j in range(len(y)-1):
+-        y_neu = [0, 0]
+-        y_neu[j] = y[j+1]
+-    return x, y_neu
++        y_new[j] = y[j+1]
++    x = pd.DataFrame(x)
++    y_new = pd.DataFrame(y_new)
++
++    # 4) split into test and training data
++    X_train, X_test, y_train, y_test = train_test_split(x, y_new, random_state=1)
++    return X_train, X_test, y_train, y_test
+ 
+ def ml_training(x, y, model):
+     if model == "linear_regression":
+@@ -26,32 +42,52 @@
+     elif model == "linear_regression_tree":
+         reg = tree.DecisionTreeRegressor()
+     elif model == "ensemble_method_adaboost":
+-        clf = AdaBoostClassifier(n_estimators=100)
+-        scores = cross_val_score(clf, x, y, cv=5)
+-        scores.mean()
+-        return scores
++        y_array = y.to_numpy()
++        y_array = y_array.ravel()
++        reg = AdaBoostRegressor(random_state=0, n_estimators=100)
++        reg.fit(x, y_array)
++        return reg
+     elif model == "neural_network":
+-        scaler = StandardScaler()
+-        scaler.fit(x)
+-        return scaler
++        y_array = y.to_numpy()
++        y_array = y_array.ravel()
++        reg = MLPRegressor(random_state=1, max_iter=500).fit(x, y_array)
++        return reg
+     elif model == "random_forest_classifier":
+-        clf = RandomForestClassifier(n_estimators=10)
+-        reg = clf.fit(x, y)
++        reg = RandomForestRegressor(n_estimators=10, random_state=0, max_depth=2)
++        y_array = y.to_numpy()
++        y_array = y_array.ravel()
++        reg = reg.fit(x, y_array)
+         return reg
+     reg.fit(x, y)
+     return reg
+ 
+-#def ml_testing(x, y, model):
+-    # random number r
+-    #r = 0
+-    #pred = model.predict(x[r])
+-    #print(compute_evaluation_metrics(y[r],pred))
++def ml_testing(X_test, y_test, model):
++    pred = model.predict(X_test)
++    scores = compute_evaluation_metrics(y_test,pred)
++    return(scores["rmse"])
+ 
+ def predict_beta(model):
+     return model.predict([[26, 15, 0.45]])
+ 
++def run_train_test(X_train, y_train, X_test, y_test, modeltype):
++    model = ml_training(X_train, y_train, modeltype)
++    return(ml_testing(X_test, y_test, model)), model
++
++def run_all(X_train, y_train, X_test, y_test):
++    rmse = []
++    min = 1000
++    metrics =["linear_regression", "lasso", "support_vector_machine", "linear_regression_tree", "ensemble_method_adaboost", "neural_network", "random_forest_classifier"]
++    for i in range(len(metrics)):
++        rmse.append(run_train_test(X_train, y_train, X_test, y_test, metrics[i]))
++    for i in range(len(rmse)):
++        if rmse[i][0] < min:
++            min = rmse[i][0]
++            best_model = rmse[i][1]
++    return best_model
+ 
+-x, y = create_tuple([[25, 12], [26, 14], [27, 15]], [0.47, 0.45, 0.5])
+-print(x,y)
+-model = ml_training(x, y, "linear_regression")
+-print(predict_beta(model))
++X_train, X_test, y_train, y_test = create_tuple([[25, 12], [26, 14], [27, 15]], [0.47, 0.45, 0.5])
++print(len(X_train))
++print(len(y_train))
++fitted_model = run_all(X_train, y_train, X_test, y_test)
++print(predict_beta(fitted_model))
++
+Index: Backend/Modeling/model_validation_pipeline.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Backend/Modeling/model_validation_pipeline.py b/Backend/Modeling/model_validation_pipeline.py
+--- a/Backend/Modeling/model_validation_pipeline.py	(revision ecf478d503a8df3781dd355f7763e3f00a20a395)
++++ b/Backend/Modeling/model_validation_pipeline.py	(revision 3f4dd1fb5853ce302b1f920c1ad7a3f973ebc256)
+@@ -66,7 +66,6 @@
+         # 3b) Compute metrics (RMSE, MAPE, ...)
+         if validate:
+             scores = compute_evaluation_metrics(y_pred=y_pred_without_train_period, y_val=y_val)
+-
+             # collecting pipeline results to a list to be used in step four
+             # results_dict.append({
+             #     'district': district,
+@@ -94,11 +93,13 @@
+ 
+ #SARIMA Model
+ def sarima_pipeline(train_end_date: date, duration: int, districts: list, validation_duration: int,
+-                     visualize=False, verbose=False, validate=True, evaluate=-1) -> None:
++                     visualize=False, verbose=False, validate=True, evaluate=False) -> None:
+     # iterate over districts(list) of interest
+     # results_dict = []
+     # store pipeline data in the DB
+     #pipeline_id = start_pipeline(train_end_date, validation_duration, visualize, verbose)
++    if evaluate:
++        rmse_list = []
+ 
+     for i, district in enumerate(districts):
+         # 1) Import Data
+@@ -146,13 +147,16 @@
+             #     'scores': scores,
+             # })
+ 
+-        if evaluate >= 0:
+-            plot_evaluation_metrics(scores["rmse"], i, evaluate, districts)
++        if evaluate:
++            rmse_list.append(scores["rmse"])
+ 
+         # 4) Store results in database:
+         #insert_param_and_start_vals(pipeline_id, district, start_vals, pipeline_result['model_params'])
+         #insert_prediction_vals(pipeline_id, district, pipeline_result['y_pred_without_train_period'], train_end_date)
+ 
++    if evaluate:
++        return rmse_list
++
+     pass
+ 
+     ## 4a) Meta parameters
+Index: Backend/Visualization/modeling_results.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Backend/Visualization/modeling_results.py b/Backend/Visualization/modeling_results.py
+--- a/Backend/Visualization/modeling_results.py	(revision ecf478d503a8df3781dd355f7763e3f00a20a395)
++++ b/Backend/Visualization/modeling_results.py	(revision 3f4dd1fb5853ce302b1f920c1ad7a3f973ebc256)
+@@ -131,12 +131,9 @@
+ 
+     plt.show()
+ 
+-def plot_evaluation_metrics(rmse, i, round, districts):
++def plot_evaluation_metrics(rmse, districts, i, round):
+ 
+-    bar_width = 0.2
+-    #1/(len(districts)+1)
+     name = (districts[i] + str(round))
+     plt.bar(name, rmse)
+-    plt.xticks(color='orange', rotation=45, horizontalalignment='right')
+-
+-    plt.show()
++    plt.xticks(color='orange', rotation=20, horizontalalignment='right')
++    plt.show()
+\ No newline at end of file
+Index: Backend/main.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Backend/main.py b/Backend/main.py
+--- a/Backend/main.py	(revision ecf478d503a8df3781dd355f7763e3f00a20a395)
++++ b/Backend/main.py	(revision 3f4dd1fb5853ce302b1f920c1ad7a3f973ebc256)
+@@ -31,7 +31,7 @@
+                      validation_duration=forecasting_horizon,
+                      visualize=True,
+                      verbose=False,
+-                     validate=True)
++                     validate=False)
+ 
+ 
+ 

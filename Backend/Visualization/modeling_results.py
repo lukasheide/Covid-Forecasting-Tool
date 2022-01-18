@@ -104,15 +104,39 @@ def plot_train_and_val_infections(y_train:np.array, y_val:np.array):
         plt.show()
 
 #create line plot for SARIMA visualization
-def plot_sarima_model_line_plot(train_array, test_array, predictions: int):
+def plot_sarima_val_line_plot(train_array, test_array, predictions: int):
     len_train = len(train_array)
     len_test = len(test_array)
     len_total = len_train + len_test
-    t_grid_total = np.linspace(1, len_total, len_total)
+    t_grid_val = np.linspace(len_train, len_total, len_test+1)
+    t_grid_train = np.linspace(1, len_train, len_train)
 
-    pred_array = np.concatenate((train_array, predictions))
-    val_array = np.concatenate((train_array, test_array))
-    plt.plot(t_grid_total, pred_array, 'b--')
-    plt.plot(t_grid_total, val_array, 'g')
-    print(pred_array)
+    pred_array = np.concatenate((train_array[len_train-1:], predictions))
+    val_array = np.concatenate((train_array[len_train-1:], test_array))
+
+    plt.plot(t_grid_val, pred_array)
+    plt.plot(t_grid_train, train_array)
+    plt.scatter(x=t_grid_val, y=val_array, s=40, zorder=10)
+
+    plt.show()
+
+def plot_sarima_pred_plot(y_train, predictions: int):
+    len_train = len(y_train)
+    len_test = len(predictions)
+    len_total = len_train + len_test
+    t_grid_val = np.linspace(len_train, len_total, len_test+1)
+    t_grid_train = np.linspace(1, len_train, len_train)
+
+    pred_array = np.concatenate((y_train[len_train-1:], predictions))
+
+    plt.plot(t_grid_val, pred_array)
+    plt.plot(t_grid_train, y_train)
+
+    plt.show()
+
+def plot_evaluation_metrics(rmse, districts, i, round):
+
+    name = (districts[i] + str(round))
+    plt.bar(name, rmse)
+    plt.xticks(color='orange', rotation=20, horizontalalignment='right')
     plt.show()

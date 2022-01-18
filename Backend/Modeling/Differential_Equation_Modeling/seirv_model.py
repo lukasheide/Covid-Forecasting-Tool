@@ -9,7 +9,9 @@ from Backend.Visualization.modeling_results import plot_train_and_val_infections
 from Backend.Modeling.Util.pipeline_util import models_params_to_dictionary, models_compartment_values_to_dictionary
 
 
-def seirv_pipeline(y_train: np.array, start_vals_fixed: tuple, forecast_horizon=14,
+def seirv_pipeline(y_train: np.array, start_vals_fixed: tuple,
+                   beta_for_predictions=None,
+                   forecast_horizon=14,
                    allow_randomness_fixed_params=False, allow_randomness_fixed_beta=False, random_runs=100, pred_quantile=0.9):
     """
     Takes as input a numpy array containing daily infection counts for the training period and a tuple containing
@@ -34,6 +36,13 @@ def seirv_pipeline(y_train: np.array, start_vals_fixed: tuple, forecast_horizon=
     # 2.1.1 Set up starting values and model parameters used for applying the model in the next step:
     model_params = setup_model_params_for_forecasting_after_fitting(fitted_model_params=fitting_result['fitted_params'],
                                                                     random_draw_fixed_params=allow_randomness_fixed_params)
+
+
+    ## Overwrite Resulting Beta result for forecasting if a value for beta was passed to the pipeline:
+    if beta_for_predictions is not None:
+        model_params[0] = beta_for_predictions
+
+
     # 2.1.2 Run forecasting - Starting point: beginning of training period
     pred_daily_infections_from_start = forecast_seirv(all_model_params=model_params,
                                                       y0=fitting_result['start_vals'] + (0,),
