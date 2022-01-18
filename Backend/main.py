@@ -20,7 +20,8 @@ matplotlib.interactive(True)
 
 def main():
     # Call wrapper function used for finding optimal training period length:
-    diff_eq_pipeline_wrapper()
+
+    # diff_eq_pipeline_wrapper()
 
     # Call differential equation model validation pipeline:
     end_date = '2021-12-14'
