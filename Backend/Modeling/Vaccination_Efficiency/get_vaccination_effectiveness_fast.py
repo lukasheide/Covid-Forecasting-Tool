@@ -6,7 +6,7 @@ import pandas as pd
 def get_vaccination_effectiveness(data):
 
     # 1) Import District Vaccination Data from API:
-    # district_data = get_vaccination_number('Münster')
+    ## district_data = get_vaccination_number('Münster')
 
     start = time.time()
 
