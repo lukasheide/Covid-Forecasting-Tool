@@ -1044,6 +1044,7 @@ def get_vaccinaction_efficiency_waning_booster(df_merged):
     print(df_merged)
     return df_merged
 
+
 if __name__ == '__main__':
     df_vaccination = get_vaccination_number("Münster")
     df_manufacturer = get_manufacturers("Nordrhein-Westfalen")
