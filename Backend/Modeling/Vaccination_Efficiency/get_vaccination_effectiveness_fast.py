@@ -143,5 +143,4 @@ def get_efficiencies_per_cohort():
 
 
 if __name__ == '__main__':
-#    demo()
     get_vaccination_effectiveness()
