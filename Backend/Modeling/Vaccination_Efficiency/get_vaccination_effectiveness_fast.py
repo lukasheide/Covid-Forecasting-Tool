@@ -4,6 +4,7 @@ import time
 
 from Backend.Modeling.Vaccination_Efficiency.get_vaccination_efficiency import get_vaccination_number
 
+
 def get_vaccination_effectiveness():
 
     # 1) Import District Vaccination Data from API:
