@@ -18,37 +18,39 @@ import matplotlib
 matplotlib.interactive(True)
 
 
-def main():
+def main(run_diff_eq_wrapper = False, run_diff_eq_pipeline=True, run_sarima_pipeline=False):
 
     # Call differential equation model validation pipeline:
     end_date = '2021-12-14'
     time_frame_train_and_validation = 28
     forecasting_horizon = 14
     districts = ['Essen', 'Münster', 'Herne', 'Bielefeld', 'Dortmund', 'Leipzig, Stadt', 'Berlin']
-    districts = ['Essen', 'Münster', 'Herne', 'Bielefeld']
 
     # Call SARIMA validation pipeline:
-    sarima_pipeline(train_end_date=end_date,
-                     duration=time_frame_train_and_validation,
-                     districts=districts,
-                     validation_duration=forecasting_horizon,
-                     visualize=True,
-                     verbose=False,
-                     validate=True)  # should be similar to 'visualize' boolean value
-                     #store_results_to_db=True)
+    if run_sarima_pipeline:
+        sarima_pipeline(train_end_date=end_date,
+                         duration=time_frame_train_and_validation,
+                         districts=districts,
+                         validation_duration=forecasting_horizon,
+                         visualize=True,
+                         verbose=False,
+                         validate=True)  # should be similar to 'visualize' boolean value
+                         #store_results_to_db=True)
 
     # Call wrapper function used for finding optimal training period length:
-    diff_eq_pipeline_wrapper()
+    if run_diff_eq_wrapper:
+        diff_eq_pipeline_wrapper()
 
     # Call differential equation model validation pipeline:
-    diff_eq_pipeline(train_end_date=end_date,
-                     duration=time_frame_train_and_validation,
-                     districts=districts,
-                     validation_duration=forecasting_horizon,
-                     visualize=True,
-                     verbose=False,
-                     validate=True, # should be similar to 'visualize' boolean value
-                     store_results_to_db=True)
+    if run_diff_eq_pipeline:
+        diff_eq_pipeline(train_end_date=end_date,
+                         duration=time_frame_train_and_validation,
+                         districts=districts,
+                         validation_duration=forecasting_horizon,
+                         visualize=True,
+                         verbose=False,
+                         validate=True, # should be similar to 'visualize' boolean value
+                         store_results_to_db=True)
 
 
     ##### Stuff below will be refactored soon #####

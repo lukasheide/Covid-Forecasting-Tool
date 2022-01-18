@@ -9,7 +9,8 @@ from Backend.Visualization.modeling_results import plot_train_and_val_infections
 from Backend.Modeling.Util.pipeline_util import models_params_to_dictionary, models_compartment_values_to_dictionary
 
 
-def seirv_pipeline(y_train: np.array, start_vals_fixed: tuple,
+def seirv_pipeline(y_train: np.array,
+                   start_vals_fixed: tuple, fixed_model_params:tuple,
                    beta_for_predictions=None,
                    forecast_horizon=14,
                    allow_randomness_fixed_params=False, allow_randomness_fixed_beta=False, random_runs=100, pred_quantile=0.9):
@@ -28,7 +29,7 @@ def seirv_pipeline(y_train: np.array, start_vals_fixed: tuple,
 
     ## 1) Model fitting
     # Run model fitting:
-    fitting_result = fit_seirv_model(y_train, start_vals_fixed)
+    fitting_result = fit_seirv_model(y_train, start_vals_fixed, fixed_model_params)
 
     ## 2) Model application / forecasting:
 
@@ -118,7 +119,7 @@ def seirv_pipeline(y_train: np.array, start_vals_fixed: tuple,
     return results_dict
 
 
-def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple) -> dict:
+def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple, fixed_model_params: tuple) -> dict:
     """
     Takes as input a numpy array with the daily new infections and a tuple containing the population size N and fixed
     starting values for each compartment: I0, R0 and V0. E0 and S0 are fitted.
@@ -144,17 +145,17 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple) -> dict:
     ## 2) Get start guess for parameters that are fitted as a tuple:
     fit_params_start_guess = (params_SEIRV_fit['beta']['mean'], 678, 789)
 
-    ## 3) Get values for fixed model parameters:
     fixed_params = {
         't_grid': t_grid_train,
         'fixed_model_params': {
-            'gamma_I': params_SEIRV_fixed['gamma_I']['mean'],
-            'gamma_U': params_SEIRV_fixed['gamma_U']['mean'],
-            'delta': params_SEIRV_fixed['delta']['mean'],
-            'theta': params_SEIRV_fixed['theta']['mean'],
-            'rho': params_SEIRV_fixed['rho']['mean']
+            'gamma_I': fixed_model_params['gamma_I'],
+            'gamma_U': fixed_model_params['gamma_U'],
+            'delta': fixed_model_params['delta'],
+            'theta': fixed_model_params['theta'],
+            'rho': fixed_model_params['rho']
         }
     }
+
 
     ## 4) Call fitting function:
     ret = least_squares(

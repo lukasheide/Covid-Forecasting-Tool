@@ -45,9 +45,10 @@ def diff_eq_pipeline(train_end_date: date, duration: int, districts: list, valid
 
         # 1c) get_starting_values() -> N=population, R0=recovered to-the-date, V0=vaccinated to-the-date
         start_vals = get_starting_values(district, train_start_date)
+        fixed_model_params = get_model_params(district, train_start_date)
 
         ## 2) Run model_pipeline
-        pipeline_result = seirv_pipeline(y_train=y_train, start_vals_fixed=start_vals,
+        pipeline_result = seirv_pipeline(y_train=y_train, start_vals_fixed=start_vals, fixed_model_params=fixed_model_params,
                                          allow_randomness_fixed_beta=False, random_runs=100)
         y_pred_without_train_period = pipeline_result['y_pred_without_train_period']
 

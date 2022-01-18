@@ -19,6 +19,7 @@ class Column(Enum):
     DAILY_VACCINATED = 'daily_vacc'
     CUM_VACCINATED = 'cum_vacc'
     VACCINATION_PERCENTAGE = 'vacc_percentage'
+    VACCINATION_EFFICIENCY = 'vacc_eff'
 
     # columns of 'district_details' table
     STATE = 'state'
