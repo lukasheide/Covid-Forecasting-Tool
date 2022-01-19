@@ -4,7 +4,7 @@ import pandas as pd
 import datetime
 from meteostat import Point, Daily
 from Backend.Data.DataManager.data_access_methods import get_starting_values, get_model_params
-from Backend.Data.data_util import Column, date_int_str
+from Backend.Data.DataManager.data_util import Column, date_int_str
 from Backend.Data.DataManager.db_calls import get_all_table_data, get_district_data, get_table_data_by_duration, update_db
 
 from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_pipeline
