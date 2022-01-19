@@ -1,5 +1,4 @@
 import datetime
-import os
 import time
 import urllib
 
@@ -7,7 +6,7 @@ import pandas as pd
 import requests
 import re
 
-from Backend.Data.db_functions import update_db, get_table_data
+from Backend.Data.DataManager.db_functions import update_db, get_table_data
 from Backend.Modeling.Vaccination_Efficiency.get_vaccination_effectiveness_fast import get_vaccination_effectiveness
 from Backend.Modeling.Differential_Equation_Modeling.starting_values import get_starting_values
 

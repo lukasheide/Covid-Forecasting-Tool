@@ -7,7 +7,7 @@ from dash import html
 import pandas as pd
 import plotly.express as px
 
-from Backend.Data.db_functions import get_table_data
+from Backend.Data.DataManager.db_functions import get_table_data
 
 app = dash.Dash(__name__)
 

@@ -1,5 +1,5 @@
 from Backend.Data.data_util import Column
-from Backend.Data.db_calls import get_table_data_by_duration, get_table_data_by_day, get_district_data
+from Backend.Data.DataManager.db_calls import get_table_data_by_duration, get_table_data_by_day, get_district_data
 from Backend.Modeling.Differential_Equation_Modeling.model_params import params_SEIRV_fixed
 
 
