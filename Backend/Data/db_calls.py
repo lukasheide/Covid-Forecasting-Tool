@@ -125,6 +125,7 @@ def get_district_data(district, attributes=None):
 
 
 def get_all_table_data(table_name):
+    table_name = format_name(table_name)
     engine = get_engine()
     return pd.read_sql(table_name, engine)
 
