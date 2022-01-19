@@ -85,3 +85,5 @@ Werkzeug==2.0.2
 widgetsnbextension==3.5.2
 sqlalchemy==1.4.26
 meteostat==1.5.10
+pmdarima
+paramiko
