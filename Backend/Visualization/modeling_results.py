@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
+
 
 ## True Data:
 # train:
@@ -21,7 +23,8 @@ def plot_train_infections(y_train: np.array):
     plt.show()
 
 
-def plot_train_fitted_and_predictions(y_train_fitted: np.array, y_train_true:np.array, y_pred_full:np.array, district=None, pred_start_date=None):
+def plot_train_fitted_and_predictions(y_train_fitted: np.array, y_train_true:np.array, y_pred_full:np.array, district=None, pred_start_date=None,
+                                      save_results=True):
     plt.clf()
 
     len_train = len(y_train_true)
@@ -48,7 +51,21 @@ def plot_train_fitted_and_predictions(y_train_fitted: np.array, y_train_true:np.
     plt.xlabel('Days')
     plt.legend(loc="upper left")
 
+    if save_results:
+        plt.savefig(f'../Assets/Forecasts/Plots/Forecast_{district}_StartDate_{pred_start_date}.png')
+        temp_df = pd.DataFrame({'Training': pd.Series(y_train_true),
+                                'Prediction': pd.Series(y_pred_full)
+                                })
+
+        temp_df.to_csv(
+            path_or_buf=f'../Assets/Forecasts/CSV_files/Forecast_{district}_StartDate_{pred_start_date}.csv',
+            sep=';'
+        )
+
     plt.show()
+
+
+
 
 
 

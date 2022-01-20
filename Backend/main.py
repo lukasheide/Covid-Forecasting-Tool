@@ -17,7 +17,7 @@ def main(run_diff_eq_wrapper = False, run_diff_eq_pipeline=True, run_sarima_pipe
     opendata = get_all_table_data(table_name='district_list')
     # districts = opendata['district'].tolist()
 
-    districts = ['Münster', 'Berlin', 'Segeberg', 'Rosenheim, Kreis', 'Fulda']
+    districts = ['Münster', 'Potsdam', 'Segeberg', 'Rosenheim, Kreis', 'Hochtaunus', 'Dortmund', 'Essen', 'Bielefeld', 'Warendorf', 'Muenchen_Landeshauptstadt']
 
     # Call SARIMA validation pipeline:
     if run_sarima_pipeline:
