@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 
 
@@ -69,7 +69,7 @@ def validate_dates_for_query(start_date, end_date):
     :param end_date: should be in DD-MM-YYYY format
     """
     if validate_date(start_date) and validate_date(end_date):
-        today = int(datetime.datetime.today().strftime('%Y%m%d'))
+        today = int(datetime.today().strftime('%Y%m%d'))
         from_date = date_str_to_int(start_date)
         to_date = date_str_to_int(end_date)
 
@@ -84,7 +84,7 @@ def validate_dates_for_query(start_date, end_date):
 
 def validate_date(date):
     date_positions = date.split("-")
-    current_year = int(datetime.datetime.today().strftime('%Y'))
+    current_year = int(datetime.today().strftime('%Y'))
 
     if 0 < int(date_positions[0]) <= current_year \
             and 0 < int(date_positions[1]) <= 12 \
@@ -101,7 +101,7 @@ def date_str_to_int(date_str):
 
 
 def date_int_str(date_int):
-    date = datetime.datetime.strptime(date_int, '%Y%m%d')
+    date = datetime.strptime(date_int, '%Y%m%d')
     date = date.strftime('%Y-%m-%d')
 
     return date
@@ -260,7 +260,7 @@ def get_correct_district_name(wrong_name):
 
 def compute_end_date_of_validation_period(train_end_date, duration):
 
-    current_day = datetime.datetime.strptime(train_end_date, '%Y-%m-%d')
-    current_day = current_day + datetime.timedelta(days=duration)
+    current_day = datetime.strptime(train_end_date, '%Y-%m-%d')
+    current_day = current_day + timedelta(days=duration)
 
     return current_day.strftime('%Y-%m-%d')

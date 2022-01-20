@@ -1,5 +1,5 @@
 import sqlite3
-import datetime
+from datetime import datetime, timedelta
 
 import sqlalchemy
 import pandas as pd
@@ -30,7 +30,7 @@ def update_db_with_index(table_name, dataframe, index_label):
 
 
 def get_table_data_by_duration(table='Münster', start_date='2020-03-01',
-                               end_date=datetime.datetime.today().strftime('%Y-%m-%d'),
+                               end_date=datetime.today().strftime('%Y-%m-%d'),
                                duration=0, attributes=None):
     if attributes is None:
         attributes = 'all'
@@ -52,8 +52,8 @@ def get_table_data_by_duration(table='Münster', start_date='2020-03-01',
 
         # assign days_back as start_day
         if duration > 0:
-            current_day = datetime.datetime.strptime(end_date, '%Y-%m-%d')
-            current_day = current_day - datetime.timedelta(days=duration)
+            current_day = datetime.strptime(end_date, '%Y-%m-%d')
+            current_day = current_day - timedelta(days=duration)
             start_date = current_day.strftime('%Y-%m-%d')
 
         # get the int value of the given date strings
@@ -71,7 +71,7 @@ def get_table_data_by_duration(table='Münster', start_date='2020-03-01',
         print('please provide correct query parameters!')
 
 
-def get_table_data_by_day(table='Münster', date=datetime.datetime.today().strftime('%Y%m%d'), attributes=None):
+def get_table_data_by_day(table='Münster', date=datetime.today().strftime('%Y%m%d'), attributes=None):
     if attributes is None:
         attributes = 'all'
     table_name = format_name(table)
@@ -188,7 +188,7 @@ def start_pipeline(end_date, validation_duration, visualize, validate, verbose):
               'verbose, ' \
               'validate, ' \
               'started_on) values (?, ?, ?, ?, ?, ?)'
-    cursor.execute(sql_srt, (end_date, validation_duration, visualize, validate, verbose, datetime.datetime.now().strftime("%d-%b-%Y (%H:%M:%S.%f)")))
+    cursor.execute(sql_srt, (end_date, validation_duration, visualize, validate, verbose, datetime.now().strftime("%d-%b-%Y (%H:%M:%S.%f)")))
     cursor.execute('SELECT MAX(pipeline_id) FROM pipeline;')
     pipeline_id = cursor.fetchone()[0]
 
@@ -226,12 +226,12 @@ def insert_param_and_start_vals(pipeline_id, district_name, start_vals, model_pa
 def insert_prediction_vals(pipeline_id, district_name, predictions, train_end_date):
     connection = get_db_connection()
     cursor = connection.cursor()
-    current_day = datetime.datetime.strptime(train_end_date, '%Y-%m-%d')
+    current_day = datetime.strptime(train_end_date, '%Y-%m-%d')
     # next day is the validation/prediction start date
     predictions = pd.DataFrame(data=predictions)
 
     for i, cases in predictions.iterrows():
-        current_day = current_day + datetime.timedelta(days=1)
+        current_day = current_day + timedelta(days=1)
         current_day_str = current_day.strftime('%Y-%m-%d')
         # prepare the list
         param_list = ()
