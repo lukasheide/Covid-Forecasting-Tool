@@ -22,7 +22,7 @@ def create_weekly_matrix():
     district_list = opendata['district'].tolist()
     district_list.sort()
     mob_data = get_all_table_data(table_name='destatis_mobility_data')
-    start_date = '2021-01-01'
+    start_date = '2020-03-16'
     end_date = '2022-01-16'
     # GET INTERVENTION DATA
     weekly_policy_dict = get_weekly_policy_data(start_date)
