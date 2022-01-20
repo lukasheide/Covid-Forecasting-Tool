@@ -4,7 +4,7 @@ import datetime
 import sqlalchemy
 import pandas as pd
 
-from Backend.Data.DataManager.data_util import format_name, date_str_to_int, validate_dates_for_query, validate_date, Column
+from Backend.Data.DataManager.data_util import format_name, date_str_to_int, validate_dates_for_query, validate_date
 
 
 def get_engine():
