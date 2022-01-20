@@ -5,7 +5,7 @@ import numpy as np
 from Backend.Data.data_scraping.data_scraping_calls import update_ecdc_variant_data, update_destatis_mobility_data, \
     update_oxcgrt_policy_data
 from Backend.Data.data_util import get_correct_district_name
-from Backend.Data.db_calls import update_db, get_all_table_data
+from Backend.Data.DataManager.db_calls import update_db, get_all_table_data
 
 
 def update_ecdc_variant_table():

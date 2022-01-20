@@ -1,17 +1,14 @@
 import pandas as pd
-import numpy as np
-from datetime import date, time, datetime
+from datetime import date
 
-from Backend.Data.data_access_methods import get_smoothen_cases, get_starting_values, get_model_params
+from Backend.Data.DataManager.data_access_methods import get_smoothen_cases, get_starting_values, get_model_params
 from Backend.Data.data_util import Column, date_int_str, compute_end_date_of_validation_period
-from Backend.Data.db_calls import start_pipeline, insert_param_and_start_vals, insert_prediction_vals
+from Backend.Data.DataManager.db_calls import start_pipeline, insert_param_and_start_vals, insert_prediction_vals
 from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_pipeline
 from Backend.Evaluation.metrics import compute_evaluation_metrics
 from Backend.Modeling.Util.pipeline_util import train_test_split, get_list_of_random_dates, get_list_of_random_districts
-from Backend.Visualization.modeling_results import plot_train_and_fitted_infections_line_plot, \
-    plot_train_and_fitted_infections_bar_plot, plot_train_infections, plot_train_fitted_and_validation, plot_sarima_pred_plot, \
+from Backend.Visualization.modeling_results import plot_train_fitted_and_validation, plot_sarima_pred_plot, \
     plot_sarima_val_line_plot
-from Backend.Data.db_functions import get_table_data
 from Backend.Modeling.Regression_Model.ARIMA import run_sarima, sarima_model_predictions
 
 # from Backend.Modeling.Regression Model.ARIMA import sarima_pipeline

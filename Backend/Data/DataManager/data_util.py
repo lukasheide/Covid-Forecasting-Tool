@@ -2,7 +2,7 @@ import datetime
 from enum import Enum
 
 
-class Column(Enum):
+class Column:
     # columns of tables named after 'districts'
     DATE = 'date'
     DAILY_INFECTIONS = 'daily_infec'
