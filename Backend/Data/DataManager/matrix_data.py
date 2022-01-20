@@ -3,11 +3,12 @@ from math import floor
 import pandas as pd
 import datetime
 from meteostat import Point, Daily
-from Backend.Data.DataManager.data_access_methods import get_starting_values, get_model_params
-from Backend.Data.DataManager.data_util import Column, date_int_str
-from Backend.Data.DataManager.db_calls import get_all_table_data, get_district_data, get_table_data_by_duration, update_db
+from Backend.Data.data_access_methods import get_starting_values, get_model_params
+from Backend.Data.data_util import Column, date_int_str
+from Backend.Data.db_calls import get_all_table_data, get_district_data, get_table_data_by_duration, update_db
 
 from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_pipeline
+from Backend.Visualization.modeling_results import plot_train_and_fitted_infections_line_plot
 
 from isoweek import Week
 
@@ -203,7 +204,7 @@ def get_weekly_variant_data(start_date):
     return weekly_variant_dict
 
 
-def get_weekly_beta(district, start_date, debug=True):
+def get_weekly_beta(district, start_date, debug=False):
     weekly_beta_values = {}
     weekly_infections = {}
     start_date_obj = datetime.datetime.strptime(start_date, '%Y-%m-%d')
@@ -255,8 +256,8 @@ def get_weekly_beta(district, start_date, debug=True):
                                              allow_randomness_fixed_beta=False, random_runs=100)
 
             # Plots for debugging:
-            # if debug:
-                # plot_train_and_fitted_infections_line_plot(y_train, pipeline_result['y_pred_including_train_period'])
+            if debug:
+                plot_train_and_fitted_infections_line_plot(y_train, pipeline_result['y_pred_including_train_period'])
 
 
             weekly_beta_values[week_no] = pipeline_result['model_params_forecast_period']['beta']
@@ -304,5 +305,5 @@ if __name__ == '__main__':
     # get_weekly_variant_data('2020-03-01')
     # weekly_mobility_dict = get_weekly_mobility_data('Stadt Neustadt a.d. W.', get_all_table_data(table_name='destatis_mobility_data'),  '2020-03-01')
     create_weekly_matrix()
-    create_complete_matrix_data()
+    # create_complete_matrix_data()
     # get_weekly_beta('Münster','2021-02-01')
