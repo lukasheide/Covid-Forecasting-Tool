@@ -70,7 +70,7 @@ def format_name(table_name):
 
 
 def get_db_connection():
-    return sqlite3.connect('../../Assets/Data/opendaten.db')
+    return sqlite3.connect('../Assets/Data/opendaten.db')
 
 
 def update_db(table_name, dataframe):

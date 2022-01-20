@@ -6,7 +6,7 @@ import matplotlib
 matplotlib.interactive(True)
 
 
-def main(run_diff_eq_wrapper = False, run_diff_eq_pipeline=True, run_sarima_pipeline=False):
+def main(run_diff_eq_wrapper=False, run_diff_eq_pipeline=True, run_sarima_pipeline=False):
     # Call wrapper function used for finding optimal training period length:
     # diff_eq_pipeline_wrapper()
 
@@ -22,13 +22,14 @@ def main(run_diff_eq_wrapper = False, run_diff_eq_pipeline=True, run_sarima_pipe
     # Call SARIMA validation pipeline:
     if run_sarima_pipeline:
         sarima_pipeline(train_end_date=end_date,
-                         duration=time_frame_train_and_validation,
-                         districts=districts,
-                         validation_duration=forecasting_horizon,
-                         visualize=True,
-                         verbose=False,
-                         validate=True)  # should be similar to 'visualize' boolean value
-                         #store_results_to_db=True)
+                        duration=time_frame_train_and_validation,
+                        districts=districts,
+                        validation_duration=forecasting_horizon,
+                        visualize=True,
+                        verbose=False,
+                        validate=True,
+                        with_db_update=False)  # should be similar to 'visualize' boolean value
+        # store_results_to_db=True)
 
     # Call wrapper function used for finding optimal training period length:
     if run_diff_eq_wrapper:
@@ -42,9 +43,8 @@ def main(run_diff_eq_wrapper = False, run_diff_eq_pipeline=True, run_sarima_pipe
                          validation_duration=forecasting_horizon,
                          visualize=True,
                          verbose=False,
-                         validate=True, # should be similar to 'visualize' boolean value
+                         validate=True,  # should be similar to 'visualize' boolean value
                          store_results_to_db=True)
-
 
     ##### Stuff below will be refactored soon #####
     # end_date = 20210804

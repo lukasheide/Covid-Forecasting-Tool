@@ -87,3 +87,4 @@ sqlalchemy==1.4.26
 meteostat==1.5.10
 pmdarima
 paramiko
+isoweek
