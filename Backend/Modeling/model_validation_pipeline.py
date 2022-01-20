@@ -32,14 +32,14 @@ def diff_eq_pipeline(train_end_date: date, duration: int, districts: list, valid
             val_end_date = compute_end_date_of_validation_period(train_end_date, validation_duration)
             smoothen_cases = get_smoothen_cases(district, val_end_date, duration)
             # 1b) split_into_train_and_validation()
-            y_train, y_val = train_test_split(data=smoothen_cases[Column.SEVEN_DAY_SMOOTHEN.value],
+            y_train, y_val = train_test_split(data=smoothen_cases[Column.SEVEN_DAY_SMOOTHEN],
                                               validation_duration=validation_duration)
-            train_start_date = date_int_str(smoothen_cases[Column.DATE.value][0])
+            train_start_date = date_int_str(smoothen_cases[Column.DATE][0])
 
         else:
             y_train = get_smoothen_cases(district, train_end_date, duration)
-            train_start_date = date_int_str(y_train[Column.DATE.value][0])
-            y_train = y_train[Column.SEVEN_DAY_SMOOTHEN.value]
+            train_start_date = date_int_str(y_train[Column.DATE][0])
+            y_train = y_train[Column.SEVEN_DAY_SMOOTHEN]
 
         # 1c) get_starting_values() -> N=population, R0=recovered to-the-date, V0=vaccinated to-the-date
         start_vals = get_starting_values(district, train_start_date)
@@ -181,7 +181,7 @@ def sarima_pipeline(train_end_date: date, duration: int, districts: list, valida
         smoothen_cases = get_smoothen_cases(district, val_end_date, duration)
 
         # 1b) split_into_train_and_validation()
-        y_train, y_val = train_test_split(data=smoothen_cases[Column.SEVEN_DAY_SMOOTHEN.value],
+        y_train, y_val = train_test_split(data=smoothen_cases[Column.SEVEN_DAY_SMOOTHEN],
                                               validation_duration=validation_duration)
 
         ## 2) Run model_pipeline
@@ -192,7 +192,7 @@ def sarima_pipeline(train_end_date: date, duration: int, districts: list, valida
         # 2b) Run model without validation data
         if validate==False:
             y_train_pred = get_smoothen_cases(district, train_end_date, duration-validation_duration)
-            y_train_pred = y_train_pred[Column.SEVEN_DAY_SMOOTHEN.value]
+            y_train_pred = y_train_pred[Column.SEVEN_DAY_SMOOTHEN]
             sarima_model_without_val = sarima_model_predictions(y_train=y_train_pred, m=season, length=validation_duration)
             predictions = sarima_model_without_val.predict(duration)
 
@@ -245,6 +245,6 @@ def sarima_pipeline(train_end_date: date, duration: int, districts: list, valida
 if __name__ == '__main__':
     smoothen_cases = get_smoothen_cases('Münster', '2021-03-31', 40)
     # y_train, y_val = train_test_split(smoothen_cases)
-    # train_start_date = date_int_str(y_train[Column.DATE.value][0])
+    # train_start_date = date_int_str(y_train[Column.DATE][0])
     # start_vals = get_starting_values('Münster', train_start_date)
     # print(start_vals)
