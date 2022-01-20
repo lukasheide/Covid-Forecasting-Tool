@@ -41,6 +41,7 @@ def upload_db_file():
 
     timestamp = datetime.now()
     remote_path_backup = f"Assets/Databasefile/opendaten_backup_{timestamp}.db"
+    sftp.put(remotepath=remote_path_backup, localpath=local_path)
 
     # save backup
 
