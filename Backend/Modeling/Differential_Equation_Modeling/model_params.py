@@ -2,30 +2,30 @@ import numpy as np
 
 params_SEIRV_fixed = {
     'gamma_I': { # mean infectious period detected cases
-       'mean': 1 / 7,
-        'sd': 1 / 7 / 10,
+       'mean': 1 / 3.6,
+        'sd': 1 / 3.6 / 10,
         'upper_lim': 2,
         'lower_lim': 0,
         'distribution': "normal"
     },
 
     'gamma_U': {  # mean infectious period undetected cases
-        'mean': 1 / 6,
-        'sd': 1 / 6 / 10,
+        'mean': 1 / 2.1,
+        'sd': 1 / 2.1 / 10,
         'upper_lim': 2,
         'lower_lim': 0,
         'distribution': "normal"
     },
 
     'delta': {  # mean incubation time
-        'mean': 1 / 6.8,
-        'sd': 1 / 6.8 / 10,
+        'mean': 1 / 4.3,
+        'sd': 1 / 4.3 / 10,
         'upper_lim': 2,
         'lower_lim': 0,
         'distribution': "normal"
     },
 
-    'theta': {  # vaccination protection
+    'theta': {  # vaccination protection #### OVERWRITTEN BY COMPUTED EFFICIENCY
         'mean': 0.1,
         'sd': 0.1 / 10,
         'upper_lim': 1,
@@ -34,8 +34,8 @@ params_SEIRV_fixed = {
     },
 
     'rho': {  # probability related to ratio of undetected cases (Dunkelziffer)
-        'mean': 0.5,
-        'sd': 0.5 / 10,
+        'mean': (1.35 - 1) / 1.35,
+        'sd': (1.35 - 1) / 1.35 / 10,
         'upper_lim': 1,
         'lower_lim': 0,
         'distribution': "normal"
