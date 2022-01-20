@@ -26,7 +26,6 @@ def claculate_wind_mean(dataframe):
             mean.append(0)
         else:
             mean.append(sum_wind/count)
-
     print('wind_mean_finished')
     return mean
 
@@ -47,7 +46,6 @@ def claculate_temperature_mean(dataframe):
             mean.append(0)
         else:
             mean.append(sum_temperature/count)
-
     print('temperature_mean_finished')
     return mean
 
@@ -58,23 +56,26 @@ def fill_empty_rows(dataframe):
     week = dataframe['week']
     for i in range(len(dataframe.index)):
         if math.isnan(dataframe['wind'][i]) == True:
-            for j in range(week.max()):
-                if dataframe['week'][i] == j:
-                    #dataframe['wind'][i] = mean[j-1]
-                    dataframe.at[[i], 'wind'] = mean[j-1]
-                    break
-    print('')
+            week = dataframe['week'][i]
+            dataframe.at[[i], 'wind'] = mean[week-1]
+ #           for j in range(week.max()):
+ #               if dataframe['week'][i] == j:
+ #                   dataframe.at[[i], 'wind'] = mean[j-1]
+ #                   break
+    print('wind_rows_finished')
 
     #fill empty temeprature rows
     mean = claculate_temperature_mean(dataframe)
     week = dataframe['week']
     for i in range(len(dataframe.index)):
         if math.isnan(dataframe['temperature'][i]) == True:
-            for j in range(week.max()+1):
-                if dataframe['week'][i] == j:
-                    dataframe.at[[i], 'temperature'] = mean[j-1]
-                    break
-    print(len(mean))
+            week = dataframe['week'][i]
+            dataframe.at[[i], 'temperature'] = mean[week-1]
+ #           for j in range(week.max()+1):
+ #               if dataframe['week'][i] == j:
+ #                   dataframe.at[[i], 'temperature'] = mean[j-1]
+ #                   break
+    print('temperature_rows_finished')
     return dataframe
 
 def delete_zero_infections(dataframe):
@@ -93,7 +94,6 @@ def create_tuple():
     df_1 = pd.get_dummies(df['variant'])
     df_2 = df.drop(columns='variant')
     df = pd.concat([df_1, df_2], axis=1)
-
     #delete districts
     df = df.drop(columns='district')
 
@@ -117,15 +117,15 @@ def create_tuple():
     df = pd.concat([df, beta_t_1], axis=1)
     df = pd.concat([df, beta_t_2], axis=1)
 
+    #delte infections = 0, fill mean in empty temperature/wind cells
     df = delete_zero_infections(df)
+    fill_empty_rows(df)
 
     #delete every first and second week
     df.drop(df[df['week'] == 1].index, inplace=True)
     df.reset_index(inplace=True, drop=True)
     df.drop(df[df['week'] == 2].index, inplace=True)
     df.reset_index(inplace=True, drop=True)
-
-    fill_empty_rows(df)
 
     #dataframe for labels
     beta = df['beta']
@@ -180,7 +180,7 @@ def ml_training(x, y, model):
 def ml_testing(X_test, y_test, model):
     pred = model.predict(X_test)
     scores = compute_evaluation_metrics(y_test,pred)
-    return(scores["mae"])
+    return(scores["rmse"])
 
 #predict with given model
 def predict_beta(model, predictions):
@@ -218,12 +218,12 @@ def load_model():
     return loaded_model
 
 
-#X_train, X_test, y_train, y_test = create_tuple()
+X_train, X_test, y_train, y_test = create_tuple()
 #X_test = pd.read_csv("x_test.csv")
 #X_train = pd.read_csv("x_train.csv")
 #y_test = pd.read_csv("y_test.csv")
 #y_train = pd.read_csv("y_train.csv")
-#fitted_model = run_all(X_train, y_train, X_test, y_test)
+fitted_model = run_all(X_train, y_train, X_test, y_test)
 predict_tuple = [0,1,0,83.92999999999999,-14.0,0.3999999999999999,8.642857142857142,125.69387755102044,0.0447375155108553,0.0899554552236932]
 fitted_model = load_model()
 print(predict_beta(fitted_model, predict_tuple))
