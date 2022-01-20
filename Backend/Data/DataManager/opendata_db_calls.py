@@ -7,6 +7,7 @@ import requests
 import re
 
 from Backend.Data.DataManager.db_functions import update_db, get_table_data
+from Backend.Data.DataManager.remote_db_manager import upload_db_file
 from Backend.Modeling.Vaccination_Efficiency.get_vaccination_effectiveness_fast import get_vaccination_effectiveness
 from Backend.Modeling.Differential_Equation_Modeling.starting_values import get_starting_values
 
@@ -378,10 +379,13 @@ if __name__ == '__main__':
     #         ALWAYS execute update_population_map() in the line BEFORE you run
     #         update_district_data("district_name")
 
-    update_district_list()
+    # update_district_list()
     # update_district_details()
-    update_population_map()
-    # update_all_district_data()
-    update_district_data("Bremen")
+    # update_population_map()
+
+    update_all_district_data()
+    upload_db_file()
+
+    # update_district_data("Bremen")
     # result_df = get_data_by_date_and_attr('Rhein-Neckar-Kreis', 20210101, 20211031, ["daily_infec", "daily_deaths"])
     # print(result_df)

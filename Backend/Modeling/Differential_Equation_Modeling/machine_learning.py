@@ -182,6 +182,14 @@ def ml_testing(X_test, y_test, model):
     scores = compute_evaluation_metrics(y_test,pred)
     return(scores["rmse"])
 
+#test the fitted model: coompare pred and beta t-1
+def ml_testing_beta(X_test, y_test, model):
+    beta_t_1 = X_test['beta_t_1']
+    pred = model.predict(X_test)
+    scores = compute_evaluation_metrics(y_val=y_test,y_pred=pred)
+    scores_beta = compute_evaluation_metrics(y_val=y_test, y_pred=beta_t_1)
+    return(scores["rmse"], scores_beta["rmse"])
+
 #predict with given model
 def predict_beta(model, predictions):
     return model.predict([predictions])
@@ -223,7 +231,8 @@ X_train, X_test, y_train, y_test = create_tuple()
 #X_train = pd.read_csv("x_train.csv")
 #y_test = pd.read_csv("y_test.csv")
 #y_train = pd.read_csv("y_train.csv")
-fitted_model = run_all(X_train, y_train, X_test, y_test)
+#fitted_model = run_all(X_train, y_train, X_test, y_test)
 predict_tuple = [0,1,0,83.92999999999999,-14.0,0.3999999999999999,8.642857142857142,125.69387755102044,0.0447375155108553,0.0899554552236932]
 fitted_model = load_model()
+rmse, rmse_beta_t_1 = ml_testing_beta(X_test, y_test, fitted_model)
 print(predict_beta(fitted_model, predict_tuple))

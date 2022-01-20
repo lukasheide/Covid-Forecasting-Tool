@@ -49,7 +49,7 @@ def forecasting_pipeline():
 
         # this is used for the machine learning layer later on
 
-        ## 
+        ##
 
 
 
