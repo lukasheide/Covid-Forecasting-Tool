@@ -13,7 +13,7 @@ def get_engine():
 
 
 def get_db_connection():
-    return sqlite3.connect('../../Assets/Data/opendaten.db')
+    return sqlite3.connect('../Assets/Data/opendaten.db')
 
 
 def update_db(table_name, dataframe):

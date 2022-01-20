@@ -13,7 +13,7 @@ def seirv_pipeline(y_train: np.array,
                    start_vals_fixed: tuple, fixed_model_params:tuple,
                    beta_for_predictions=None,
                    forecast_horizon=14,
-                   allow_randomness_fixed_params=False, allow_randomness_fixed_beta=False, random_runs=100, pred_quantile=0.9):
+                   allow_randomness_fixed_params=False, allow_randomness_fixed_beta=False, random_runs=100, pred_quantile=0.9, district=None):
     """
     Takes as input a numpy array containing daily infection counts for the training period and a tuple containing
     the population size N and fixed starting values for each compartment: I0, R0 and V0. E0 and S0 are fitted.
@@ -29,13 +29,14 @@ def seirv_pipeline(y_train: np.array,
 
     ## 1) Model fitting
     # Run model fitting:
-    fitting_result = fit_seirv_model(y_train, start_vals_fixed, fixed_model_params)
+    fitting_result = fit_seirv_model(y_train, start_vals_fixed, fixed_model_params, district=district)
 
     ## 2) Model application / forecasting:
 
     ## 2.1 Model Run with fixed parameters derived from fitting:
     # 2.1.1 Set up starting values and model parameters used for applying the model in the next step:
-    model_params = setup_model_params_for_forecasting_after_fitting(fitted_model_params=fitting_result['fitted_params'],
+    model_params = setup_model_params_for_forecasting_after_fitting(fixed_model_params=fixed_model_params,
+                                                                    fitted_model_params=fitting_result['fitted_params'],
                                                                     random_draw_fixed_params=allow_randomness_fixed_params)
 
 
@@ -47,7 +48,7 @@ def seirv_pipeline(y_train: np.array,
     # 2.1.2 Run forecasting - Starting point: beginning of training period
     pred_daily_infections_from_start = forecast_seirv(all_model_params=model_params,
                                                       y0=fitting_result['start_vals'] + (0,),
-                                                      forecast_horizon=forecast_horizon + len(y_train) - 1)
+                                                      forecast_horizon=forecast_horizon + len(y_train))
 
     # 2.2.1) No Randomness:
     if not allow_randomness_fixed_params and not allow_randomness_fixed_beta:
@@ -119,7 +120,7 @@ def seirv_pipeline(y_train: np.array,
     return results_dict
 
 
-def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple, fixed_model_params: tuple) -> dict:
+def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple, fixed_model_params: tuple, district=None) -> dict:
     """
     Takes as input a numpy array with the daily new infections and a tuple containing the population size N and fixed
     starting values for each compartment: I0, R0 and V0. E0 and S0 are fitted.
@@ -143,7 +144,7 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple, fixed_model_para
     t_grid_train = np.linspace(0, num_days_train, num_days_train + 1)
 
     ## 2) Get start guess for parameters that are fitted as a tuple:
-    fit_params_start_guess = (params_SEIRV_fit['beta']['mean'], 678, 789)
+    fit_params_start_guess = (2, 1000, 1000)
 
     fixed_params = {
         't_grid': t_grid_train,
@@ -173,14 +174,14 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple, fixed_model_para
 
     ## 5) Prepare model parameters and start values to run the model again:
     # Model params:
-    fixed_params = [param['mean'] for param in params_SEIRV_fixed.values()]
+    fixed_params = [param for param in fixed_model_params.values()]
     fitted_and_fixed_model_params = tuple(opt_params[:1]) + tuple(fixed_params)
 
     # Compute starting values for each compartment:
     N = start_vals_fixed[0]
     E0 = opt_params[1]
     I0 = opt_params[2]
-    U0 = I0 * params_SEIRV_fixed['rho']['mean'] / (1 - params_SEIRV_fixed['rho']['mean'])
+    U0 = I0 * fixed_model_params['rho'] / (1 - fixed_model_params['rho'])
     R0 = start_vals_fixed[1]
     V0 = start_vals_fixed[2]
     S0 = N - E0 - I0 - R0 - V0
@@ -189,9 +190,12 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple, fixed_model_para
     y0_train = (S0, E0, I0, U0, R0, V0, 0)
 
     ## 6) Apply fitted parameters to get the end values for all compartments:
+    # extend t_grid so that also the last day is included:
+    t_grid_apply_again = np.linspace(0, (num_days_train + 1), (num_days_train + 1) + 1)
+
     # Retrieve values for each compartment over time:
     S, E, I, U, R, V, cum_infections_fitted, daily_infections_fitted = solve_ode(y0=y0_train,
-                                                                                 t=t_grid_train,
+                                                                                 t=t_grid_apply_again,
                                                                                  params=fitted_and_fixed_model_params)
 
 
@@ -256,10 +260,15 @@ def merge_fitted_and_fixed_start_vals(fitted_start_vals, tot_pop_size, fixed_sta
     return S0, E0, I0, R0, V0, 0
 
 
-def setup_model_params_for_forecasting_after_fitting(fitted_model_params, random_draw_fixed_params=False, random_draw_beta=False):
+def setup_model_params_for_forecasting_after_fitting(fixed_model_params, fitted_model_params, random_draw_fixed_params=False, random_draw_beta=False):
     """
     Combines fitted and fixed model parameter into one tuple.
     """
+
+
+    ########## CAREFUL WITH STUFF BELOW ############
+    # todo repair setting up model params
+
     ## Beta:
     if not random_draw_beta:
         beta = fitted_model_params['beta']
@@ -284,6 +293,17 @@ def setup_model_params_for_forecasting_after_fitting(fitted_model_params, random
         delta = draw_value_from_param_distribution('delta')
         theta = draw_value_from_param_distribution('theta')
         rho = draw_value_from_param_distribution('rho')
+
+
+    ########## CAREFUL WITH STUFF ABOVE ############
+
+    # For now just use values of previous run:
+    beta = fitted_model_params['beta']
+    gamma_I = fixed_model_params['gamma_I']
+    gamma_U = fixed_model_params['gamma_U']
+    delta = fixed_model_params['delta']
+    theta = fixed_model_params['theta']
+    rho = fixed_model_params['rho']
 
 
     return beta, gamma_I, gamma_U, delta, theta, rho

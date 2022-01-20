@@ -8,7 +8,7 @@ from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_pi
 from Backend.Evaluation.metrics import compute_evaluation_metrics
 from Backend.Modeling.Util.pipeline_util import train_test_split, get_list_of_random_dates, get_list_of_random_districts
 from Backend.Visualization.modeling_results import plot_train_fitted_and_validation, plot_sarima_pred_plot, \
-    plot_sarima_val_line_plot
+    plot_sarima_val_line_plot, plot_train_fitted_and_predictions
 from Backend.Modeling.Regression_Model.ARIMA import run_sarima, sarima_model_predictions
 
 # from Backend.Modeling.Regression Model.ARIMA import sarima_pipeline
@@ -37,7 +37,8 @@ def diff_eq_pipeline(train_end_date: date, duration: int, districts: list, valid
             train_start_date = date_int_str(smoothen_cases[Column.DATE][0])
 
         else:
-            y_train = get_smoothen_cases(district, train_end_date, duration)
+            forecast_length = duration - validation_duration
+            y_train = get_smoothen_cases(district, train_end_date, forecast_length)
             train_start_date = date_int_str(y_train[Column.DATE][0])
             y_train = y_train[Column.SEVEN_DAY_SMOOTHEN]
 
@@ -47,7 +48,7 @@ def diff_eq_pipeline(train_end_date: date, duration: int, districts: list, valid
 
         ## 2) Run model_pipeline
         pipeline_result = seirv_pipeline(y_train=y_train, start_vals_fixed=start_vals, fixed_model_params=fixed_model_params,
-                                         allow_randomness_fixed_beta=False, random_runs=100)
+                                         allow_randomness_fixed_beta=False, random_runs=100, district=district)
         y_pred_without_train_period = pipeline_result['y_pred_without_train_period']
 
         # Run Sarima model
@@ -62,10 +63,19 @@ def diff_eq_pipeline(train_end_date: date, duration: int, districts: list, valid
 
         # 3a) Visualize results (mainly for debugging)
         if visualize:
-            plot_train_fitted_and_validation(y_train=y_train, y_val=y_val,
-                                             y_pred=pipeline_result['y_pred_including_train_period'],
-                                             y_pred_upper=pipeline_result['y_pred_without_train_period_upper_bound'],
-                                             y_pred_lower=pipeline_result['y_pred_without_train_period_lower_bound'])
+            if validate:
+                plot_train_fitted_and_validation(y_train=y_train, y_val=y_val,
+                                                 y_pred=pipeline_result['y_pred_including_train_period'],
+                                                 y_pred_upper=pipeline_result['y_pred_without_train_period_upper_bound'],
+                                                 y_pred_lower=pipeline_result['y_pred_without_train_period_lower_bound'])
+
+            else:
+                plot_train_fitted_and_predictions(y_train_fitted=pipeline_result['y_pred_including_train_period'][0:duration],
+                                                  y_train_true=y_train,
+                                                  y_pred_full=pipeline_result['y_pred_including_train_period'],
+                                                  district=district,
+                                                  pred_start_date=train_end_date)
+
 
         # 3b) Compute metrics (RMSE, MAPE, ...)
         if validate:
@@ -84,11 +94,15 @@ def diff_eq_pipeline(train_end_date: date, duration: int, districts: list, valid
             insert_prediction_vals(pipeline_id, district, pipeline_result['y_pred_without_train_period'], train_end_date)
 
         #  5) Append results to dictionary:
-        results_dict[district] = {
-            'scores':scores
-        }
+        if validate:
+            results_dict[district] = {
+                'scores':scores
+            }
 
-    return results_dict
+    if validate:
+        return results_dict
+    else:
+        return None
 
 
 

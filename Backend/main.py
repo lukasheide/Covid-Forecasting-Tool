@@ -11,13 +11,13 @@ def main(run_diff_eq_wrapper = False, run_diff_eq_pipeline=True, run_sarima_pipe
     # diff_eq_pipeline_wrapper()
 
     # Call differential equation model validation pipeline:
-    end_date = '2021-12-14'
+    end_date = '2022-01-16'
     time_frame_train_and_validation = 28
     forecasting_horizon = 14
     opendata = get_all_table_data(table_name='district_list')
-    districts = opendata['district'].tolist()
+    # districts = opendata['district'].tolist()
 
-    districts = ['Münster', 'Berlin', 'Segeberg', 'Rosenheim', 'Fulda']
+    districts = ['Münster', 'Berlin', 'Segeberg', 'Rosenheim, Kreis', 'Fulda']
 
     # Call SARIMA validation pipeline:
     if run_sarima_pipeline:
@@ -27,7 +27,7 @@ def main(run_diff_eq_wrapper = False, run_diff_eq_pipeline=True, run_sarima_pipe
                          validation_duration=forecasting_horizon,
                          visualize=True,
                          verbose=False,
-                         validate=True)  # should be similar to 'visualize' boolean value
+                         validate=False)  # should be similar to 'visualize' boolean value
                          #store_results_to_db=True)
 
     # Call wrapper function used for finding optimal training period length:
@@ -42,8 +42,8 @@ def main(run_diff_eq_wrapper = False, run_diff_eq_pipeline=True, run_sarima_pipe
                          validation_duration=forecasting_horizon,
                          visualize=True,
                          verbose=False,
-                         validate=True, # should be similar to 'visualize' boolean value
-                         store_results_to_db=True)
+                         validate=False, # should be similar to 'visualize' boolean value
+                         store_results_to_db=False)
 
 
     ##### Stuff below will be refactored soon #####
