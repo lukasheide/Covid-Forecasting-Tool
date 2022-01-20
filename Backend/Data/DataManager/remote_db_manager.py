@@ -1,14 +1,10 @@
 from paramiko import Transport, SFTPClient
+from properties import Server
 
 
 def download_db_file():
-    host = "D-3120S33.uni-muenster.de"
-    port = 2222
-    username = "covcastadmin"
-    password = "7vCrSwcnFJXir"
-
-    transport = Transport((host, port))
-    transport.connect(username=username, password=password)
+    transport = Transport((Server.host, Server.port))
+    transport.connect(username=Server.username, password=Server.password)
     sftp = SFTPClient.from_transport(transport)
 
     remote_path = "Assets/Databasefile/opendaten_backup.db"
@@ -22,13 +18,8 @@ def download_db_file():
 
 
 def upload_db_file():
-    host = "D-3120S33.uni-muenster.de"
-    port = 2222
-    username = "covcastadmin"
-    password = "7vCrSwcnFJXir"
-
-    transport = Transport((host, port))
-    transport.connect(username=username, password=password)
+    transport = Transport((Server.host, Server.port))
+    transport.connect(username=Server.username, password=Server.password)
     sftp = SFTPClient.from_transport(transport)
 
     remote_path = "Assets/Databasefile/opendaten_backup.db"

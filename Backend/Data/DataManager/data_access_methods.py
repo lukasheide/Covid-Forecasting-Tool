@@ -1,5 +1,5 @@
 from Backend.Data.data_util import Column
-from Backend.Data.db_calls import get_table_data_by_duration, get_table_data_by_day, get_district_data
+from Backend.Data.DataManager.db_calls import get_table_data_by_duration, get_table_data_by_day, get_district_data
 from Backend.Modeling.Differential_Equation_Modeling.model_params import params_SEIRV_fixed
 
 
@@ -7,7 +7,7 @@ def get_smoothen_cases(district, end_date, duration):
     data_result = get_table_data_by_duration(table=district,
                                              end_date=end_date,
                                              duration=duration-1,       # otherwise for a duration of two days we would get data from e.g. 15th Dec - 17th Dec
-                                             attributes=[Column.DATE.value, Column.SEVEN_DAY_SMOOTHEN.value])
+                                             attributes=[Column.DATE, Column.SEVEN_DAY_SMOOTHEN])
 
     return data_result
 
@@ -15,11 +15,11 @@ def get_smoothen_cases(district, end_date, duration):
 # assumes DB tables are up-to_date
 def get_starting_values(district, train_start_date):
     district_status = get_table_data_by_day(table=district, date=train_start_date,
-                                            attributes=[Column.CUM_VACCINATED.value, Column.CUM_RECOVERIES.value])
-    district_details = get_district_data(district=district, attributes=[Column.POPULATION.value])
-    vaccinated, recovered, population = district_status[Column.CUM_VACCINATED.value].to_list()[0], \
-                                        district_status[Column.CUM_RECOVERIES.value].to_list()[0], \
-                                        district_details[Column.POPULATION.value].to_list()[0]
+                                            attributes=[Column.CUM_VACCINATED, Column.CUM_RECOVERIES])
+    district_details = get_district_data(district=district, attributes=[Column.POPULATION])
+    vaccinated, recovered, population = district_status[Column.CUM_VACCINATED].to_list()[0], \
+                                        district_status[Column.CUM_RECOVERIES].to_list()[0], \
+                                        district_details[Column.POPULATION].to_list()[0]
 
     return population, vaccinated, recovered
 
@@ -27,8 +27,8 @@ def get_starting_values(district, train_start_date):
 def get_model_params(district, train_start_date):
     # Get theta for train_start_date from db:
     theta = get_table_data_by_day(table=district, date=train_start_date,
-                          attributes=[Column.VACCINATION_EFFICIENCY.value])
-    theta = theta[Column.VACCINATION_EFFICIENCY.value].tolist()[0]
+                          attributes=[Column.VACCINATION_EFFICIENCY])
+    theta = theta[Column.VACCINATION_EFFICIENCY].tolist()[0]
     model_params = {
         # Get fixed model params:
         'gamma_I': params_SEIRV_fixed['gamma_I']['mean'],

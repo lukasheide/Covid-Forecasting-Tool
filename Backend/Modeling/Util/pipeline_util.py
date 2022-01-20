@@ -1,7 +1,7 @@
 import numpy as np
-from datetime import date, time, datetime, timedelta
+from datetime import datetime, timedelta
 
-from Backend.Data.opendata_db_calls import get_list_of_districts
+from Backend.Data.DataManager.opendata_db_calls import get_list_of_districts
 import random
 
 

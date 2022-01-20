@@ -5,7 +5,7 @@ import numpy as np
 import math
 import plotly.express as px
 
-from Backend.Data.db_functions import get_table_data, update_district_matrices, get_filtered_table_data
+from Backend.Data.DataManager.db_functions import get_table_data, update_district_matrices, get_filtered_table_data
 
 # updating all_district_data should be executed before
 list_of_districts = get_table_data("district_list", 0, 0, "district", False)
