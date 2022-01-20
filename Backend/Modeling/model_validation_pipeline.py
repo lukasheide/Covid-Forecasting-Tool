@@ -2,7 +2,7 @@ import pandas as pd
 from datetime import date
 
 from Backend.Data.DataManager.data_access_methods import get_smoothen_cases, get_starting_values, get_model_params
-from Backend.Data.data_util import Column, date_int_str, compute_end_date_of_validation_period
+from Backend.Data.DataManager.data_util import Column, date_int_str, compute_end_date_of_validation_period
 from Backend.Data.DataManager.db_calls import start_pipeline, insert_param_and_start_vals, insert_prediction_vals
 from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_pipeline
 from Backend.Evaluation.metrics import compute_evaluation_metrics
