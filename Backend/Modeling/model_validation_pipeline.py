@@ -102,6 +102,7 @@ def diff_eq_pipeline(train_end_date: date, duration: int, districts: list, valid
     return results_dict
 
 
+
 def diff_eq_pipeline_wrapper(**kwargs):
     end_date = '2021-12-14'
     time_frame_train_and_validation = 28
@@ -113,6 +114,7 @@ def diff_eq_pipeline_wrapper(**kwargs):
     random_train_end_dates = get_list_of_random_dates(num=20, lower_bound='2020-03-15', upper_bound='2021-12-15',
                                                       seed=SEED)
     random_districts = get_list_of_random_districts(num=10, seed=SEED)
+
 
     ####################################################################
     ### Part below is for finding optimal length of training period: ###
@@ -176,11 +178,15 @@ def diff_eq_pipeline_wrapper(**kwargs):
 
 # SARIMA Model
 def sarima_pipeline(train_end_date: date, duration: int, districts: list, validation_duration: int,
-                    visualize=False, verbose=False, validate=True, evaluate=False) -> None:
+                    visualize=False, verbose=False, validate=True, evaluate=False, with_db_update=False) -> None:
+    if with_db_update:
+        download_db_file()
     # iterate over districts(list) of interest
     # results_dict = []
     # store pipeline data in the DB
     # pipeline_id = start_pipeline(train_end_date, validation_duration, visualize, verbose)
+    predictions_list = []
+
     if evaluate:
         rmse_list = []
 
@@ -230,6 +236,8 @@ def sarima_pipeline(train_end_date: date, duration: int, districts: list, valida
             #     'scores': scores,
             # })
 
+        predictions_list.append(predictions)
+
         if evaluate:
             rmse_list.append(scores["rmse"])
 
@@ -237,6 +245,7 @@ def sarima_pipeline(train_end_date: date, duration: int, districts: list, valida
         # insert_param_and_start_vals(pipeline_id, district, start_vals, pipeline_result['model_params'])
         # insert_prediction_vals(pipeline_id, district, pipeline_result['y_pred_without_train_period'], train_end_date)
 
+    return predictions_list
     if evaluate:
         return rmse_list
 

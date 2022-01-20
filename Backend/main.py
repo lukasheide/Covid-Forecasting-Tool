@@ -44,7 +44,9 @@ def main(run_diff_eq_wrapper=False, run_diff_eq_pipeline=True, run_sarima_pipeli
                          visualize=True,
                          verbose=False,
                          validate=True,  # should be similar to 'visualize' boolean value
-                         store_results_to_db=True)
+                         store_results_to_db=True,
+                         with_db_update=False
+                         )
 
     ##### Stuff below will be refactored soon #####
     # end_date = 20210804
@@ -77,4 +79,4 @@ def main(run_diff_eq_wrapper=False, run_diff_eq_pipeline=True, run_sarima_pipeli
 
 
 if __name__ == '__main__':
-    main()
+    main(run_sarima_pipeline=True)
