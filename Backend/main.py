@@ -16,7 +16,8 @@ def main(run_diff_eq_wrapper = False, run_diff_eq_pipeline=True, run_sarima_pipe
     forecasting_horizon = 14
     opendata = get_all_table_data(table_name='district_list')
     districts = opendata['district'].tolist()
-    # districts = ['Essen', 'Münster', 'Herne', 'Bielefeld', 'Dortmund', 'Leipzig, Stadt', 'Berlin']
+
+    districts = ['Münster', 'Berlin', 'Segeberg', 'Rosenheim', 'Fulda']
 
     # Call SARIMA validation pipeline:
     if run_sarima_pipeline:
