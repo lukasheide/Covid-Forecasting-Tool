@@ -285,6 +285,24 @@ def create_complete_matrix_data():
     final_df.to_csv('../Assets/Data/all_matrix_data.csv')
     # update_db('all_matrix_data', final_df)
 
+
+def get_predictors_for_ml_layer(district, start_date):
+    mob_data = get_all_table_data(table_name='destatis_mobility_data')
+
+    # GET INTERVENTION DATA
+    weekly_policy_dict = get_weekly_policy_data(start_date)
+    # GET VARIANT DATA
+    weekly_variant_dict = get_weekly_variant_data(start_date)
+    # GET MOBILITY DATA
+    weekly_mobility_dict = get_weekly_mobility_data(district, mob_data, start_date)
+    # GET WEATHER DATA
+    weekly_temp_dict, weekly_wind_dict = get_weekly_weather_data(district, start_date)
+    # GET LAST WEEK BETA
+    weekly_beta_dict, weekly_infections_dict = get_weekly_beta(district, start_date)
+
+
+
+
 if __name__ == '__main__':
     # mob_data = get_all_table_data(table_name='destatis_mobility_data')
     # mob_data_dist = mob_data['Kreisname'].to_list()

@@ -1,5 +1,5 @@
 from paramiko import Transport, SFTPClient
-from properties import Server
+from Backend.Data.DataManager.properties import Server
 import shutil
 
 
