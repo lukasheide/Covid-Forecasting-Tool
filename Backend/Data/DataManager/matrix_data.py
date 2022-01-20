@@ -34,6 +34,7 @@ def create_weekly_matrix():
 
     # only one city for debugging:
     # district_list = ['Bielefeld']
+    district_list = district_list[district_list.index('Coesfeld'):]
 
     for j, district in enumerate(district_list):
         print(district)
