@@ -70,6 +70,9 @@ def update_all_district_data():
 
     for i, district in enumerate(district_list['district']):
 
+        if not district == 'Bremen':
+            break
+
         update_district_data(district)
         # time.sleep(0.1)
         print('progress: ' + str((i+1)/400))
