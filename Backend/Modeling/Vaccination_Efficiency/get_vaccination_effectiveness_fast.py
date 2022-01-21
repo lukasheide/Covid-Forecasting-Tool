@@ -1,9 +1,10 @@
 import time
 import numpy as np
 import pandas as pd
+from Backend.Modeling.Differential_Equation_Modeling.starting_values import get_number_inhabitants
 
 
-def get_vaccination_effectiveness(data):
+def get_vaccination_effectiveness(data, district):
 
     # 1) Import District Vaccination Data from API:
     ## district_data = get_vaccination_number('Münster')
@@ -84,7 +85,11 @@ def get_vaccination_effectiveness(data):
 
     # Get number of people with vaccinated as their status in time t:
     # make this max 90 % of the number of inhabitants -> get number of inhabitants
+    inhabitants = get_number_inhabitants(district)
+    max_value_total_vacc = inhabitants * 0.9
     district_data['total_vacc'] = district_data['total_second_vacc_status'] + district_data['total_booster_vacc']
+    district_data['total_vacc'] = district_data.apply(lambda x: max_value_total_vacc if max_value_total_vacc < x['total_vacc'] else x['total_vacc'], axis=1)
+
 
     #change into lambda function in order to check date to include influence of VOC
 
