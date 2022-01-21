@@ -168,7 +168,10 @@ def plot_train_and_val_infections(y_train:np.array, y_val:np.array):
         plt.show()
 
 #create line plot for SARIMA visualization
-def plot_sarima_val_line_plot(train_array, test_array, predictions: int):
+def plot_sarima_val_line_plot(train_array, test_array, predictions: int, pred_start_date, district):
+
+    plt.clf()
+
     len_train = len(train_array)
     len_test = len(test_array)
     len_total = len_train + len_test
@@ -178,13 +181,23 @@ def plot_sarima_val_line_plot(train_array, test_array, predictions: int):
     pred_array = np.concatenate((train_array[len_train-1:], predictions))
     val_array = np.concatenate((train_array[len_train-1:], test_array))
 
-    plt.plot(t_grid_val, pred_array)
-    plt.plot(t_grid_train, train_array)
-    plt.scatter(x=t_grid_val, y=val_array, s=40, zorder=10)
+    plt.plot(t_grid_val, pred_array, color=purple, zorder=5, linewidth=2.5, label='Forecast')
+    plt.plot(t_grid_train, train_array, color=lightblue, zorder=5, linewidth=2.5, label='Training Line')
+    plt.scatter(x=t_grid_val, y=val_array, s=40, zorder=10, color=black, label='Real Cases')
+
+    plt.title(f'Validation for {district} starting on {pred_start_date}')
+    plt.xlabel("Days")
+    plt.ylabel("7-day average infections")
+    plt.legend(loc="upper left")
 
     plt.show()
 
-def plot_sarima_pred_plot(y_train, predictions: int):
+    plt.savefig(f'../Assets/Forecasts/Plots/Sarima_Evaluate_{district}_StartDate_{pred_start_date}.png')
+
+def plot_sarima_pred_plot(y_train, predictions: int, district, pred_start_date):
+
+    plt.clf()
+
     len_train = len(y_train)
     len_test = len(predictions)
     len_total = len_train + len_test
@@ -193,16 +206,32 @@ def plot_sarima_pred_plot(y_train, predictions: int):
 
     pred_array = np.concatenate((y_train[len_train-1:], predictions))
 
-    plt.plot(t_grid_val, pred_array)
-    plt.plot(t_grid_train, y_train)
+    ## Fitted data:
+    # Training:
+    plt.plot(t_grid_train, y_train, color=lightblue, zorder=5, linewidth=2.5, label='Training Line')
+    # Prediction:
+    plt.plot(t_grid_val, pred_array, color=purple, zorder=10, linewidth=2.5, label='Forecast')
+
+    # Axis description:
+    plt.title(f'Forecast for {district} starting on {pred_start_date}')
+    plt.ylabel('7-day average infections')
+    plt.xlabel('Days')
+    plt.legend(loc="upper left")
 
     plt.show()
+
+    plt.savefig(f'../Assets/Forecasts/Plots/Sarima_Forecast_{district}_StartDate_{pred_start_date}.png')
 
 def plot_evaluation_metrics(rmse, districts, i, round):
 
     name = (districts[i] + str(round))
     plt.bar(name, rmse)
     plt.xticks(color='orange', rotation=20, horizontalalignment='right')
+
+    plt.title("Metrics Plot")
+    plt.xlabel("District & Date")
+    plt.ylabel("RMSE")
+
     plt.show()
 
 

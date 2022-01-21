@@ -3,8 +3,10 @@ from datetime import datetime, timedelta
 
 import sqlalchemy
 import pandas as pd
+from meteostat import Point, Daily
 
-from Backend.Data.DataManager.data_util import format_name, date_str_to_int, validate_dates_for_query, validate_date
+from Backend.Data.DataManager.data_util import format_name, date_str_to_int, validate_dates_for_query, validate_date, \
+    Column
 
 
 def get_engine():
@@ -128,6 +130,126 @@ def get_all_table_data(table_name):
     table_name = format_name(table_name)
     engine = get_engine()
     return pd.read_sql(table_name, engine)
+
+
+def get_policy_data(date=None):
+    engine = get_engine()
+
+    if date is not None:
+        query_sql = 'SELECT policy_index ' \
+                    'FROM xocgrt_policy_data ' \
+                    'WHERE date = "%s"' % (date,)
+
+        result = pd.read_sql(query_sql, engine)
+        if result.empty:
+            query_sql = 'SELECT policy_index ' \
+                        'FROM xocgrt_policy_data ' \
+                        'WHERE policy_index > 0 ' \
+                        'ORDER BY date DESC ' \
+                        'LIMIT 1'
+            result = pd.read_sql(query_sql, engine)
+            print('no policy data for the given date, latest available value is selected!')
+
+        return result['policy_index'][0]
+
+    else:
+        query_sql = 'SELECT policy_index ' \
+                    'FROM xocgrt_policy_data ' \
+                    'WHERE policy_index > 0 ' \
+                    'ORDER BY date DESC ' \
+                    'LIMIT 1'
+        result = pd.read_sql(query_sql, engine)
+        print('no policy data for the given date, latest available data is selected!')
+        return result['policy_index'][0]
+
+
+def get_variant_data(date=None):
+    engine = get_engine()
+
+    if date is not None:
+        date_obj = datetime.strptime(date, '%Y-%m-%d')
+        week = date_obj.isocalendar()[1]
+        year_week_str = str(date_obj.year) + '-' + str(week if week >= 10 else str(week).zfill(2))
+
+        query_sql = 'SELECT variant ' \
+                    'FROM ecdc_varient_data ' \
+                    'WHERE year_week = "%s" AND percent_variant > 0 ' \
+                    'ORDER BY year_week, percent_variant DESC ' \
+                    'LIMIT 1' \
+                    % (year_week_str,)
+
+        result = pd.read_sql(query_sql, engine)
+
+        if result.empty:
+            query_sql = 'SELECT variant ' \
+                        'FROM ecdc_variant_data ' \
+                        'WHERE percent_variant > 0 ' \
+                        'ORDER BY year_week, percent_variant DESC ' \
+                        'LIMIT 1'
+            result = pd.read_sql(query_sql, engine)
+            print('no variant data for the given date, latest available week data is selected!')
+
+        return result['variant'][0]
+
+    else:
+        query_sql = 'SELECT variant ' \
+                    'FROM ecdc_variant_data ' \
+                    'WHERE percent_variant > 0 ' \
+                    'ORDER BY year_week, percent_variant DESC ' \
+                    'LIMIT 1'
+        result = pd.read_sql(query_sql, engine)
+        print('no variant data for the given date, latest available week data is selected!')
+
+        return result['variant'][0]
+
+
+def get_mobility_data(district, date=None):
+    engine = get_engine()
+
+    if date is not None:
+        query_sql = 'SELECT "%s" '\
+                    'FROM destatis_mobility_data ' \
+                    'WHERE Kreisname = "%s" ' % (date, district,)
+
+        result = pd.read_sql(query_sql, engine)
+
+        if result.empty:
+            # couldnt find a quesry to get the last column data
+            # therefore, read the whole table and prepare the df to do the task
+            #end_date = [*mob_data.columns[-1:]][0]
+            mob_data = get_all_table_data(table_name='destatis_mobility_data')
+            dist_mobility = mob_data.loc[mob_data['Kreisname'] == district]
+            result = dist_mobility.iloc[:, -1].iloc[0]
+            print('no variant data for the given date, latest available week data is selected!')
+            return result
+
+        return result[date].tolist()[0]
+
+    else:
+        # couldnt find a quesry to get the last column data
+        # therefore, read the whole table and prepare the df to do the task
+        # end_date = [*mob_data.columns[-1:]][0]
+        mob_data = get_all_table_data(table_name='destatis_mobility_data')
+        dist_mobility = mob_data.loc[mob_data['Kreisname'] == district]
+        result = dist_mobility.iloc[:, -1].iloc[0]
+        print('no variant data for the given date, latest available week data is selected!')
+        return result
+
+
+def get_weather_data(district, date=None):
+    location = get_district_data(district, [Column.LATITUDE, Column.LONGITUDE])
+    dist_lat = float(location[Column.LATITUDE].iloc[0])
+    dist_lon = float(location[Column.LONGITUDE].iloc[0])
+    date_obj = datetime.strptime(date, '%Y-%m-%d')
+
+    district_loc = Point(dist_lat, dist_lon)
+    data = Daily(district_loc, date_obj, date_obj)
+    data = data.fetch()
+
+    temperature = data['tavg'][0]
+    wind = data['wspd'][0]
+
+    return temperature, wind
 
 
 def clean_create_model_store():

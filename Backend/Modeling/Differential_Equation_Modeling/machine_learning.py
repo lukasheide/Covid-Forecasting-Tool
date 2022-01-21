@@ -83,7 +83,10 @@ def delete_zero_infections(dataframe):
     dataframe.reset_index(inplace=True, drop=True)
     return dataframe
 
-
+def delete_small_beta(dataframe):
+    dataframe.drop(dataframe[dataframe['beta'] <= 0.025].index, inplace=True)
+    dataframe.reset_index(inplace=True, drop=True)
+    return dataframe
 
 def create_tuple():
     # 1) separate beta, delete districts, transform variant
@@ -97,35 +100,9 @@ def create_tuple():
     #delete districts
     df = df.drop(columns='district')
 
-    # 2a) extend beta with 1 row, so including beta_t-1 is easier
-    beta_t_1 = pd.DataFrame(beta)
-    beta_t_1.loc[0] = [0]  # adding a row
-    beta_t_1.index = beta_t_1.index + 1  # shifting index
-    beta_t_1 = beta_t_1.sort_index()  # sorting by index
-    beta_t_1 = beta_t_1.drop(beta_t_1.index[-1:])
-    beta_t_1.rename(columns={'beta': 'beta_t_1'}, inplace=True)
-
-    # 2b) extend beta with 2 row, so including beta_t-2 is easier
-    beta_t_2 = pd.DataFrame(beta_t_1) # creating be
-    beta_t_2.loc[0] = [0] # adding a row
-    beta_t_2.index = beta_t_2.index + 1  # shifting index
-    beta_t_2 = beta_t_2.sort_index()  # sorting by index
-    beta_t_2 = beta_t_2.drop(beta_t_2.index[-1:])
-    beta_t_2.rename(columns={'beta_t_1': 'beta_t_2'}, inplace=True)
-
-    # 3)insert a new column in a dataframe:
-    df = pd.concat([df, beta_t_1], axis=1)
-    df = pd.concat([df, beta_t_2], axis=1)
-
     #delte infections = 0, fill mean in empty temperature/wind cells
     df = delete_zero_infections(df)
     fill_empty_rows(df)
-
-    #delete every first and second week
-    df.drop(df[df['week'] == 1].index, inplace=True)
-    df.reset_index(inplace=True, drop=True)
-    df.drop(df[df['week'] == 2].index, inplace=True)
-    df.reset_index(inplace=True, drop=True)
 
     #dataframe for labels
     beta = df['beta']
@@ -184,7 +161,7 @@ def ml_testing(X_test, y_test, model):
 
 #test the fitted model: coompare pred and beta t-1
 def ml_testing_beta(X_test, y_test, model):
-    beta_t_1 = X_test['beta_t_1']
+    beta_t_1 = X_test['beta_t_minus_1']
     pred = model.predict(X_test)
     scores = compute_evaluation_metrics(y_val=y_test,y_pred=pred)
     scores_beta = compute_evaluation_metrics(y_val=y_test, y_pred=beta_t_1)

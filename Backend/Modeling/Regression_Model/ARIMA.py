@@ -16,7 +16,7 @@ def sarimamodel(timeseriesarray, i):
 
 #model execution
 def run_sarima(y_train, y_val):
-    r = 20000
+    r = 2000000000
     i = 1
 
     #iteration to find the best fitting length of a season
@@ -25,7 +25,6 @@ def run_sarima(y_train, y_val):
         predictions = arima_model.predict(len(y_val))
         evaluations = compute_evaluation_metrics(y_val, predictions)
         RMSE = evaluations["rmse"]
-
         #save best fitting model
         if RMSE < r:
             r = RMSE

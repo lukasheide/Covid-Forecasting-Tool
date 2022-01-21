@@ -1,9 +1,10 @@
+import datetime
 import pandas as pd
 from datetime import date
-
 from Backend.Data.DataManager.data_access_methods import get_smoothen_cases, get_starting_values, get_model_params
 from Backend.Data.DataManager.data_util import Column, date_int_str, compute_end_date_of_validation_period
 from Backend.Data.DataManager.db_calls import start_pipeline, insert_param_and_start_vals, insert_prediction_vals
+from Backend.Data.DataManager.remote_db_manager import download_db_file
 from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_pipeline
 from Backend.Evaluation.metrics import compute_evaluation_metrics
 from Backend.Modeling.Util.pipeline_util import train_test_split, get_list_of_random_dates, get_list_of_random_districts
@@ -11,13 +12,20 @@ from Backend.Visualization.modeling_results import plot_train_fitted_and_validat
     plot_sarima_val_line_plot, plot_train_fitted_and_predictions
 from Backend.Modeling.Regression_Model.ARIMA import run_sarima, sarima_model_predictions
 
+
 # from Backend.Modeling.Regression Model.ARIMA import sarima_pipeline
 
 
 def diff_eq_pipeline(train_end_date: date, duration: int, districts: list, validation_duration: int,
-                     visualize=False, verbose=False, validate=True, store_results_to_db=True) -> None:
+                     visualize=False, verbose=False, validate=True, store_results_to_db=True,
+                     with_db_update=False) -> None:
     # iterate over districts(list) of interest
     # results_dict = []
+
+    # retrieve the latest db file from the server
+    if with_db_update:
+        download_db_file()
+
     # store pipeline data in the DB
     pipeline_id = start_pipeline(train_end_date, validation_duration, visualize, validate, verbose)
 
@@ -106,6 +114,7 @@ def diff_eq_pipeline(train_end_date: date, duration: int, districts: list, valid
 
 
 
+
 def diff_eq_pipeline_wrapper(**kwargs):
 
     end_date = '2021-12-14'
@@ -180,15 +189,29 @@ def diff_eq_pipeline_wrapper(**kwargs):
 
 #SARIMA Model
 def sarima_pipeline(train_end_date: date, duration: int, districts: list, validation_duration: int,
-                     visualize=False, verbose=False, validate=True, evaluate=False) -> None:
+                     visualize=False, verbose=False, validate=True, evaluate=False, with_db_update=False) -> None:
+    if with_db_update:
+        download_db_file()
+
     # iterate over districts(list) of interest
     # results_dict = []
     # store pipeline data in the DB
     #pipeline_id = start_pipeline(train_end_date, validation_duration, visualize, verbose)
+    # pipeline_id = start_pipeline(train_end_date, validation_duration, visualize, verbose)
+    predictions_list = []
+
     if evaluate:
         rmse_list = []
 
     for i, district in enumerate(districts):
+
+        if validate == False:
+            format = "%Y-%m-%d"
+            train_end_date = datetime.datetime.strptime(train_end_date, format)
+            train_end_date = train_end_date - datetime.timedelta(days=validation_duration)
+            train_end_date = str(train_end_date)
+            train_end_date = train_end_date[:10]
+
         # 1) Import Data
         # 1a) get_smoothed_infection_counts() -> directly from Database
         val_end_date = compute_end_date_of_validation_period(train_end_date, validation_duration)
@@ -204,12 +227,19 @@ def sarima_pipeline(train_end_date: date, duration: int, districts: list, valida
         predictions_val = sarima_model["model"].predict(validation_duration)
 
         # 2b) Run model without validation data
-        if validate==False:
-            y_train_pred = get_smoothen_cases(district, train_end_date, duration-validation_duration)
-            y_train_pred = y_train_pred[Column.SEVEN_DAY_SMOOTHEN]
-            sarima_model_without_val = sarima_model_predictions(y_train=y_train_pred, m=season, length=validation_duration)
-            predictions = sarima_model_without_val.predict(duration)
+        if validate == False:
 
+            format = "%Y-%m-%d"
+            train_end_date = datetime.datetime.strptime(train_end_date, format)
+            train_end_date = train_end_date + datetime.timedelta(days=validation_duration)
+            train_end_date = str(train_end_date)
+            train_end_date = train_end_date[:10]
+
+            y_train_pred = get_smoothen_cases(district, train_end_date, duration - validation_duration)
+            y_train_pred = y_train_pred[Column.SEVEN_DAY_SMOOTHEN]
+            sarima_model_without_val = sarima_model_predictions(y_train=y_train_pred, m=season,
+                                                                length=validation_duration)
+            predictions = sarima_model_without_val.predict(validation_duration)
 
         # returned:
         # I) sarima_model: season, model
@@ -220,9 +250,9 @@ def sarima_pipeline(train_end_date: date, duration: int, districts: list, valida
         # 3a) Visualize results (mainly for debugging)
         if visualize:
             if validate:
-                plot_sarima_val_line_plot(y_train, y_val, predictions_val)
+                plot_sarima_val_line_plot(y_train, y_val, predictions_val, pred_start_date=train_end_date, district=district)
             else:
-                plot_sarima_pred_plot(y_train_pred, predictions)
+                plot_sarima_pred_plot(y_train_pred, predictions, district, pred_start_date=train_end_date)
 
         # 3b) Compute metrics (RMSE, MAPE, ...)
         if validate:
@@ -233,16 +263,22 @@ def sarima_pipeline(train_end_date: date, duration: int, districts: list, valida
             #     'pipeline_results': pipeline_result,
             #     'scores': scores,
             # })
+        if validate == False:
+            predictions_list.append(predictions)
+        else:
+            predictions_list.append(predictions_val)
 
         if evaluate:
             rmse_list.append(scores["rmse"])
 
         # 4) Store results in database:
-        #insert_param_and_start_vals(pipeline_id, district, start_vals, pipeline_result['model_params'])
-        #insert_prediction_vals(pipeline_id, district, pipeline_result['y_pred_without_train_period'], train_end_date)
+        # insert_param_and_start_vals(pipeline_id, district, start_vals, pipeline_result['model_params'])
+        # insert_prediction_vals(pipeline_id, district, pipeline_result['y_pred_without_train_period'], train_end_date)
 
     if evaluate:
         return rmse_list
+
+    return predictions_list
 
     pass
 
