@@ -34,9 +34,9 @@ def get_model_params(district, train_start_date):
         'gamma_I': params_SEIRV_fixed['gamma_I']['mean'],
         'gamma_U': params_SEIRV_fixed['gamma_U']['mean'],
         'delta': params_SEIRV_fixed['delta']['mean'],
+        'theta': theta,
         'rho': params_SEIRV_fixed['rho']['mean'],
-
-        'theta': theta}
+    }
 
     return model_params
 
