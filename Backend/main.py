@@ -6,18 +6,18 @@ import matplotlib
 matplotlib.interactive(True)
 
 
-def main(run_diff_eq_wrapper=False, run_diff_eq_pipeline=True, run_sarima_pipeline=False):
+def main(run_diff_eq_wrapper = False, run_diff_eq_pipeline=True, run_sarima_pipeline=False):
     # Call wrapper function used for finding optimal training period length:
     # diff_eq_pipeline_wrapper()
 
     # Call differential equation model validation pipeline:
-    end_date = '2021-12-14'
+    end_date = '2022-01-16'
     time_frame_train_and_validation = 28
     forecasting_horizon = 14
     opendata = get_all_table_data(table_name='district_list')
-    districts = opendata['district'].tolist()
+    # districts = opendata['district'].tolist()
 
-    districts = ['Münster', 'Berlin', 'Segeberg', 'Rosenheim', 'Fulda']
+    districts = ['Münster', 'Potsdam', 'Segeberg', 'Rosenheim, Kreis', 'Hochtaunus', 'Dortmund', 'Essen', 'Bielefeld', 'Warendorf', 'Muenchen_Landeshauptstadt']
 
     # Call SARIMA validation pipeline:
     if run_sarima_pipeline:
@@ -43,10 +43,9 @@ def main(run_diff_eq_wrapper=False, run_diff_eq_pipeline=True, run_sarima_pipeli
                          validation_duration=forecasting_horizon,
                          visualize=True,
                          verbose=False,
-                         validate=True,  # should be similar to 'visualize' boolean value
-                         store_results_to_db=True,
-                         with_db_update=False
-                         )
+                         validate=False, # should be similar to 'visualize' boolean value
+                         store_results_to_db=False)
+
 
     ##### Stuff below will be refactored soon #####
     # end_date = 20210804
@@ -79,4 +78,4 @@ def main(run_diff_eq_wrapper=False, run_diff_eq_pipeline=True, run_sarima_pipeli
 
 
 if __name__ == '__main__':
-    main(run_sarima_pipeline=True)
+    main()

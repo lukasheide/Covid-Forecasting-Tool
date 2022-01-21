@@ -1,6 +1,10 @@
 from paramiko import Transport, SFTPClient
+
+from Backend.Data.DataManager.data_util import print_progress
 from Backend.Data.DataManager.properties import Server
 import shutil
+
+from datetime import datetime
 
 
 def download_db_file():
@@ -16,7 +20,8 @@ def download_db_file():
     remote_path = "Assets/Databasefile/opendaten.db"
     local_path = "../Assets/Data/opendaten.db"
 
-    sftp.get(remotepath=remote_path, localpath=local_path)
+    print("downloading the database file from the server:")
+    sftp.get(remotepath=remote_path, localpath=local_path, callback=print_progress)
 
     sftp.close()
     transport.close()
@@ -35,12 +40,24 @@ def upload_db_file():
     remote_path = "Assets/Databasefile/opendaten.db"
     local_path = "../Assets/Data/opendaten.db"
 
-    sftp.put(remotepath=remote_path, localpath=local_path)
+    print("uploading the database file to the server:")
+    sftp.put(remotepath=remote_path, localpath=local_path, callback=print_progress)
+
+    timestamp = datetime.now()
+    remote_path_backup = f"Assets/Databasefile/opendaten_backup_{timestamp}.db"
+    sftp.put(remotepath=remote_path_backup, localpath=local_path)
+
+    # save backup
 
     sftp.close()
     transport.close()
 
 
 if __name__ == '__main__':
-    # upload_db_file()
-    download_db_file()
+
+    task = 'upload'
+
+    if task == 'upload':
+        upload_db_file()
+    elif task == 'download':
+        download_db_file()

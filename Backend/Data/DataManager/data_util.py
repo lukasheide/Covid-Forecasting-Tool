@@ -1,5 +1,5 @@
 import datetime
-from enum import Enum
+import sys
 
 
 class Column:
@@ -264,3 +264,16 @@ def compute_end_date_of_validation_period(train_end_date, duration):
     current_day = current_day + datetime.timedelta(days=duration)
 
     return current_day.strftime('%Y-%m-%d')
+
+
+def print_progress(transferred, total):
+    progress = round((transferred / total) * 100 / 10)
+    progress_str = "["
+
+    for i in range(progress):
+        progress_str = progress_str + "="
+    for i in range(10 - progress):
+        progress_str = progress_str + " "
+
+    progress_str = progress_str + "]"
+    sys.stdout.write('\r' + progress_str + " " + str(round(transferred / total * 100, 2)) + "%")
