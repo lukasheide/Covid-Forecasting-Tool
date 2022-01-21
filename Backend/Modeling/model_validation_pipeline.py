@@ -250,9 +250,9 @@ def sarima_pipeline(train_end_date: date, duration: int, districts: list, valida
         # 3a) Visualize results (mainly for debugging)
         if visualize:
             if validate:
-                plot_sarima_val_line_plot(y_train, y_val, predictions_val)
+                plot_sarima_val_line_plot(y_train, y_val, predictions_val, pred_start_date=train_end_date, district=district)
             else:
-                plot_sarima_pred_plot(y_train_pred, predictions, district)
+                plot_sarima_pred_plot(y_train_pred, predictions, district, pred_start_date=train_end_date)
 
         # 3b) Compute metrics (RMSE, MAPE, ...)
         if validate:
@@ -275,10 +275,10 @@ def sarima_pipeline(train_end_date: date, duration: int, districts: list, valida
         # insert_param_and_start_vals(pipeline_id, district, start_vals, pipeline_result['model_params'])
         # insert_prediction_vals(pipeline_id, district, pipeline_result['y_pred_without_train_period'], train_end_date)
 
-    return predictions_list
-
     if evaluate:
         return rmse_list
+
+    return predictions_list
 
     pass
 

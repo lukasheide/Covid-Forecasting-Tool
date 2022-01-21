@@ -25,7 +25,7 @@ def main(run_diff_eq_wrapper = False, run_diff_eq_pipeline=True, run_sarima_pipe
                         duration=time_frame_train_and_validation,
                         districts=districts,
                         validation_duration=forecasting_horizon,
-                        visualize=False,
+                        visualize=True,
                         verbose=False,
                         validate=False,
                         with_db_update=False)  # should be similar to 'visualize' boolean value
