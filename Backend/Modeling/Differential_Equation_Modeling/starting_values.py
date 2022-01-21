@@ -299,6 +299,7 @@ def get_starting_values(df, district): #(df_vaccination, df_rec_and_vacc):
 
     df_vaccination['vaccination_rate'] = 0
     df_vaccination['vaccination_rate'] = df_vaccination.apply(lambda x: x['number_people_vacc'] / inhabitants, axis=1)
+    df_vaccination['vaccination_rate'] = df_vaccination.apply(lambda x: 90 if (x['vaccination_rate'] > 90) else x['vaccination_rate'], axis=1)
 
     # calculation share of vacc in rec
     df_vaccination['share_vacc_in_rec'] = 0
@@ -323,8 +324,8 @@ def get_starting_values(df, district): #(df_vaccination, df_rec_and_vacc):
 
     #print(df_starting_values)
 
-if __name__ == '__main__':
-    df_vaccination = get_vaccination_data("Münster", "Nordrhein-Westfalen") #df_merged
-    df_recovered = get_recovered_data('Münster')
-    df_rec_and_vacc = get_vaccination_breakthrough(df_vaccination, df_recovered, 'Münster') #df_merged
-    get_starting_values(df_vaccination, df_rec_and_vacc)
+# if __name__ == '__main__':
+    # df_vaccination = get_vaccination_data("Münster", "Nordrhein-Westfalen") #df_merged
+    # df_recovered = get_recovered_data('Münster')
+    # df_rec_and_vacc = get_vaccination_breakthrough(df_vaccination, df_recovered, 'Münster') #df_merged
+    # get_starting_values(df_vaccination, df_rec_and_vacc)

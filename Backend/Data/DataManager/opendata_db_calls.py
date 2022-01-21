@@ -272,7 +272,10 @@ def update_district_data(district):
         #     seven_day_avg = seven_day_avg + int(daily_cases_list.get(date_key, 0))
         #
         # seven_day_avg = round(seven_day_avg / 7)
+        # this value has to be maximum 90 %
         vacc_percentage = round(int(cum_vacc_list.get(date, cum_vac)) * 100 / int(population_map.get(district)), 2)
+        if vacc_percentage > 90:
+            vacc_percentage = 90.
 
         current_day1 = datetime.datetime.strptime(str(date).replace("d", ""), '%Y%m%d')
         date_bfr_3days = current_day1 - datetime.timedelta(days=3)
@@ -324,7 +327,7 @@ def update_district_data(district):
     df['seven_day_infec'].fillna(value=0, inplace=True)
 
     # Compute vaccination effectiveness:
-    df = get_vaccination_effectiveness(df)
+    df = get_vaccination_effectiveness(df, district)
     df = get_starting_values(df, district)
 
     update_db(district, df)
@@ -404,13 +407,10 @@ if __name__ == '__main__':
     #         ALWAYS execute update_population_map() in the line BEFORE you run
     #         update_district_data("district_name")
 
-    # update_district_list()
+    update_district_list()
     # update_district_details()
-    # update_population_map()
-
-    update_all_district_data()
-    upload_db_file()
-
-    # update_district_data("Bremen")
+    update_population_map()
+    # update_all_district_data()
+    update_district_data("Stuttgart")
     # result_df = get_data_by_date_and_attr('Rhein-Neckar-Kreis', 20210101, 20211031, ["daily_infec", "daily_deaths"])
     # print(result_df)

@@ -1037,6 +1037,8 @@ def get_vaccinaction_efficiency_waning_booster(df_merged):
                                                                                    x['people_third_vacc_jj_within_6_month_booster'],
 
                                                                  axis=1)
+
+
     for i in range(0, len(df_merged)):
         df_merged.loc[i, 'total_vacc_efficiency_today_corrected_waning_booster'] = \
         df_merged.loc[i, 'vacc_types_and_efficiency_booster'] / df_merged.loc[i, 'people_vacc_last_180_days_booster']
