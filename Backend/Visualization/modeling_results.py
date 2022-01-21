@@ -182,9 +182,13 @@ def plot_sarima_val_line_plot(train_array, test_array, predictions: int):
     plt.plot(t_grid_train, train_array)
     plt.scatter(x=t_grid_val, y=val_array, s=40, zorder=10)
 
+    plt.title("Validation Plot")
+    plt.xlabel("Days")
+    plt.ylabel("Cases")
+
     plt.show()
 
-def plot_sarima_pred_plot(y_train, predictions: int):
+def plot_sarima_pred_plot(y_train, predictions: int, district):
     len_train = len(y_train)
     len_test = len(predictions)
     len_total = len_train + len_test
@@ -196,6 +200,10 @@ def plot_sarima_pred_plot(y_train, predictions: int):
     plt.plot(t_grid_val, pred_array)
     plt.plot(t_grid_train, y_train)
 
+    plt.title(district + " Prediction Plot")
+    plt.xlabel("Days")
+    plt.ylabel("Cases")
+
     plt.show()
 
 def plot_evaluation_metrics(rmse, districts, i, round):
@@ -203,6 +211,11 @@ def plot_evaluation_metrics(rmse, districts, i, round):
     name = (districts[i] + str(round))
     plt.bar(name, rmse)
     plt.xticks(color='orange', rotation=20, horizontalalignment='right')
+
+    plt.title("Metrics Plot")
+    plt.xlabel("District & Date")
+    plt.ylabel("RMSE")
+
     plt.show()
 
 

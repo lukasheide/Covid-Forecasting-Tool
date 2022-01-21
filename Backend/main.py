@@ -1,6 +1,6 @@
 from Backend.Data.DataManager.db_calls import get_all_table_data
 from Backend.Modeling.model_validation_pipeline import diff_eq_pipeline, diff_eq_pipeline_wrapper, sarima_pipeline
-
+import pandas as pd
 import matplotlib
 
 matplotlib.interactive(True)
@@ -12,7 +12,7 @@ def main(run_diff_eq_wrapper = False, run_diff_eq_pipeline=True, run_sarima_pipe
 
     # Call differential equation model validation pipeline:
     end_date = '2022-01-16'
-    time_frame_train_and_validation = 28
+    time_frame_train_and_validation = 42
     forecasting_horizon = 14
     opendata = get_all_table_data(table_name='district_list')
     # districts = opendata['district'].tolist()
@@ -21,15 +21,25 @@ def main(run_diff_eq_wrapper = False, run_diff_eq_pipeline=True, run_sarima_pipe
 
     # Call SARIMA validation pipeline:
     if run_sarima_pipeline:
-        sarima_pipeline(train_end_date=end_date,
+        predictions = sarima_pipeline(train_end_date=end_date,
                         duration=time_frame_train_and_validation,
                         districts=districts,
                         validation_duration=forecasting_horizon,
-                        visualize=True,
+                        visualize=False,
                         verbose=False,
-                        validate=True,
+                        validate=False,
                         with_db_update=False)  # should be similar to 'visualize' boolean value
         # store_results_to_db=True)
+
+        column_name = [end_date]
+        df = pd.DataFrame(predictions)
+        #df_t = df.transpose()
+        df.insert(0, 'district', districts, True)
+        #df_t.plot(x='district', y='2021-11-15', kind='hist')
+        #df_t.hist(figsize=(15,15))
+        #plt.show
+        #save results as csv
+        df.to_csv("evaluation.csv")
 
     # Call wrapper function used for finding optimal training period length:
     if run_diff_eq_wrapper:
@@ -78,4 +88,4 @@ def main(run_diff_eq_wrapper = False, run_diff_eq_pipeline=True, run_sarima_pipe
 
 
 if __name__ == '__main__':
-    main()
+    main(run_diff_eq_pipeline=False, run_sarima_pipeline=True)
