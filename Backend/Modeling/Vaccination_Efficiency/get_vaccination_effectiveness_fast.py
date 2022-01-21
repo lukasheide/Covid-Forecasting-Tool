@@ -83,6 +83,7 @@ def get_vaccination_effectiveness(data):
     )
 
     # Get number of people with vaccinated as their status in time t:
+    # make this max 90 % of the number of inhabitants -> get number of inhabitants
     district_data['total_vacc'] = district_data['total_second_vacc_status'] + district_data['total_booster_vacc']
 
     #change into lambda function in order to check date to include influence of VOC
