@@ -230,6 +230,114 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple, fixed_model_para
     return fitting_results
 
 
+def fit_seirv_model_only_beta(y_train: np.array, start_vals_fixed: tuple, fixed_model_params: tuple, district=None) -> dict:
+    """
+    Takes as input a numpy array with the daily new infections and a tuple containing the population size N and fixed
+    starting values for each compartment: I0, R0 and V0. E0 and S0 are fitted.
+    Running the model requires the following parameters: Beta, gamma, delta and theta. Beta is fit, while the others
+    are fixed and imported from a settings function turing model training/fitting.
+    The model is trained/fitted using a curve-fitting approach with weighted root mean squared error as the metric.
+    The weights ensure that the residuals near the end of the fitting period receive higher penalties.
+
+    This function returns a dictionary containing:
+    1) A dictionary containing the fitted parameters
+    2) The end-values for each compartment (how many individuals are in which compartment at the end of training)
+    3) A time series for the number of individuals in each compartment over time
+    4) The daily infection counts produced by the fitted model
+    """
+
+    ## 1) Create variables needed for applying the model fitting part:
+    # Compute length of train_data:
+    num_days_train = len(y_train) - 1
+
+    # Create a grid of time points (in days)
+    t_grid_train = np.linspace(0, num_days_train, num_days_train + 1)
+
+    ## 2) Get start guess for parameters that are fitted as a tuple:
+    fit_params_start_guess = (0.4)
+
+    fixed_params = {
+        't_grid': t_grid_train,
+        'fixed_model_params': {
+            'gamma_I': fixed_model_params['gamma_I'],
+            'gamma_U': fixed_model_params['gamma_U'],
+            'delta': fixed_model_params['delta'],
+            'theta': fixed_model_params['theta'],
+            'rho': fixed_model_params['rho']
+        }
+    }
+
+
+    ## 4) Call fitting function:
+    ret = least_squares(
+        fun=compute_weighted_residuals_beta_only,
+        x0=fit_params_start_guess,
+        args=(fixed_params, start_vals_fixed, y_train),
+        method='trf',
+        ftol=1e-10,
+        xtol=1e-10,
+        bounds=(0, np.inf)
+    )
+
+    # get optimal parameters from least squares result:
+    opt_params = tuple(ret.x)
+
+    ## 5) Prepare model parameters and start values to run the model again:
+    # Model params:
+    fixed_params = [param for param in fixed_model_params.values()]
+    fitted_and_fixed_model_params = tuple(opt_params[:1]) + tuple(fixed_params)
+
+    # Compute starting values for each compartment:
+    N = start_vals_fixed['N']
+    E0 = start_vals_fixed['E0']
+    I0 = start_vals_fixed['I0']
+    U0 = I0 * fixed_model_params['rho'] / (1 - fixed_model_params['rho'])
+    R0 = start_vals_fixed['R0']
+    V0 = start_vals_fixed['V0']
+    S0 = N - E0 - I0 - R0 - V0
+
+    # pack all together and add start value 0 for cumulated infections:
+    y0_train = (S0, E0, I0, U0, R0, V0, 0)
+
+    ## 6) Apply fitted parameters to get the end values for all compartments:
+    # extend t_grid so that also the last day is included:
+    t_grid_apply_again = np.linspace(0, (num_days_train + 1), (num_days_train + 1) + 1)
+
+    # Retrieve values for each compartment over time:
+    S, E, I, U, R, V, cum_infections_fitted, daily_infections_fitted = solve_ode(y0=y0_train,
+                                                                                 t=t_grid_apply_again,
+                                                                                 params=fitted_and_fixed_model_params)
+
+
+    #### Debugging ####
+    # plot_train_and_fitted_infections_line_plot(y_train, daily_infections_fitted)
+
+
+    ## 7) Prepare results for returning them
+    # Pack retrieved values for each compartment over time into one tuple:
+    compartment_time_series = (S, E, I, U, R, V)
+
+    # Compute end values:
+    end_vals = (S[-1], E[-1], I[-1], U[-1], R[-1], V[-1])
+    start_vals = (S0, E0, I0, U0, R0, V0)
+
+    # Fit params:
+    fitted_params = {
+        'beta': opt_params[0],
+    }
+
+    # Bundle them all up in one dictionary:
+    fitting_results = {
+        'fitted_params': fitted_params,
+        'compartment_time_series': compartment_time_series,
+        'daily_infections': daily_infections_fitted,
+        'end_vals': end_vals,
+        'start_vals': start_vals
+    }
+
+    return fitting_results
+
+
 def forecast_seirv(all_model_params: tuple, y0: np.array, forecast_horizon=14) -> np.array:
     ## 1) Set up variables needed for applying the model:
     # Create a grid of time points (in days)
@@ -327,6 +435,24 @@ def compute_weighted_residuals(params_to_fit, t_grid, start_vals, y_true):
     return weighted_residuals
 
 
+def compute_weighted_residuals_beta_only(params_to_fit, t_grid, start_vals, y_true):
+    fit_result = solve_ode_for_fitting_beta_only(start_vals, t_grid, params_to_fit)
+
+    # add value at t=0 to fit_result:
+    y_fit = np.append(y_true[0], fit_result)
+
+    # compute abs difference between predicted and actual infection counts:
+    residual = y_true - y_fit
+
+    # weight residuals:
+    weighted_residuals = weigh_residuals(residual)
+
+    #### Debugging ####
+    # plot_train_and_fitted_infections_line_plot(y_true, y_fit)
+
+    return weighted_residuals
+
+
 def solve_ode_for_fitting_partly_fitted_y0(fixed_start_vals, fixed_params, fit_params):
     ## 1) Pull apart fitting params:
     beta = fit_params[0]
@@ -349,6 +475,49 @@ def solve_ode_for_fitting_partly_fitted_y0(fixed_start_vals, fixed_params, fit_p
     N = fixed_start_vals[0]
     R0 = fixed_start_vals[1]
     V0 = fixed_start_vals[2]
+
+    # Compute U0 and S0:
+    # Expected number of individuals in undetected compartment: Depends on "Dunkelziffer" factor
+    U0 = I0 * rho / (1 - rho)
+    S0 = N - E0 - I0 - U0 - R0 - V0
+
+    # pack all together and add cumulated infections:
+    y0 = (S0, E0, I0, U0, R0, V0, 0)
+
+    # lambda function as shown here: https://www.kaggle.com/baiyanren/modified-seir-model-for-covid-19-prediction-in-us
+    # this circumvents issues with the scipy odeint function, which can only handle a predefined number of params
+    seir_ode = lambda y0, t: ode_seirv(y0, t, beta, gamma_I, gamma_U, delta, theta, rho)
+
+    ode_result = odeint(func=seir_ode, y0=y0, t=t_grid).T
+
+    # compute predicted daily infections from estimated cumulated number of infections:
+    predicted_daily_infections = compute_daily_infections(ode_result[6, :])
+
+    return predicted_daily_infections  # return only Infection counts
+
+
+def solve_ode_for_fitting_beta_only(fixed_start_vals, fixed_params, fit_params):
+    ## 1) Pull apart fitting params:
+    beta = fit_params[0]
+
+    ## 2) Setup other parameters:
+    # 2a) Get time grid:
+    t_grid = fixed_params['t_grid']
+
+    # 2b) Get fixed model params:
+    gamma_I = fixed_params['fixed_model_params']['gamma_I']
+    gamma_U = fixed_params['fixed_model_params']['gamma_U']
+    delta = fixed_params['fixed_model_params']['delta']
+    theta = fixed_params['fixed_model_params']['theta']
+    rho = fixed_params['fixed_model_params']['rho']
+
+    #  2c) Get y0:
+    #  Starting values for I, R and V are given. E0 is fitted and S0 is then computed as the last missing value.
+    N = fixed_start_vals['N']
+    R0 = fixed_start_vals['R0']
+    V0 = fixed_start_vals['V0']
+    E0 = fixed_start_vals['E0']
+    I0 = fixed_start_vals['I0']
 
     # Compute U0 and S0:
     # Expected number of individuals in undetected compartment: Depends on "Dunkelziffer" factor

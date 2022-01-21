@@ -24,7 +24,7 @@ def plot_train_infections(y_train: np.array):
 
 
 def plot_train_fitted_and_predictions(y_train_fitted: np.array, y_train_true:np.array, y_pred_full:np.array, district=None, pred_start_date=None,
-                                      save_results=True):
+                                      save_results=False):
     plt.clf()
 
     len_train = len(y_train_true)
@@ -203,4 +203,32 @@ def plot_evaluation_metrics(rmse, districts, i, round):
     name = (districts[i] + str(round))
     plt.bar(name, rmse)
     plt.xticks(color='orange', rotation=20, horizontalalignment='right')
+    plt.show()
+
+
+def plot_beta_matrix_estimation(y_train_true, y_val_true, y_train_pred_full, y_val_pred, district, start_date=None, end_date=None):
+    plt.clf()
+
+    len_train = len(y_train_true)
+    len_val = len(y_val_true)
+    len_total = len_train + len_val
+
+    t_grid_train = np.linspace(1, len_train, len_train)
+    t_grid_val = np.linspace(len_train+1, len_total, len_val)
+    t_grid_total = np.linspace(1, len_total, len_total)
+
+    # Training data:
+    plt.scatter(x=t_grid_train, y=y_train_true, s=40, color=orange, zorder=15, label='Training Data')
+    plt.plot(t_grid_total, y_train_pred_full, color=lightblue, zorder=5, linewidth=2.5, label='Fitted Line (with beta t-1)')
+
+    # Validation data:
+    plt.scatter(x=t_grid_val, y=y_val_true, s=40, color=black, zorder=15, label='Validation Data')
+    plt.plot(t_grid_val, y_val_pred, color=purple, zorder=5, linewidth=2.5, label='Fitted Line (best fit)')
+
+    # Axis description:
+    plt.title(f'Forecast for {district} - from {start_date} to {end_date}')
+    plt.ylabel('7-day average infections')
+    plt.xlabel('Days')
+    plt.legend(loc="upper right")
+
     plt.show()

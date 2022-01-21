@@ -63,9 +63,11 @@ def update_population_map():
 def update_all_district_data():
     update_district_list()
     district_list = get_table_data("district_list", 0, 0, "district", False)
+    district_list.sort_values("district", inplace=True)
     update_population_map()
 
     for i, district in enumerate(district_list['district']):
+
         update_district_data(district)
         # time.sleep(0.1)
         print('progress: ' + str((i+1)/400))
@@ -292,7 +294,6 @@ def update_district_data(district):
                   'cum_vacc',
                   'vacc_percentage']
     df['date'] = df['date'].apply(lambda x: x.replace('d', ''))
-
 
     # Compute 7 day cases:
     df['seven_day_infec'] = df['daily_infec'].rolling(7).mean()
