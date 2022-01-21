@@ -59,8 +59,7 @@ def forecasting_pipeline():
         fixed_model_params_seirv = get_model_params(district, train_start_date_SEIRV)
 
         ## 2c) Import Data for Machine Learning Matrix:
-        # todo Lasitha handle not available dates
-        # ml_training_data = get_predictors_for_ml_layer(district, training_end_date)
+        ml_training_data = get_predictors_for_ml_layer(district, training_end_date)
 
         # this is used for the machine learning layer later on
 
