@@ -1,3 +1,4 @@
+import time
 from math import floor
 
 import pandas as pd
@@ -76,6 +77,7 @@ def create_weekly_matrix():
                                              weekly_beta_dict.get(week, 0),
                                              weekly_beta_t_minus_1.get(week, 0),
                                              start_forecasting_dict.get(week, 0)))
+
 
         df = pd.DataFrame(district_matrix_list)
         df.columns = ['week',
@@ -311,6 +313,9 @@ def get_weekly_beta_v2(district, start_date, end_date, debug=False):
 
     results = []
 
+    start_time = time.time()
+
+
     for week_num, current_interval in enumerate(intervals_grid):
 
         # For Debugging:
@@ -372,6 +377,12 @@ def get_weekly_beta_v2(district, start_date, end_date, debug=False):
         weekly_beta_values[week_num+2] = validation_pipeline_result['fitted_params']['beta']
         weekly_infections[week_num+2] = y_val.mean()
         weekly_forecasting_start_date[week_num+2] = current_interval['start_day_val_str']
+
+
+
+
+    end_time = time.time()
+    print(f'Duration: {end_time-start_time}')
 
     return weekly_beta_values, weekly_beta_t_minus_1_values, weekly_infections, weekly_forecasting_start_date
 
@@ -487,7 +498,7 @@ if __name__ == '__main__':
     # create_weekly_matrix()
     # get_weekly_variant_data('2020-03-01')
     # weekly_mobility_dict = get_weekly_mobility_data('Stadt Neustadt a.d. W.', get_all_table_data(table_name='destatis_mobility_data'),  '2020-03-01')
-    # create_weekly_matrix()
+    create_weekly_matrix()
     # create_complete_matrix_data()
     # get_weekly_beta('Münster','2021-02-01')
-    get_predictors_for_ml_layer('Münster', '2021-01-15')
+    # get_predictors_for_ml_layer('Münster', '2021-01-15')

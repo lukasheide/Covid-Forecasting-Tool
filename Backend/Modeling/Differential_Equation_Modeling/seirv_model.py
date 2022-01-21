@@ -164,8 +164,8 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple, fixed_model_para
         x0=fit_params_start_guess,
         args=(fixed_params, start_vals_fixed, y_train),
         method='trf',
-        ftol=1e-10,
-        xtol=1e-10,
+        ftol=1e-8,
+        xtol=1e-8,
         bounds=(0, np.inf)
     )
 
@@ -274,8 +274,8 @@ def fit_seirv_model_only_beta(y_train: np.array, start_vals_fixed: tuple, fixed_
         x0=fit_params_start_guess,
         args=(fixed_params, start_vals_fixed, y_train),
         method='trf',
-        ftol=1e-10,
-        xtol=1e-10,
+        ftol=1e-8,
+        xtol=1e-8,
         bounds=(0, np.inf)
     )
 
