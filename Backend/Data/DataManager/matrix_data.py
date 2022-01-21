@@ -6,7 +6,7 @@ from meteostat import Point, Daily
 from Backend.Data.DataManager.data_access_methods import get_starting_values, get_model_params
 from Backend.Data.DataManager.data_util import Column, date_int_str
 from Backend.Data.DataManager.db_calls import get_all_table_data, get_district_data, get_table_data_by_duration, \
-    update_db
+    update_db, get_policy_data, get_variant_data, get_mobility_data, get_weather_data
 
 from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_pipeline, fit_seirv_model, \
     fit_seirv_model_only_beta
@@ -251,7 +251,7 @@ def get_weekly_beta(district, start_date, debug=False):
     start_date_dataframe = datetime.combine(start_date_monday, datetime.min.time()) - timedelta(days=duration - 1)
     all_smoothen_cases = get_table_data_by_duration(table=district,
                                                     start_date=start_date_dataframe.strftime('%Y-%m-%d'),
-                                                    attributes=[Column.DATE.value, Column.SEVEN_DAY_SMOOTHEN.value])
+                                                    attributes=[Column.DATE, Column.SEVEN_DAY_SMOOTHEN])
 
     # cut of last rows so that we have multiples of 7:
     last_idx = floor(len(all_smoothen_cases) / 7) * 7
@@ -446,18 +446,26 @@ def create_complete_matrix_data(debug=True):
 
 
 def get_predictors_for_ml_layer(district, start_date):
-    mob_data = get_all_table_data(table_name='destatis_mobility_data')
-
     # GET INTERVENTION DATA
-    weekly_policy_dict = get_weekly_policy_data(start_date)
+    policy_index = get_policy_data(start_date)
+
     # GET VARIANT DATA
-    weekly_variant_dict = get_weekly_variant_data(start_date)
+    variant = get_variant_data(start_date)
+
     # GET MOBILITY DATA
-    weekly_mobility_dict = get_weekly_mobility_data(district, mob_data, start_date)
+    mobility = get_mobility_data(district, start_date)
+
     # GET WEATHER DATA
-    weekly_temp_dict, weekly_wind_dict = get_weekly_weather_data(district, start_date)
-    # GET LAST WEEK BETA
-    weekly_beta_dict, weekly_infections_dict = get_weekly_beta(district, start_date)
+    temperature, wind = get_weather_data(district, start_date)
+
+    # GET LAST WEEK BETA TODO : Lukas should check this!
+    start_date_obj = datetime.strptime(start_date, '%Y-%m-%d')- timedelta(days=14)
+    corrected_start_date = start_date_obj.strftime('%Y-%m-%d')
+    end_date_obj = start_date
+    result_tuple = get_weekly_beta_v2(district, corrected_start_date, end_date_obj)
+    beta = result_tuple[0][2]
+
+    return policy_index, variant, mobility, temperature, wind, beta
 
 
 if __name__ == '__main__':
@@ -479,6 +487,7 @@ if __name__ == '__main__':
     # create_weekly_matrix()
     # get_weekly_variant_data('2020-03-01')
     # weekly_mobility_dict = get_weekly_mobility_data('Stadt Neustadt a.d. W.', get_all_table_data(table_name='destatis_mobility_data'),  '2020-03-01')
-    create_weekly_matrix()
+    # create_weekly_matrix()
     # create_complete_matrix_data()
     # get_weekly_beta('Münster','2021-02-01')
+    get_predictors_for_ml_layer('Münster', '2021-01-15')

@@ -11,6 +11,8 @@ from Backend.Data.DataManager.remote_db_manager import upload_db_file
 from Backend.Modeling.Vaccination_Efficiency.get_vaccination_effectiveness_fast import get_vaccination_effectiveness
 from Backend.Modeling.Differential_Equation_Modeling.starting_values import get_starting_values
 
+from concurrent.futures import ThreadPoolExecutor
+
 population_map = {}
 
 
@@ -73,32 +75,51 @@ def update_all_district_data():
         print('progress: ' + str((i+1)/400))
 
 
-def update_district_data(district):
+def parallel_corona_datenplatform_api_requests(district):
+
     headers = {
         'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2MzcwNzU4MzksImp0aSI6ImV3Tk96Z0M4ZEJXdmYtc'
                          '2wybDJfdS10NFY1Q0hySjlNamlsRElnVVdfODQifQ.q_YvSVMAed7MMZUi8om0UWla5YkPlCmckqGs_RHclfs'}
 
-    response_cases = requests.get('https://www.corona-datenplattform.de/api/3/action/datastore_search?limit=1000'
-                                  '&resource_id=8966dc58-c7f6-47a5-8af6-603fe72a5d4a&q=' + district + ':kr_inf_md'
-                                  , headers=headers)
+    list_of_urls = [
+        # Cases
+        'https://www.corona-datenplattform.de/api/3/action/datastore_search?limit=1000'
+        '&resource_id=8966dc58-c7f6-47a5-8af6-603fe72a5d4a&q=' + district + ':kr_inf_md',
 
-    response_deaths = requests.get(
+        # Deaths
         'https://www.corona-datenplattform.de/api/3/action/datastore_search?limit=1000&resource'
-        '_id=af5ad86a-5c10-48e0-a232-1e3464ae4270&q=' + district + ':kr_tod_md'
-        , headers=headers)
+        '_id=af5ad86a-5c10-48e0-a232-1e3464ae4270&q=' + district + ':kr_tod_md',
 
-    response_recoveries = requests.get(
+        # Recoveries
         'https://www.corona-datenplattform.de/api/3/action/datastore_search?limit=1000&resou'
-        'rce_id=d469b463-daee-40c6-b2ad-f58b00142608&q=' + district + ':kr_gen_md'
-        , headers=headers)
+        'rce_id=d469b463-daee-40c6-b2ad-f58b00142608&q=' + district + ':kr_gen_md',
 
-    response_vaccination = requests.get('https://www.corona-datenplattform.de/api/3/action/datastore_search?'
-                                        'limit=1000&resource_id=df59e579-875d-497a-9eda-369722150d89&q=' + district
-                                        , headers=headers)
+        # Vaccination:
+        'https://www.corona-datenplattform.de/api/3/action/datastore_search?'
+        'limit=1000&resource_id=df59e579-875d-497a-9eda-369722150d89&q=' + district,
 
-    response_incidents = requests.get('https://www.corona-datenplattform.de/api/3/action/datastore_search?limit=1000'
-                                      '&resource_id=8966dc58-c7f6-47a5-8af6-603fe72a5d4a&q=' + district + ':kr_inz_rate'
-                                      , headers=headers)
+        # Incidence:
+        'https://www.corona-datenplattform.de/api/3/action/datastore_search?limit=1000'
+        '&resource_id=8966dc58-c7f6-47a5-8af6-603fe72a5d4a&q=' + district + ':kr_inz_rate'
+    ]
+
+    def get_url(url):
+        return requests.get(url, headers=headers)
+
+    with ThreadPoolExecutor(max_workers=10) as pool:
+        response_list = list(pool.map(get_url, list_of_urls))
+
+    responses_tuple = (r for r in response_list)
+
+    return responses_tuple
+
+
+
+
+
+def update_district_data(district):
+    response_cases, response_deaths, response_recoveries, response_vaccination, response_incidents = \
+        parallel_corona_datenplatform_api_requests(district=district)
 
     cases = response_cases.json()
     deaths = response_deaths.json()
