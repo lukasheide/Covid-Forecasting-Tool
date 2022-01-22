@@ -6,6 +6,7 @@ import pandas as pd
 import requests
 import re
 
+from Backend.Data.DataManager.data_util import print_progress
 from Backend.Data.DataManager.db_functions import update_db, get_table_data
 from Backend.Data.DataManager.remote_db_manager import upload_db_file
 from Backend.Modeling.Vaccination_Efficiency.get_vaccination_effectiveness_fast import get_vaccination_effectiveness
@@ -67,12 +68,12 @@ def update_all_district_data():
     district_list = get_table_data("district_list", 0, 0, "district", False)
     district_list.sort_values("district", inplace=True)
     update_population_map()
+    no_of_districts = len(district_list['district'])
+    print('retrieving data from Corona Daten Platform:')
 
     for i, district in enumerate(district_list['district']):
-
         update_district_data(district)
-        # time.sleep(0.1)
-        print('progress: ' + str((i+1)/400))
+        print_progress(completed=i+1, total=no_of_districts, extra=district)
 
 
 def parallel_corona_datenplatform_api_requests(district):
@@ -114,9 +115,6 @@ def parallel_corona_datenplatform_api_requests(district):
     return responses_tuple
 
 
-
-
-
 def update_district_data(district):
     response_cases, response_deaths, response_recoveries, response_vaccination, response_incidents = \
         parallel_corona_datenplatform_api_requests(district=district)
@@ -154,7 +152,7 @@ def update_district_data(district):
             column_check_okay = True
 
         if column_check_okay and re.match("^(d[0-9]{8})", key):
-            daily_cases_list[key] = value
+            daily_cases_list[key] = value if value is not None else daily_cases_list[list(daily_cases_list)[-1]]
 
             date_obj = datetime.datetime.strptime(str(key).replace("d", ""), '%Y%m%d')
             date_obj = date_obj + datetime.timedelta(days=14)
@@ -171,7 +169,7 @@ def update_district_data(district):
             column_check_okay = True
 
         if column_check_okay and re.match("^(d[0-9]{8})", key):
-            cum_cases_list[key] = value
+            cum_cases_list[key] = value if value is not None else cum_cases_list[list(cum_cases_list)[-1]]
 
     column_check_okay = False
     cum_death_a14d = 0
@@ -181,7 +179,7 @@ def update_district_data(district):
             column_check_okay = True
 
         if column_check_okay and re.match("^(d[0-9]{8})", key):
-            daily_deaths_list[key] = value
+            daily_deaths_list[key] = value if value is not None else daily_deaths_list[list(daily_deaths_list)[-1]]
 
             date_obj = datetime.datetime.strptime(str(key).replace("d", ""), '%Y%m%d')
             date_obj = date_obj + datetime.timedelta(days=14)
@@ -198,7 +196,7 @@ def update_district_data(district):
             column_check_okay = True
 
         if column_check_okay and re.match("^(d[0-9]{8})", key):
-            cum_deaths_list[key] = value
+            cum_deaths_list[key] = value if value is not None else cum_deaths_list[list(cum_deaths_list)[-1]]
 
     column_check_okay = False
     for key, value in recoveries['result']['records'][0].items():
@@ -207,7 +205,7 @@ def update_district_data(district):
             column_check_okay = True
 
         if column_check_okay and re.match("^(d[0-9]{8})", key):
-            daily_recoveries_list[key] = value
+            daily_recoveries_list[key] = value if value is not None else daily_recoveries_list[list(daily_recoveries_list)[-1]]
     column_check_okay = False
     for key, value in recoveries['result']['records'][1].items():
 
@@ -215,7 +213,7 @@ def update_district_data(district):
             column_check_okay = True
 
         if column_check_okay and re.match("^(d[0-9]{8})", key):
-            cum_recoveries_list[key] = value
+            cum_recoveries_list[key] = value if value is not None else cum_recoveries_list[list(cum_recoveries_list)[-1]]
 
     cum_vac = 0
     for rec in vaccination['result']['records']:
@@ -272,7 +270,7 @@ def update_district_data(district):
         # this value has to be maximum 90 %
         vacc_percentage = round(int(cum_vacc_list.get(date, cum_vac)) * 100 / int(population_map.get(district)), 2)
         if vacc_percentage > 90:
-            vacc_percentage = 90
+            vacc_percentage = 90.
 
         current_day1 = datetime.datetime.strptime(str(date).replace("d", ""), '%Y%m%d')
         date_bfr_3days = current_day1 - datetime.timedelta(days=3)
@@ -406,8 +404,8 @@ if __name__ == '__main__':
 
     # update_district_list()
     # update_district_details()
-    update_population_map()
-    # update_all_district_data()
-    update_district_data("Stuttgart")
+    # update_population_map()
+    update_all_district_data()
+    # update_district_data("Stuttgart")
     # result_df = get_data_by_date_and_attr('Rhein-Neckar-Kreis', 20210101, 20211031, ["daily_infec", "daily_deaths"])
     # print(result_df)

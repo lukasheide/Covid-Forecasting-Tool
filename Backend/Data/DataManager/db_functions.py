@@ -64,7 +64,7 @@ def format_name(table_name):
     string = string.replace("(", "")
     string = string.replace(")", "")
 
-    print(string)
+    # print(string)
 
     return string
 

@@ -1,5 +1,6 @@
 import datetime
 import sys
+import os
 
 
 class Column:
@@ -259,15 +260,14 @@ def get_correct_district_name(wrong_name):
 
 
 def compute_end_date_of_validation_period(train_end_date, duration):
-
     current_day = datetime.datetime.strptime(train_end_date, '%Y-%m-%d')
     current_day = current_day + datetime.timedelta(days=duration)
 
     return current_day.strftime('%Y-%m-%d')
 
 
-def print_progress(transferred, total):
-    progress = round((transferred / total) * 100 / 10)
+def print_progress(completed, total, extra=''):
+    progress = round((completed / total) * 100 / 10)
     progress_str = "["
 
     for i in range(progress):
@@ -276,4 +276,5 @@ def print_progress(transferred, total):
         progress_str = progress_str + " "
 
     progress_str = progress_str + "]"
-    sys.stdout.write('\r' + progress_str + " " + str(round(transferred / total * 100, 2)) + "%")
+    sys.stdout.write('\r')
+    sys.stdout.write('\r' + progress_str + " " + str(round(completed / total * 100, 2)) + "% " + extra)
