@@ -144,7 +144,7 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple, fixed_model_para
     t_grid_train = np.linspace(0, num_days_train, num_days_train + 1)
 
     ## 2) Get start guess for parameters that are fitted as a tuple:
-    fit_params_start_guess = (2, 1000, 1000)
+    fit_params_start_guess = (0.4, 1000, 1000)
 
     fixed_params = {
         't_grid': t_grid_train,
