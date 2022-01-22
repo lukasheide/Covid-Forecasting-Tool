@@ -2,10 +2,9 @@ import time
 from math import floor
 
 import pandas as pd
-import datetime
 from meteostat import Point, Daily
 from Backend.Data.DataManager.data_access_methods import get_starting_values, get_model_params
-from Backend.Data.DataManager.data_util import Column, date_int_str
+from Backend.Data.DataManager.data_util import Column, date_int_str, print_progress
 from Backend.Data.DataManager.db_calls import get_all_table_data, get_district_data, get_table_data_by_duration, \
     update_db, get_policy_data, get_variant_data, get_mobility_data, get_weather_data
 
@@ -22,6 +21,7 @@ def create_weekly_matrix():
     opendata = get_all_table_data(table_name='district_list')
     district_list = opendata['district'].tolist()
     district_list.sort()
+    total_districts = len(district_list)
     mob_data = get_all_table_data(table_name='destatis_mobility_data')
     start_date = '2020-03-16'
     end_date = '2022-01-16'
@@ -38,7 +38,8 @@ def create_weekly_matrix():
 
 
     for j, district in enumerate(district_list):
-        print(district)
+        # print(district)
+        start_time = datetime.now()
         district_matrix_list = []
         shortest_dict = {}
 
@@ -91,7 +92,9 @@ def create_weekly_matrix():
                       'beta_t_minus_1',
                       'start_date_forecasting']
         update_db('matrix_' + district, df)
-        print('--> progress: ' + str((j + 1) * 100 / 401))
+        end_time = datetime.now()
+        extra_str = '--> ' + district + ' | calculation time: ' + str(end_time-start_time)
+        print_progress(completed=j+1, total=total_districts, extra=extra_str)
 
 
 def get_weekly_mobility_data(district, mob_data, start_date):
@@ -289,7 +292,7 @@ def get_weekly_beta(district, start_date, debug=False):
 
 
 def get_weekly_beta_v2(district, start_date, end_date, debug=False):
-    print(f"Starting computation of weekly betas at time: {datetime.now()}")
+    # print(f"Starting computation of weekly betas at time: {datetime.now()}")
 
     weekly_beta_t_minus_1_values = {}
     weekly_beta_values = {}
@@ -382,7 +385,7 @@ def get_weekly_beta_v2(district, start_date, end_date, debug=False):
 
 
     end_time = time.time()
-    print(f'Duration: {end_time-start_time}')
+    # print(f'Duration: {end_time-start_time}')
 
     return weekly_beta_values, weekly_beta_t_minus_1_values, weekly_infections, weekly_forecasting_start_date
 
