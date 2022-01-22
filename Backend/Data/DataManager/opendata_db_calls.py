@@ -157,7 +157,7 @@ def update_district_data(district):
             column_check_okay = True
 
         if column_check_okay and re.match("^(d[0-9]{8})", key):
-            daily_cases_list[key] = value
+            daily_cases_list[key] = value if value is not None else daily_cases_list[list(daily_cases_list)[-1]]
 
             date_obj = datetime.datetime.strptime(str(key).replace("d", ""), '%Y%m%d')
             date_obj = date_obj + datetime.timedelta(days=14)
@@ -174,7 +174,7 @@ def update_district_data(district):
             column_check_okay = True
 
         if column_check_okay and re.match("^(d[0-9]{8})", key):
-            cum_cases_list[key] = value
+            cum_cases_list[key] = value if value is not None else cum_cases_list[list(cum_cases_list)[-1]]
 
     column_check_okay = False
     cum_death_a14d = 0
@@ -184,7 +184,7 @@ def update_district_data(district):
             column_check_okay = True
 
         if column_check_okay and re.match("^(d[0-9]{8})", key):
-            daily_deaths_list[key] = value
+            daily_deaths_list[key] = value if value is not None else daily_deaths_list[list(daily_deaths_list)[-1]]
 
             date_obj = datetime.datetime.strptime(str(key).replace("d", ""), '%Y%m%d')
             date_obj = date_obj + datetime.timedelta(days=14)
@@ -201,7 +201,7 @@ def update_district_data(district):
             column_check_okay = True
 
         if column_check_okay and re.match("^(d[0-9]{8})", key):
-            cum_deaths_list[key] = value
+            cum_deaths_list[key] = value if value is not None else cum_deaths_list[list(cum_deaths_list)[-1]]
 
     column_check_okay = False
     for key, value in recoveries['result']['records'][0].items():
@@ -210,7 +210,7 @@ def update_district_data(district):
             column_check_okay = True
 
         if column_check_okay and re.match("^(d[0-9]{8})", key):
-            daily_recoveries_list[key] = value
+            daily_recoveries_list[key] = value if value is not None else daily_recoveries_list[list(daily_recoveries_list)[-1]]
     column_check_okay = False
     for key, value in recoveries['result']['records'][1].items():
 
@@ -218,7 +218,7 @@ def update_district_data(district):
             column_check_okay = True
 
         if column_check_okay and re.match("^(d[0-9]{8})", key):
-            cum_recoveries_list[key] = value
+            cum_recoveries_list[key] = value if value is not None else cum_recoveries_list[list(cum_recoveries_list)[-1]]
 
     cum_vac = 0
     for rec in vaccination['result']['records']:
