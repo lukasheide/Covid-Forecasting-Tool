@@ -66,7 +66,7 @@ def update_population_map():
 def update_all_district_data():
     update_district_list()
     district_list = get_table_data("district_list", 0, 0, "district", False)
-    district_list.sort_values("district", inplace=True)
+    district_list.sort_values("district", inplace=True, ascending=True)
     update_population_map()
     no_of_districts = len(district_list['district'])
     print('retrieving data from Corona Daten Platform:')
