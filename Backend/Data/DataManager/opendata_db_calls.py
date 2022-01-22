@@ -6,6 +6,7 @@ import pandas as pd
 import requests
 import re
 
+from Backend.Data.DataManager.data_util import print_progress
 from Backend.Data.DataManager.db_functions import update_db, get_table_data
 from Backend.Data.DataManager.remote_db_manager import upload_db_file
 from Backend.Modeling.Vaccination_Efficiency.get_vaccination_effectiveness_fast import get_vaccination_effectiveness
@@ -67,15 +68,12 @@ def update_all_district_data():
     district_list = get_table_data("district_list", 0, 0, "district", False)
     district_list.sort_values("district", inplace=True)
     update_population_map()
+    no_of_districts = len(district_list['district'])
+    print('retrieving data from Corona Daten Platform:')
 
     for i, district in enumerate(district_list['district']):
-
-        if not district == 'Bremen':
-            break
-
         update_district_data(district)
-        # time.sleep(0.1)
-        print('progress: ' + str((i+1)/400))
+        print_progress(completed=i+1, total=no_of_districts, extra=district)
 
 
 def parallel_corona_datenplatform_api_requests(district):
@@ -115,9 +113,6 @@ def parallel_corona_datenplatform_api_requests(district):
     responses_tuple = (r for r in response_list)
 
     return responses_tuple
-
-
-
 
 
 def update_district_data(district):
@@ -407,10 +402,10 @@ if __name__ == '__main__':
     #         ALWAYS execute update_population_map() in the line BEFORE you run
     #         update_district_data("district_name")
 
-    update_district_list()
+    # update_district_list()
     # update_district_details()
-    update_population_map()
-    # update_all_district_data()
-    update_district_data("Stuttgart")
+    # update_population_map()
+    update_all_district_data()
+    # update_district_data("Stuttgart")
     # result_df = get_data_by_date_and_attr('Rhein-Neckar-Kreis', 20210101, 20211031, ["daily_infec", "daily_deaths"])
     # print(result_df)
