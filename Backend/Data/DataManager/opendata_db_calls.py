@@ -70,9 +70,6 @@ def update_all_district_data():
 
     for i, district in enumerate(district_list['district']):
 
-        if not district == 'Bremen':
-            break
-
         update_district_data(district)
         # time.sleep(0.1)
         print('progress: ' + str((i+1)/400))
@@ -275,7 +272,7 @@ def update_district_data(district):
         # this value has to be maximum 90 %
         vacc_percentage = round(int(cum_vacc_list.get(date, cum_vac)) * 100 / int(population_map.get(district)), 2)
         if vacc_percentage > 90:
-            vacc_percentage = 90.
+            vacc_percentage = 90
 
         current_day1 = datetime.datetime.strptime(str(date).replace("d", ""), '%Y%m%d')
         date_bfr_3days = current_day1 - datetime.timedelta(days=3)
@@ -407,7 +404,7 @@ if __name__ == '__main__':
     #         ALWAYS execute update_population_map() in the line BEFORE you run
     #         update_district_data("district_name")
 
-    update_district_list()
+    # update_district_list()
     # update_district_details()
     update_population_map()
     # update_all_district_data()
