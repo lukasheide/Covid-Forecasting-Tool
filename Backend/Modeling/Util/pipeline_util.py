@@ -93,3 +93,11 @@ def get_list_of_random_districts(num, seed=42):
 
     return random_districts
 
+
+def date_difference_strings(d1:str, d2:str):
+    # Convert strings to datetime objects:
+    d1_obj = datetime.strptime(d1, '%Y-%m-%d')
+    d2_obj = datetime.strptime(d2, '%Y-%m-%d')
+
+    return abs((d2_obj - d1_obj).days)
+

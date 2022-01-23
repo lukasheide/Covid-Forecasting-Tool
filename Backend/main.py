@@ -1,5 +1,5 @@
 from Backend.Data.DataManager.db_calls import get_all_table_data
-from Backend.Modeling.model_validation_pipeline import diff_eq_pipeline, diff_eq_pipeline_wrapper, sarima_pipeline
+from Backend.Modeling.model_validation import diff_eq_pipeline, diff_eq_pipeline_wrapper, sarima_pipeline
 import pandas as pd
 import matplotlib
 

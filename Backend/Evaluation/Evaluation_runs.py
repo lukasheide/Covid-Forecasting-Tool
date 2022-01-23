@@ -1,4 +1,4 @@
-from Backend.Modeling.model_validation_pipeline import sarima_pipeline
+from Backend.Modeling.model_validation import sarima_pipeline
 import matplotlib
 matplotlib.interactive(True)
 import matplotlib.pyplot as plt

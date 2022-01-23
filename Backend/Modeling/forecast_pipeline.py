@@ -9,7 +9,7 @@ from Backend.Data.DataManager.matrix_data import get_predictors_for_ml_layer
 from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_pipeline
 from Backend.Evaluation.metrics import compute_evaluation_metrics
 from Backend.Modeling.Util.pipeline_util import train_test_split, get_list_of_random_dates, get_list_of_random_districts
-from Backend.Modeling.model_validation_pipeline import sarima_pipeline
+from Backend.Modeling.model_validation import sarima_pipeline
 from Backend.Visualization.modeling_results import plot_train_fitted_and_validation, plot_sarima_pred_plot, \
     plot_sarima_val_line_plot, plot_train_fitted_and_predictions
 from Backend.Modeling.Regression_Model.ARIMA import run_sarima, sarima_model_predictions

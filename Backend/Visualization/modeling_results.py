@@ -261,3 +261,7 @@ def plot_beta_matrix_estimation(y_train_true, y_val_true, y_train_pred_full, y_v
     plt.legend(loc="upper right")
 
     plt.show()
+
+
+def visualize_multiple_models(y_train, y_pred_full_diffeq, y_forecast_diffeq, y_forecast_sarima):
+    pass
