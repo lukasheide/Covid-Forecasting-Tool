@@ -211,7 +211,7 @@ def sarima_pipeline(train_end_date: date, duration: int, districts: list, valida
         val_end_date = compute_end_date_of_validation_period(train_end_date, validation_duration)
         smoothen_cases = get_smoothen_cases(district, val_end_date, duration)
 
-        y_train = smoothen_cases['seven_day_infec'].to_numpy()
+        y_train = smoothen_cases['seven_day_infec']
 
         if validate == False:
             sarima_pipeline_pred(y_train, validation_duration)
@@ -403,11 +403,13 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
                                                 allow_randomness_fixed_beta=False, district=district)
 
             ## 3.2) SEIRV + Machine Learning Layer
-            # input: y_train_sarima (6 weeks), forecast_horizon (14 days)
-            # output: {y_pred_mean, y_pred_upper, y_pred_lower, params}
+
 
             ## 3.3) SARIMA
-
+            # input: y_train_sarima (6 weeks), forecast_horizon (14 days)
+            # output: {y_pred_mean, y_pred_upper, y_pred_lower, params}
+            sarima_results = sarima_pipeline_pred(y_train=y_train_sarima,
+                                                forecasting_horizon=forecasting_horizon)
 
             ## 3.4) Ensemble Model
 
