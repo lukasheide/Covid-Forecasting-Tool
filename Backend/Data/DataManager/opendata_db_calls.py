@@ -295,8 +295,8 @@ def update_district_data(district):
                            daily_incidents_rate.get(date, 0),
                            daily_vacc_list.get(date, 0),
                            daily_booster_list.get(date, 0),
-                           cum_vacc_list.get(date, cum_vac),
-                           vacc_percentage))
+                           cum_vacc_list.get(date, cum_vac)))
+                           # vacc_percentage))
 
     df = pd.DataFrame(final_data)
     df.columns = ['date',
@@ -313,8 +313,8 @@ def update_district_data(district):
                   'daily_incidents_rate',
                   'daily_vacc',
                   'daily_booster',
-                  'cum_vacc',
-                  'vacc_percentage']
+                  'cum_vacc']
+                  # 'vacc_percentage']
     df['date'] = df['date'].apply(lambda x: x.replace('d', ''))
 
     # Compute 7 day cases:
@@ -402,10 +402,10 @@ if __name__ == '__main__':
     #         ALWAYS execute update_population_map() in the line BEFORE you run
     #         update_district_data("district_name")
 
-    # update_district_list()
+    update_district_list()
     # update_district_details()
-    # update_population_map()
-    update_all_district_data()
-    # update_district_data("Stuttgart")
+    update_population_map()
+    # update_all_district_data()
+    update_district_data("Münster")
     # result_df = get_data_by_date_and_attr('Rhein-Neckar-Kreis', 20210101, 20211031, ["daily_infec", "daily_deaths"])
     # print(result_df)
