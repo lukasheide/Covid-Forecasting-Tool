@@ -42,3 +42,14 @@ def sarima_model_predictions(y_train, m, length):
     arima_model = sarimamodel(y_train, m)
     return arima_model
 
+def create_val_data(y_train, forecasting_horizon):
+    ...
+
+
+def sarima_pipeline_pred(y_train, forecasting_horizon):
+    y_val_train, y_val_predict = create_val_data(y_train, forecasting_horizon)
+    m, model = run_sarima(y_train=y_train,y_val=y_val_predict)
+    predictions, conf_int = model.predict(forecasting_horizon, return_conf_int=True)
+    print(conf_int)
+
+    return predictions, conf_int
