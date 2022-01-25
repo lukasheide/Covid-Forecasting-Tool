@@ -1,4 +1,6 @@
+import pandas as pd
 import pmdarima as pmd
+import numpy as np
 from Backend.Evaluation.metrics import compute_evaluation_metrics
 
 #creating SARIMA model
@@ -42,14 +44,23 @@ def sarima_model_predictions(y_train, m, length):
     arima_model = sarimamodel(y_train, m)
     return arima_model
 
+# create validation data for forecasting pipeline
 def create_val_data(y_train, forecasting_horizon):
-    ...
+    length_train = len(y_train)-forecasting_horizon
+    y_val_train, y_val_predict = np.split(y_train, [length_train])
+    return y_val_train, y_val_predict
 
-
+# sarima pipeline for predictions
 def sarima_pipeline_pred(y_train, forecasting_horizon):
     y_val_train, y_val_predict = create_val_data(y_train, forecasting_horizon)
-    m, model = run_sarima(y_train=y_train,y_val=y_val_predict)
-    predictions, conf_int = model.predict(forecasting_horizon, return_conf_int=True)
+    sarima_model = run_sarima(y_train=y_train, y_val=y_val_predict)
+    predictions, conf_int = sarima_model["model"].predict(forecasting_horizon, return_conf_int=True)
     print(conf_int)
-
-    return predictions, conf_int
+    pred_int = pd.DataFrame(conf_int, columns=['lower', 'upper'])
+    results_dict = {
+        'predictions': predictions,
+        'lower': pred_int['lower'],
+        'upper': pred_int['upper'],
+        'season': sarima_model["season"]
+    }
+    return results_dict
