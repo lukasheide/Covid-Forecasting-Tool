@@ -13,7 +13,7 @@ from Backend.Modeling.Util.pipeline_util import train_test_split, get_list_of_ra
     get_list_of_random_districts, date_difference_strings
 from Backend.Visualization.modeling_results import plot_train_fitted_and_validation, plot_sarima_pred_plot, \
     plot_sarima_val_line_plot, plot_train_fitted_and_predictions, visualize_multiple_models
-from Backend.Modeling.Regression_Model.ARIMA import run_sarima, sarima_model_predictions
+from Backend.Modeling.Regression_Model.ARIMA import run_sarima, sarima_model_predictions, sarima_pipeline_pred
 
 
 # from Backend.Modeling.Regression Model.ARIMA import sarima_pipeline
@@ -208,7 +208,15 @@ def sarima_pipeline(train_end_date: date, duration: int, districts: list, valida
 
     for i, district in enumerate(districts):
 
+        val_end_date = compute_end_date_of_validation_period(train_end_date, validation_duration)
+        smoothen_cases = get_smoothen_cases(district, val_end_date, duration)
+
+        y_train = smoothen_cases['seven_day_infec'].to_numpy()
+
         if validate == False:
+            sarima_pipeline_pred(y_train, validation_duration)
+
+
             format = "%Y-%m-%d"
             train_end_date = datetime.datetime.strptime(train_end_date, format)
             train_end_date = train_end_date - datetime.timedelta(days=validation_duration)
@@ -217,12 +225,11 @@ def sarima_pipeline(train_end_date: date, duration: int, districts: list, valida
 
         # 1) Import Data
         # 1a) get_smoothed_infection_counts() -> directly from Database
-        val_end_date = compute_end_date_of_validation_period(train_end_date, validation_duration)
-        smoothen_cases = get_smoothen_cases(district, val_end_date, duration)
+
 
         # 1b) split_into_train_and_validation()
         y_train, y_val = train_test_split(data=smoothen_cases[Column.SEVEN_DAY_SMOOTHEN],
-                                              validation_duration=validation_duration)
+                                         validation_duration=validation_duration)
 
         ## 2) Run model_pipeline
         sarima_model = run_sarima(y_train=y_train, y_val=y_val)
@@ -231,7 +238,6 @@ def sarima_pipeline(train_end_date: date, duration: int, districts: list, valida
 
         # 2b) Run model without validation data
         if validate == False:
-
             format = "%Y-%m-%d"
             train_end_date = datetime.datetime.strptime(train_end_date, format)
             train_end_date = train_end_date + datetime.timedelta(days=validation_duration)
