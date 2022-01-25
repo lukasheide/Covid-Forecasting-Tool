@@ -18,10 +18,10 @@ params_SEIRV_fixed = {
     },
 
     'delta': {  # mean incubation time
-        'mean': 1 / 4.3,
-        'sd': 1 / 4.3 / 10,
-        'upper_lim': 2,
-        'lower_lim': 0,
+        'mean': 1 / 2,
+        'sd': 1 / 2 / 10,
+        'upper_lim': 1 / 5,
+        'lower_lim': 1 / 1.5,
         'distribution': "normal"
     },
 
