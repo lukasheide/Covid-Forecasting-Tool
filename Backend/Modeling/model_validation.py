@@ -296,18 +296,28 @@ def sarima_pipeline(train_end_date: date, duration: int, districts: list, valida
 
 
 
-def model_validation_pipeline_v2():
+def model_validation_pipeline_v2_wrapper():
+
+    # Small helper function for determining date shifted by a given number of weeks
+    target_date = '2021-11-01'
+    num_weeks_shift = 8
+    shifted_date_obj = datetime.strptime(target_date, '%Y-%m-%d') + timedelta(days=7*num_weeks_shift)
+    shifted_date_str = shifted_date_obj.strftime('%Y-%m-%d')
+    print(f'Date 8 weeks after target_date: {shifted_date_str}')
+
 
     #################### Pipeline Configuration: ####################
-    pipeline_start_date = '2021-11-01'
-    pipeline_end_date = '2022-01-15'
+    # For each interval
+    pipeline_intervals = [
+        ('2021-11-01', '2022-01-15'), # pipeline_start_dates
+        ('2021-08-01', '2021-10-01'), # pipeline_end_dates:
+    ]
+
     forecasting_horizon = 14
 
     train_length_diffeqmodel = 14
-    train_length_sarima = 28
+    train_length_sarima = 42
     training_period_max = max(train_length_diffeqmodel, train_length_sarima)
-
-    debug = True
 
     opendata = get_all_table_data(table_name='district_list')
     districts = opendata['district'].tolist()
@@ -317,6 +327,15 @@ def model_validation_pipeline_v2():
 
     ################################################################
 
+    for pipeline_interval in pipeline_intervals:
+        model_validation_pipeline_v2(pipeline_start_date=pipeline_interval[0], pipeline_end_date=pipeline_interval[1],
+                                     forecasting_horizon=forecasting_horizon, train_length_diffeqmodel=train_length_diffeqmodel,
+                                     train_length_sarima=train_length_sarima, training_period_max=training_period_max,
+                                     districts=districts)
+
+
+def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecasting_horizon, train_length_diffeqmodel, train_length_sarima,
+                                 training_period_max, districts, debug=True):
 
     # Create time_grid:
     intervals_grid = get_weekly_intervals_grid(pipeline_start_date, pipeline_end_date, training_period_max, forecasting_horizon)
@@ -378,7 +397,8 @@ def model_validation_pipeline_v2():
                                                 allow_randomness_fixed_beta=False, district=district)
 
             ## 3.2) SEIRV + Machine Learning Layer
-
+            # input: y_train_sarima (6 weeks), forecast_horizon (14 days)
+            # output: {y_pred_mean, y_pred_upper, y_pred_lower, params}
 
             ## 3.3) SARIMA
 
@@ -398,7 +418,7 @@ def model_validation_pipeline_v2():
                                           y_forecast_diffeq=y_pred['Diff_Eq_Last_Beta'],
                                           y_forecast_sarima=None)
 
-            ## 5) Compute metrics:
+            ## 5) Evaluation - Compute metrics:
             metrics = {
                 'Diff_Eq_Last_Beta': compute_evaluation_metrics(y_pred=y_pred['Diff_Eq_Last_Beta'], y_val=y_val),
             }
@@ -434,4 +454,4 @@ if __name__ == '__main__':
     # start_vals = get_starting_values('Münster', train_start_date)
     # print(start_vals)
 
-    model_validation_pipeline_v2()
+    model_validation_pipeline_v2_wrapper()
