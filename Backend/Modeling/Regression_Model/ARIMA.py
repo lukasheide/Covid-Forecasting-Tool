@@ -54,8 +54,24 @@ def create_val_data(y_train, forecasting_horizon):
 def sarima_pipeline_pred(y_train, forecasting_horizon):
     y_val_train, y_val_predict = create_val_data(y_train, forecasting_horizon)
     sarima_model = run_sarima(y_train=y_train, y_val=y_val_predict)
-    predictions, conf_int = sarima_model["model"].predict(forecasting_horizon, return_conf_int=True)
-    print(conf_int)
+    not_used, y_pred_train = np.split(y_train, [14])
+    pred_sarima = sarimamodel(y_pred_train, sarima_model["season"])
+    predictions, conf_int = pred_sarima.predict(forecasting_horizon, return_conf_int=True, alpha=0.1)
+    pred_int = pd.DataFrame(conf_int, columns=['lower', 'upper'])
+    results_dict = {
+        'predictions': predictions,
+        'lower': pred_int['lower'],
+        'upper': pred_int['upper'],
+        'season': sarima_model["season"]
+    }
+    return results_dict
+
+
+# sarima pipeline for validation
+def sarima_pipeline_val(y_train, forecasting_horizon):
+    y_val_train, y_val_predict = create_val_data(y_train, forecasting_horizon)
+    sarima_model = run_sarima(y_train=y_train, y_val=y_val_predict)
+    predictions, conf_int = sarima_model["model"].predict(forecasting_horizon, return_conf_int=True, alpha=0.1)
     pred_int = pd.DataFrame(conf_int, columns=['lower', 'upper'])
     results_dict = {
         'predictions': predictions,
