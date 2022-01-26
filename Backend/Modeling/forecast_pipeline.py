@@ -93,7 +93,7 @@ def forecasting_pipeline():
 
         ## 5) Upload to DB
 
-        # 5.1) Delete existing data in table for current district
+        # 5.1) If exists, delete existing data in table for current district
 
         # 5.2) Upload data for current district to table:
         # With the following Columns:
@@ -111,6 +111,16 @@ def forecasting_pipeline():
         ## ...
         # [12-14] Ensemble Model
         ## ...
+
+
+        # Metadata - Table:
+        # [1] Pipeline-ID
+        # [2] Full_Run                          -> set to 1 if pipeline is run on all districts and 0 if only on a subset
+        # [3] Timestamp of Start of Pipeline
+        # [4] Training-Start-Day
+        # [5] Training-End-Day
+        # [6] Forecasting-Start-Day
+        # [7] Forecasting-End-Day
 
 
 
