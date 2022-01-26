@@ -13,7 +13,7 @@ from Backend.Modeling.Util.pipeline_util import train_test_split, get_list_of_ra
     get_list_of_random_districts, date_difference_strings
 from Backend.Visualization.modeling_results import plot_train_fitted_and_validation, plot_sarima_pred_plot, \
     plot_sarima_val_line_plot, plot_train_fitted_and_predictions, visualize_multiple_models
-from Backend.Modeling.Regression_Model.ARIMA import run_sarima, sarima_model_predictions, sarima_pipeline_pred
+from Backend.Modeling.Regression_Model.ARIMA import run_sarima, sarima_model_predictions, sarima_pipeline_val
 
 
 # from Backend.Modeling.Regression Model.ARIMA import sarima_pipeline
@@ -214,7 +214,7 @@ def sarima_pipeline(train_end_date: date, duration: int, districts: list, valida
         y_train = smoothen_cases['seven_day_infec']
 
         if validate == False:
-            sarima_pipeline_pred(y_train, validation_duration)
+            sarima_pipeline_val(y_train, validation_duration)
 
 
             format = "%Y-%m-%d"
@@ -408,7 +408,7 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
             ## 3.3) SARIMA
             # input: y_train_sarima (6 weeks), forecast_horizon (14 days)
             # output: {y_pred_mean, y_pred_upper, y_pred_lower, params}
-            sarima_results = sarima_pipeline_pred(y_train=y_train_sarima,
+            sarima_results = sarima_pipeline_val(y_train=y_train_sarima,
                                                 forecasting_horizon=forecasting_horizon)
 
             ## 3.4) Ensemble Model

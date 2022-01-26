@@ -7,6 +7,7 @@ from Backend.Data.DataManager.db_calls import start_pipeline, insert_param_and_s
     get_all_table_data
 from Backend.Data.DataManager.matrix_data import get_predictors_for_ml_layer
 from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_pipeline
+from Backend.Modeling.Regression_Model.ARIMA import sarima_pipeline_pred
 from Backend.Evaluation.metrics import compute_evaluation_metrics
 from Backend.Modeling.Util.pipeline_util import train_test_split, get_list_of_random_dates, get_list_of_random_districts
 from Backend.Modeling.model_validation import sarima_pipeline
@@ -77,7 +78,10 @@ def forecasting_pipeline():
 
 
         ## 3.3) SARIMA
-        sarima_results = None # todo Toni
+        # input: y_train_sarima (6 weeks), forecast_horizon (14 days)
+        # output: {y_pred_mean, y_pred_upper, y_pred_lower, params}
+        sarima_results = sarima_pipeline_pred(y_train=y_train_sarima,
+                                             forecasting_horizon=forecasting_horizon)
 
 
         ## 3.4) Ensemble Model
