@@ -66,7 +66,7 @@ def forecast_all_models(y_train_diffeq, y_train_sarima, forecasting_horizon, ml_
 def convert_all_forecasts_to_incidences(forecasts: dict, pop_size_district: int) -> dict:
     results_dict = {}
 
-        for k, v in forecasts.items():
+    for k, v in forecasts.items():
         if v is not None:
             results_dict[k] = convert_seven_day_averages(v, pop_size_district)
         else:
