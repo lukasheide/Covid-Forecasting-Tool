@@ -1,7 +1,6 @@
 import time
 from math import floor
 
-import pandas as pd
 from meteostat import Point, Daily
 from Backend.Data.DataManager.data_access_methods import get_starting_values, get_model_params
 from Backend.Data.DataManager.data_util import Column, date_int_str, print_progress
@@ -15,6 +14,9 @@ from Backend.Visualization.modeling_results import plot_train_and_fitted_infecti
 
 from isoweek import Week
 from datetime import datetime, timedelta
+
+import numpy as np
+import pandas as pd
 
 
 def create_weekly_matrix():
@@ -352,7 +354,7 @@ def get_weekly_beta_v2(district, start_date, end_date, debug=False):
         ## 2) Run fitting again for validation period: -> "What would've been the perfect beta?"
 
         fixed_start_vals_from_training = {
-            'N': start_vals_train[0],
+            'N': start_vals_train['N'],
             'V0': training_pipeline_results['model_start_vals_forecast_period']['V'],
             'R0': training_pipeline_results['model_start_vals_forecast_period']['R'],
             'E0': training_pipeline_results['model_start_vals_forecast_period']['E'],
@@ -472,14 +474,42 @@ def get_predictors_for_ml_layer(district, start_date):
     # GET WEATHER DATA
     temperature, wind = get_weather_data(district, start_date)
 
-    # GET LAST WEEK BETA TODO : Lukas should check this!
-    start_date_obj = datetime.strptime(start_date, '%Y-%m-%d')- timedelta(days=14)
-    corrected_start_date = start_date_obj.strftime('%Y-%m-%d')
-    end_date_obj = start_date
-    result_tuple = get_weekly_beta_v2(district, corrected_start_date, end_date_obj)
-    beta = result_tuple[0][2]
+    ### Last weeks beta is not needed!!!! ###
 
-    return policy_index, variant, mobility, temperature, wind, beta
+    # # GET LAST WEEK BETA
+    # start_date_obj = datetime.strptime(start_date, '%Y-%m-%d')- timedelta(days=14)
+    # corrected_start_date = start_date_obj.strftime('%Y-%m-%d')
+    # end_date_obj = start_date
+    # result_tuple = get_weekly_beta_v2(district, corrected_start_date, end_date_obj)
+    # beta = result_tuple[0][2]
+
+    # TODO : Add Omnicron variant below:
+    # Create dictionary:
+    ml_predictors_dict = {
+        'B.1.1.7': 1 if variant == 'B.1.1.7' else 0,
+        'B.1.617.2': 1 if variant == 'B.1.617.2' else 0,
+        'policy_index': policy_index,
+        'mobility': mobility,
+        'temperature': temperature,
+        'wind': wind,
+    }
+
+
+    # One-hot-encode variant data:
+
+    return ml_predictors_dict
+
+
+def prepare_all_beta_predictors(y_train_last_two_weeks: np.array, previous_beta:float, ml_predictors=dict) -> pd.Series:
+    mean_infections_last_two_weeks = y_train_last_two_weeks.mean()
+
+    ml_predictors['infections'] = mean_infections_last_two_weeks
+    ml_predictors['beta_t_minus_1'] = previous_beta
+
+    df = pd.DataFrame(columns=list(ml_predictors.keys()))
+    df.loc[0] = list(ml_predictors.values())
+
+    return df
 
 
 if __name__ == '__main__':

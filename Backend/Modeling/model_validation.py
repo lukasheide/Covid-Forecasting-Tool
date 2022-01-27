@@ -1,19 +1,26 @@
 import datetime
+
+import joblib
 import pandas as pd
 from datetime import date, datetime, timedelta
 from Backend.Data.DataManager.data_access_methods import get_smoothen_cases, get_starting_values, get_model_params
 from Backend.Data.DataManager.data_util import Column, date_int_str, compute_end_date_of_validation_period
 from Backend.Data.DataManager.db_calls import start_pipeline, insert_param_and_start_vals, insert_prediction_vals, \
     get_all_table_data
-from Backend.Data.DataManager.matrix_data import get_weekly_intervals_grid, get_predictors_for_ml_layer
+from Backend.Data.DataManager.matrix_data import get_weekly_intervals_grid, get_predictors_for_ml_layer, \
+    prepare_all_beta_predictors
 from Backend.Data.DataManager.remote_db_manager import download_db_file
-from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_pipeline
+from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_pipeline, forecast_seirv
 from Backend.Evaluation.metrics import compute_evaluation_metrics
+from Backend.Modeling.Differential_Equation_Modeling.seirv_model_and_ml import seirv_ml_layer
 from Backend.Modeling.Util.pipeline_util import train_test_split, get_list_of_random_dates, \
     get_list_of_random_districts, date_difference_strings
 from Backend.Visualization.modeling_results import plot_train_fitted_and_validation, plot_sarima_pred_plot, \
     plot_sarima_val_line_plot, plot_train_fitted_and_predictions, visualize_multiple_models
 from Backend.Modeling.Regression_Model.ARIMA import run_sarima, sarima_model_predictions, sarima_pipeline_val
+
+import xgboost as xgb
+from sklearn.preprocessing import StandardScaler
 
 
 # from Backend.Modeling.Regression Model.ARIMA import sarima_pipeline
@@ -58,7 +65,8 @@ def diff_eq_pipeline(train_end_date: date, duration: int, districts: list, valid
         fixed_model_params = get_model_params(district, train_start_date)
 
         ## 2) Run model_pipeline
-        pipeline_result = seirv_pipeline(y_train=y_train, start_vals_fixed=start_vals, fixed_model_params=fixed_model_params,
+        pipeline_result = seirv_pipeline(y_train=y_train, start_vals_fixed=start_vals,
+                                         fixed_model_params=fixed_model_params,
                                          allow_randomness_fixed_beta=False, random_runs=100, district=district)
         y_pred_without_train_period = pipeline_result['y_pred_without_train_period']
 
@@ -77,16 +85,18 @@ def diff_eq_pipeline(train_end_date: date, duration: int, districts: list, valid
             if validate:
                 plot_train_fitted_and_validation(y_train=y_train, y_val=y_val,
                                                  y_pred=pipeline_result['y_pred_including_train_period'],
-                                                 y_pred_upper=pipeline_result['y_pred_without_train_period_upper_bound'],
-                                                 y_pred_lower=pipeline_result['y_pred_without_train_period_lower_bound'])
+                                                 y_pred_upper=pipeline_result[
+                                                     'y_pred_without_train_period_upper_bound'],
+                                                 y_pred_lower=pipeline_result[
+                                                     'y_pred_without_train_period_lower_bound'])
 
             else:
-                plot_train_fitted_and_predictions(y_train_fitted=pipeline_result['y_pred_including_train_period'][0:duration],
-                                                  y_train_true=y_train,
-                                                  y_pred_full=pipeline_result['y_pred_including_train_period'],
-                                                  district=district,
-                                                  pred_start_date=train_end_date)
-
+                plot_train_fitted_and_predictions(
+                    y_train_fitted=pipeline_result['y_pred_including_train_period'][0:duration],
+                    y_train_true=y_train,
+                    y_pred_full=pipeline_result['y_pred_including_train_period'],
+                    district=district,
+                    pred_start_date=train_end_date)
 
         # 3b) Compute metrics (RMSE, MAPE, ...)
         if validate:
@@ -101,13 +111,15 @@ def diff_eq_pipeline(train_end_date: date, duration: int, districts: list, valid
 
         # 4) Store results in database:
         if store_results_to_db:
-            insert_param_and_start_vals(pipeline_id, district, start_vals, pipeline_result['model_params_forecast_period'])
-            insert_prediction_vals(pipeline_id, district, pipeline_result['y_pred_without_train_period'], train_end_date)
+            insert_param_and_start_vals(pipeline_id, district, start_vals,
+                                        pipeline_result['model_params_forecast_period'])
+            insert_prediction_vals(pipeline_id, district, pipeline_result['y_pred_without_train_period'],
+                                   train_end_date)
 
         #  5) Append results to dictionary:
         if validate:
             results_dict[district] = {
-                'scores':scores
+                'scores': scores
             }
 
     if validate:
@@ -116,10 +128,7 @@ def diff_eq_pipeline(train_end_date: date, duration: int, districts: list, valid
         return None
 
 
-
-
 def diff_eq_pipeline_wrapper(**kwargs):
-
     end_date = '2021-12-14'
     time_frame_train_and_validation = 28
     forecasting_horizon = 14
@@ -127,9 +136,9 @@ def diff_eq_pipeline_wrapper(**kwargs):
 
     SEED = 42
 
-    random_train_end_dates = get_list_of_random_dates(num=20, lower_bound='2020-03-15', upper_bound='2021-12-15', seed=SEED)
+    random_train_end_dates = get_list_of_random_dates(num=20, lower_bound='2020-03-15', upper_bound='2021-12-15',
+                                                      seed=SEED)
     random_districts = get_list_of_random_districts(num=10, seed=SEED)
-
 
     ####################################################################
     ### Part below is for finding optimal length of training period: ###
@@ -144,9 +153,9 @@ def diff_eq_pipeline_wrapper(**kwargs):
         ## Iterate over train dates:
         # set_up dictionary for storing results at run time:
         results_lvl2 = []
-        for round_lvl2,random_train_end_date in enumerate(random_train_end_dates):
+        for round_lvl2, random_train_end_date in enumerate(random_train_end_dates):
             res = diff_eq_pipeline(train_end_date=random_train_end_date,
-                                   duration=train_period_length+forecasting_horizon,
+                                   duration=train_period_length + forecasting_horizon,
                                    districts=random_districts,
                                    validation_duration=forecasting_horizon,
                                    visualize=False,
@@ -155,17 +164,17 @@ def diff_eq_pipeline_wrapper(**kwargs):
                                    store_results_to_db=False)
 
             # Print progess:
-            print(f'Round {1+round_lvl2+round_lvl1*len(random_train_end_dates)} / '
+            print(f'Round {1 + round_lvl2 + round_lvl1 * len(random_train_end_dates)} / '
                   f'{len(duration_param_grid) * len(random_train_end_dates)} completed!')
 
             results_lvl2.append({
                 'date': random_train_end_date,
-                'pipeline_results':res
+                'pipeline_results': res
             })
 
         results_level1.append({
-            'train_period_length':train_period_length,
-            'dict':results_lvl2
+            'train_period_length': train_period_length,
+            'dict': results_lvl2
         })
 
     # build dataframe from results:
@@ -174,14 +183,14 @@ def diff_eq_pipeline_wrapper(**kwargs):
     for lvl1 in results_level1:
         for lvl2 in lvl1['dict']:
             for city, result in lvl2['pipeline_results'].items():
-                    results_transformed.append({
-                        'train_length':lvl1['train_period_length'],
-                        'training_end_date':lvl2['date'],
-                        'city':city,
-                        'rmse':result['scores']['rmse'],
-                        'mape':result['scores']['mape'],
-                        'mae':result['scores']['mae'],
-                    })
+                results_transformed.append({
+                    'train_length': lvl1['train_period_length'],
+                    'training_end_date': lvl2['date'],
+                    'city': city,
+                    'rmse': result['scores']['rmse'],
+                    'mape': result['scores']['mape'],
+                    'mae': result['scores']['mae'],
+                })
 
     results_df = pd.DataFrame(results_transformed)
 
@@ -190,16 +199,17 @@ def diff_eq_pipeline_wrapper(**kwargs):
 
     pass
 
-#SARIMA Model
+
+# SARIMA Model
 def sarima_pipeline(train_end_date: date, duration: int, districts: list, validation_duration: int,
-                     visualize=False, verbose=False, validate=True, evaluate=False, with_db_update=False) -> None:
+                    visualize=False, verbose=False, validate=True, evaluate=False, with_db_update=False) -> None:
     if with_db_update:
         download_db_file()
 
     # iterate over districts(list) of interest
     # results_dict = []
     # store pipeline data in the DB
-    #pipeline_id = start_pipeline(train_end_date, validation_duration, visualize, verbose)
+    # pipeline_id = start_pipeline(train_end_date, validation_duration, visualize, verbose)
     # pipeline_id = start_pipeline(train_end_date, validation_duration, visualize, verbose)
     predictions_list = []
 
@@ -216,7 +226,6 @@ def sarima_pipeline(train_end_date: date, duration: int, districts: list, valida
         if validate == False:
             sarima_pipeline_val(y_train, validation_duration)
 
-
             format = "%Y-%m-%d"
             train_end_date = datetime.datetime.strptime(train_end_date, format)
             train_end_date = train_end_date - datetime.timedelta(days=validation_duration)
@@ -226,10 +235,9 @@ def sarima_pipeline(train_end_date: date, duration: int, districts: list, valida
         # 1) Import Data
         # 1a) get_smoothed_infection_counts() -> directly from Database
 
-
         # 1b) split_into_train_and_validation()
         y_train, y_val = train_test_split(data=smoothen_cases[Column.SEVEN_DAY_SMOOTHEN],
-                                         validation_duration=validation_duration)
+                                          validation_duration=validation_duration)
 
         ## 2) Run model_pipeline
         sarima_model = run_sarima(y_train=y_train, y_val=y_val)
@@ -259,7 +267,8 @@ def sarima_pipeline(train_end_date: date, duration: int, districts: list, valida
         # 3a) Visualize results (mainly for debugging)
         if visualize:
             if validate:
-                plot_sarima_val_line_plot(y_train, y_val, predictions_val, pred_start_date=train_end_date, district=district)
+                plot_sarima_val_line_plot(y_train, y_val, predictions_val, pred_start_date=train_end_date,
+                                          district=district)
             else:
                 plot_sarima_pred_plot(y_train_pred, predictions, district, pred_start_date=train_end_date)
 
@@ -301,22 +310,19 @@ def sarima_pipeline(train_end_date: date, duration: int, districts: list, valida
     # -> basically all parameters that are set
 
 
-
 def model_validation_pipeline_v2_wrapper():
-
     # Small helper function for determining date shifted by a given number of weeks
     target_date = '2021-11-01'
     num_weeks_shift = 8
-    shifted_date_obj = datetime.strptime(target_date, '%Y-%m-%d') + timedelta(days=7*num_weeks_shift)
+    shifted_date_obj = datetime.strptime(target_date, '%Y-%m-%d') + timedelta(days=7 * num_weeks_shift)
     shifted_date_str = shifted_date_obj.strftime('%Y-%m-%d')
-    print(f'Date 8 weeks after target_date: {shifted_date_str}')
-
+    # print(f'Date 8 weeks after target_date: {shifted_date_str}')
 
     #################### Pipeline Configuration: ####################
     # For each interval
     pipeline_intervals = [
-        ('2021-11-01', '2022-01-15'), # pipeline_start_dates
-        ('2021-08-01', '2021-10-01'), # pipeline_end_dates:
+        ('2021-11-01', '2022-01-15'),  # pipeline_start_dates
+        ('2021-08-01', '2021-10-01'),  # pipeline_end_dates:
     ]
 
     forecasting_horizon = 14
@@ -331,36 +337,52 @@ def model_validation_pipeline_v2_wrapper():
 
     districts = ['Bielefeld', 'Münster']
 
+    # ML Layer:
+    ml_model_path = '../Assets/MachineLearningLayer/Models/xgb_model_lukas.pkl'
+    standardizer_model_path = '../Assets/MachineLearningLayer/Models/standardizer_model.pkl'
+
     ################################################################
 
     for pipeline_interval in pipeline_intervals:
         model_validation_pipeline_v2(pipeline_start_date=pipeline_interval[0], pipeline_end_date=pipeline_interval[1],
-                                     forecasting_horizon=forecasting_horizon, train_length_diffeqmodel=train_length_diffeqmodel,
+                                     forecasting_horizon=forecasting_horizon,
+                                     train_length_diffeqmodel=train_length_diffeqmodel,
                                      train_length_sarima=train_length_sarima, training_period_max=training_period_max,
+                                     ml_model_path=ml_model_path, standardizer_model_path=standardizer_model_path,
                                      districts=districts)
 
 
-def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecasting_horizon, train_length_diffeqmodel, train_length_sarima,
-                                 training_period_max, districts, debug=True):
-
+def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecasting_horizon, train_length_diffeqmodel,
+                                 train_length_sarima, training_period_max,
+                                 ml_model_path, standardizer_model_path,
+                                 districts, debug=True):
     # Create time_grid:
-    intervals_grid = get_weekly_intervals_grid(pipeline_start_date, pipeline_end_date, training_period_max, forecasting_horizon)
+    intervals_grid = get_weekly_intervals_grid(pipeline_start_date, pipeline_end_date, training_period_max,
+                                               forecasting_horizon)
 
     # Compute training duration:
     duration_full = date_difference_strings(d1=pipeline_start_date, d2=pipeline_end_date)
 
+    # Import ML-Model:
+    with open(ml_model_path, 'rb') as fid:
+        ml_model = joblib.load(fid)
+
+    # Import Standardizer:
+    with open(standardizer_model_path, 'rb') as fid:
+        standardizer_obj = joblib.load(fid)
 
     # Iterate over districts:
     results_dict = {}
     for i, district in enumerate(districts):
-        print(f'Computing district {district}: {i+1} / {len(districts)}')
+        print(f'Computing district {district}: {i + 1} / {len(districts)}')
 
         ## 2a) Import Historical Infections
         # Import Training Data:
 
-        infections_df = get_smoothen_cases(district=district, duration=duration_full+1, end_date=pipeline_end_date)
+        infections_df = get_smoothen_cases(district=district, duration=duration_full + 1, end_date=pipeline_end_date)
         # append one column for formatted dates:
-        infections_df['date_str'] = infections_df[Column.DATE].apply(lambda row: datetime.strptime(row, '%Y%m%d').strftime('%Y-%m-%d'))
+        infections_df['date_str'] = infections_df[Column.DATE].apply(
+            lambda row: datetime.strptime(row, '%Y%m%d').strftime('%Y-%m-%d'))
 
         # Iterate over weeks:
         weekly_results = []
@@ -369,17 +391,22 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
             ## 2a) Import Historical Infections
 
             # Training indices:
-            idx_train_start_sarima = infections_df.loc[infections_df['date_str'] == current_interval['start_day_train_str']].index[0]
+            idx_train_start_sarima = \
+                infections_df.loc[infections_df['date_str'] == current_interval['start_day_train_str']].index[0]
             idx_train_start_diffeq = idx_train_start_sarima + (train_length_sarima - train_length_diffeqmodel)
-            idx_train_end = infections_df.loc[infections_df['date_str'] == current_interval['end_day_train_str']].index[0]
+            idx_train_end = infections_df.loc[infections_df['date_str'] == current_interval['end_day_train_str']].index[
+                0]
 
             # Validation indices:
-            idx_val_start = infections_df.loc[infections_df['date_str'] == current_interval['start_day_val_str']].index[0]
+            idx_val_start = infections_df.loc[infections_df['date_str'] == current_interval['start_day_val_str']].index[
+                0]
             idx_val_end = infections_df.loc[infections_df['date_str'] == current_interval['end_day_val_str']].index[0]
 
             # Get arrays from dataframe:
-            y_train_sarima = infections_df.loc[idx_train_start_sarima:idx_train_end, Column.SEVEN_DAY_SMOOTHEN].reset_index(drop=True)
-            y_train_diffeq = infections_df.loc[idx_train_start_diffeq:idx_train_end, Column.SEVEN_DAY_SMOOTHEN].reset_index(drop=True)
+            y_train_sarima = infections_df.loc[idx_train_start_sarima:idx_train_end,
+                             Column.SEVEN_DAY_SMOOTHEN].reset_index(drop=True)
+            y_train_diffeq = infections_df.loc[idx_train_start_diffeq:idx_train_end,
+                             Column.SEVEN_DAY_SMOOTHEN].reset_index(drop=True)
             y_val = infections_df.loc[idx_val_start:idx_val_end, Column.SEVEN_DAY_SMOOTHEN].reset_index(drop=True)
 
             ## 2b) Get Starting Values for SEIRV Model:
@@ -390,39 +417,39 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
             fixed_model_params_seirv = get_model_params(district, train_start_date_diff_eq_str)
 
             ## 2c) Import Data for Machine Learning Matrix:
-            ml_training_data = get_predictors_for_ml_layer(district, train_start_date_diff_eq_str)
-
+            ml_matrix_predictors = get_predictors_for_ml_layer(district, train_start_date_diff_eq_str)
 
             ### 3) Models
 
             ## 3.1) SEIRV + Last Beta
-            seirv_beta_results = seirv_pipeline(y_train=y_train_diffeq,
-                                                start_vals_fixed=start_vals_seirv,
-                                                fixed_model_params=fixed_model_params_seirv,
-                                                forecast_horizon=forecasting_horizon,
-                                                allow_randomness_fixed_beta=False, district=district)
+            seirv_last_beta_only_results = seirv_pipeline(y_train=y_train_diffeq,
+                                                          start_vals_fixed=start_vals_seirv,
+                                                          fixed_model_params=fixed_model_params_seirv,
+                                                          forecast_horizon=forecasting_horizon,
+                                                          allow_randomness_fixed_beta=False, district=district)
 
             ## 3.2) SEIRV + Machine Learning Layer
-
+            seirv_ml_results = seirv_ml_layer(y_train_diffeq, start_vals_seirv, fixed_model_params_seirv,
+                                              forecasting_horizon, ml_matrix_predictors, standardizer_obj, ml_model)
 
             ## 3.3) SARIMA
             # input: y_train_sarima (6 weeks), forecast_horizon (14 days)
             # output: {y_pred_mean, y_pred_upper, y_pred_lower, params}
             sarima_results = sarima_pipeline_val(y_train=y_train_sarima,
-                                                forecasting_horizon=forecasting_horizon)
+                                                 forecasting_horizon=forecasting_horizon)
 
             ## 3.4) Ensemble Model
 
-
             # Combine results:
             y_pred = {
-                'Diff_Eq_Last_Beta': seirv_beta_results['y_pred_without_train_period'],
+                'Diff_Eq_Last_Beta': seirv_last_beta_only_results['y_pred_without_train_period'],
             }
 
             ## 4) Visualization:
             if debug:
                 visualize_multiple_models(y_train=y_train_diffeq,
-                                          y_pred_full_diffeq=seirv_beta_results['y_pred_including_train_period'],
+                                          y_pred_full_diffeq=seirv_last_beta_only_results[
+                                              'y_pred_including_train_period'],
                                           y_forecast_diffeq=y_pred['Diff_Eq_Last_Beta'],
                                           y_forecast_sarima=None)
 
@@ -430,7 +457,6 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
             metrics = {
                 'Diff_Eq_Last_Beta': compute_evaluation_metrics(y_pred=y_pred['Diff_Eq_Last_Beta'], y_val=y_val),
             }
-
 
             ## 6) Append everything to result list:
             weekly_results.append({

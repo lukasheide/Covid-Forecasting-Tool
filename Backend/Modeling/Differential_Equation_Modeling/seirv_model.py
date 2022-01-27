@@ -178,12 +178,12 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple, fixed_model_para
     fitted_and_fixed_model_params = tuple(opt_params[:1]) + tuple(fixed_params)
 
     # Compute starting values for each compartment:
-    N = start_vals_fixed[0]
+    N = start_vals_fixed['N']
     E0 = opt_params[1]
     I0 = opt_params[2]
     U0 = I0 * fixed_model_params['rho'] / (1 - fixed_model_params['rho'])
-    R0 = start_vals_fixed[1]
-    V0 = start_vals_fixed[2]
+    R0 = start_vals_fixed['R']
+    V0 = start_vals_fixed['V']
     S0 = N - E0 - I0 - R0 - V0
 
     # pack all together and add start value 0 for cumulated infections:
@@ -472,9 +472,9 @@ def solve_ode_for_fitting_partly_fitted_y0(fixed_start_vals, fixed_params, fit_p
 
     #  2c) Get y0:
     #  Starting values for I, R and V are given. E0 is fitted and S0 is then computed as the last missing value.
-    N = fixed_start_vals[0]
-    R0 = fixed_start_vals[1]
-    V0 = fixed_start_vals[2]
+    N = fixed_start_vals['N']
+    R0 = fixed_start_vals['R']
+    V0 = fixed_start_vals['V']
 
     # Compute U0 and S0:
     # Expected number of individuals in undetected compartment: Depends on "Dunkelziffer" factor
