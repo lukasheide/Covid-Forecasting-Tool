@@ -38,3 +38,7 @@ def forecast_all_models(y_train_diffeq, y_train_sarima, forecasting_horizon, ml_
     }
 
     return seirv_last_beta_only_results, seirv_ml_results, sarima_results, ensemble_results
+
+
+
+def convert_seven_day_averages(forecast_array:np.array, pop_size_district:int) -> np.array:

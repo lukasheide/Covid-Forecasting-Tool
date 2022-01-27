@@ -101,6 +101,7 @@ def forecasting_pipeline():
         if debug:
             pass #todo
 
+        ## 5) Convert 7-day average to 7-day-incident:
 
 
         ## 6) Upload to DB
