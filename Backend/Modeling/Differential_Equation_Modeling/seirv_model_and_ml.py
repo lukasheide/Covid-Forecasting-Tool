@@ -47,3 +47,9 @@ def seirv_ml_layer(y_train_diffeq, start_vals_seirv, fixed_model_params_seirv, f
     y_pred_point_estimate = forecast_seirv(all_model_params=model_params_tuple,
                                            y0=start_vals_tuple,
                                            forecast_horizon=forecasting_horizon)
+
+    results_dict = {
+        'y_pred_mean': y_pred_point_estimate
+    }
+
+    return results_dict

@@ -440,7 +440,8 @@ def create_complete_matrix_data(debug=True):
 
     final_df = pd.DataFrame([])
 
-    for district in districts_list:
+    for i, district in enumerate(districts_list):
+        print_progress(completed=i+1, total=len(districts_list))
         district_df = get_all_table_data(table_name='matrix_' + district)
         district_df['district'] = district
         final_df = pd.concat([final_df, district_df])
@@ -531,7 +532,7 @@ if __name__ == '__main__':
     # create_weekly_matrix()
     # get_weekly_variant_data('2020-03-01')
     # weekly_mobility_dict = get_weekly_mobility_data('Stadt Neustadt a.d. W.', get_all_table_data(table_name='destatis_mobility_data'),  '2020-03-01')
-    create_weekly_matrix()
-    # create_complete_matrix_data()
+    # create_weekly_matrix()
+    create_complete_matrix_data()
     # get_weekly_beta('Münster','2021-02-01')
     # get_predictors_for_ml_layer('Münster', '2021-01-15')

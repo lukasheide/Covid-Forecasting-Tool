@@ -36,6 +36,13 @@ def forecasting_pipeline():
     ml_model_path = '../Assets/MachineLearningLayer/Models/xgb_model_lukas.pkl'
     standardizer_model_path = '../Assets/MachineLearningLayer/Models/standardizer_model.pkl'
 
+    # Ensemble Weights:
+    ensemble_model_share = {
+        'seirv_last_beta': 0.5,
+        'seirv_ml_beta': 0,
+        'sarima': 0.5
+    }
+
     debug = False
 
     ################################################################
@@ -88,17 +95,19 @@ def forecasting_pipeline():
         seirv_last_beta_only_results, seirv_ml_results, sarima_results, ensemble_results = \
             forecast_all_models(y_train_seirv, y_train_sarima, forecasting_horizon,
                                 ml_training_data, start_vals_seirv, fixed_model_params_seirv,
-                                standardizer_obj, ml_model, district)
+                                standardizer_obj, ml_model, district, ensemble_model_share)
 
         ## 4) Debugging Visualization
         if debug:
             pass #todo
 
-        ## 5) Upload to DB
 
-        # 5.1) If exists, delete existing data in table for current district
 
-        # 5.2) Upload data for current district to table:
+        ## 6) Upload to DB
+
+        # 6.1) If exists, delete existing data in table for current district
+
+        # 6.2) Upload data for current district to table:
         # With the following Columns:
         # [1] date
         # [2] historical_infections (training data -> is NA in forecasting period)

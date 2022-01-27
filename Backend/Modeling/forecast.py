@@ -8,7 +8,7 @@ from Backend.Modeling.Regression_Model.ARIMA import sarima_pipeline_val
 
 def forecast_all_models(y_train_diffeq, y_train_sarima, forecasting_horizon, ml_matrix_predictors,
                         start_vals_seirv, fixed_model_params_seirv,
-                        standardizer_obj, ml_model, district
+                        standardizer_obj, ml_model, district, ensemble_model_share
                         ):
     ## 3.1) SEIRV + Last Beta
     seirv_last_beta_only_results = seirv_pipeline(y_train=y_train_diffeq,
@@ -28,7 +28,13 @@ def forecast_all_models(y_train_diffeq, y_train_sarima, forecasting_horizon, ml_
                                          forecasting_horizon=forecasting_horizon)
 
     ## 3.4) Ensemble Model
-    # Todo Implement Ensemble
-    ensemble_results = None
+    # Ensemble Share:
+    ensemble_point_y_pred = ensemble_model_share['seirv_last_beta'] * seirv_last_beta_only_results['y_pred_without_train_period'] + \
+                            ensemble_model_share['seirv_ml_beta'] * seirv_ml_results['y_pred_mean'] + \
+                            ensemble_model_share['sarima'] * sarima_results['predictions']
+
+    ensemble_results = {
+        'y_pred_mean': ensemble_point_y_pred
+    }
 
     return seirv_last_beta_only_results, seirv_ml_results, sarima_results, ensemble_results

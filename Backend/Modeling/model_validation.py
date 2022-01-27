@@ -338,6 +338,12 @@ def model_validation_pipeline_v2_wrapper():
 
     districts = ['Bielefeld', 'Münster']
 
+    ensemble_model_share = {
+        'seirv_last_beta': 0.5,
+        'seirv_ml_beta': 0,
+        'sarima': 0.5
+    }
+
     # ML Layer:
     ml_model_path = '../Assets/MachineLearningLayer/Models/xgb_model_lukas.pkl'
     standardizer_model_path = '../Assets/MachineLearningLayer/Models/standardizer_model.pkl'
@@ -350,12 +356,13 @@ def model_validation_pipeline_v2_wrapper():
                                      train_length_diffeqmodel=train_length_diffeqmodel,
                                      train_length_sarima=train_length_sarima, training_period_max=training_period_max,
                                      ml_model_path=ml_model_path, standardizer_model_path=standardizer_model_path,
+                                     ensemble_model_share=ensemble_model_share,
                                      districts=districts)
 
 
 def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecasting_horizon, train_length_diffeqmodel,
                                  train_length_sarima, training_period_max,
-                                 ml_model_path, standardizer_model_path,
+                                 ml_model_path, standardizer_model_path, ensemble_model_share,
                                  districts, debug=True):
     # Create time_grid:
     intervals_grid = get_weekly_intervals_grid(pipeline_start_date, pipeline_end_date, training_period_max,
@@ -424,7 +431,7 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
             seirv_last_beta_only_results, seirv_ml_results, sarima_results, ensemble_results = \
                 forecast_all_models(y_train_diffeq, y_train_sarima, forecasting_horizon,
                                     ml_matrix_predictors, start_vals_seirv, fixed_model_params_seirv,
-                                    standardizer_obj, ml_model, district)
+                                    standardizer_obj, ml_model, district, ensemble_model_share)
 
             # Combine results:
             y_pred = {
@@ -461,7 +468,7 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
                 'metrics': metrics
             })
 
-        # Append everything to results dict:
+        # Append everything to results dict:F
         results_dict[district] = weekly_results
 
     pass
