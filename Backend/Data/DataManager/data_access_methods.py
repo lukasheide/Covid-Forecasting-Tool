@@ -21,7 +21,13 @@ def get_starting_values(district, train_start_date):
                                         district_status[Column.CUM_RECOVERIES].to_list()[0], \
                                         district_details[Column.POPULATION].to_list()[0]
 
-    return population, vaccinated, recovered
+    fixed_start_vals = {
+        'N': population,
+        'V': vaccinated,
+        'R': recovered,
+    }
+
+    return fixed_start_vals
 
 
 def get_model_params(district, train_start_date):

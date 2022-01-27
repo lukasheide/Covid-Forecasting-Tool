@@ -1,7 +1,6 @@
 import time
 from math import floor
 
-import pandas as pd
 from meteostat import Point, Daily
 from Backend.Data.DataManager.data_access_methods import get_starting_values, get_model_params
 from Backend.Data.DataManager.data_util import Column, date_int_str, print_progress
@@ -15,6 +14,9 @@ from Backend.Visualization.modeling_results import plot_train_and_fitted_infecti
 
 from isoweek import Week
 from datetime import datetime, timedelta
+
+import numpy as np
+import pandas as pd
 
 
 def create_weekly_matrix():
@@ -36,7 +38,6 @@ def create_weekly_matrix():
     # only one city for debugging:
     # district_list = ['Bielefeld']
 
-
     for j, district in enumerate(district_list):
         # print(district)
         start_time = datetime.now()
@@ -48,7 +49,8 @@ def create_weekly_matrix():
         # GET WEATHER DATA
         weekly_temp_dict, weekly_wind_dict = get_weekly_weather_data(district, start_date)
         # GET LAST WEEK BETA
-        weekly_beta_dict, weekly_beta_t_minus_1, weekly_infections_dict, start_forecasting_dict = get_weekly_beta_v2(district, start_date, end_date)
+        weekly_beta_dict, weekly_beta_t_minus_1, weekly_infections_dict, start_forecasting_dict = get_weekly_beta_v2(
+            district, start_date, end_date)
 
         # if len(weekly_policy_dict) > len(weekly_variant_dict):
         #     shortest_dict = weekly_variant_dict
@@ -67,7 +69,6 @@ def create_weekly_matrix():
             min_week = min(weekly_beta_dict.keys())
             max_week = max(weekly_beta_dict.keys())
             if min_week <= week <= max_week:
-
                 district_matrix_list.append((week,
                                              weekly_policy_dict.get(week, 0),
                                              weekly_variant_dict.get(week, 0),
@@ -78,7 +79,6 @@ def create_weekly_matrix():
                                              weekly_beta_dict.get(week, 0),
                                              weekly_beta_t_minus_1.get(week, 0),
                                              start_forecasting_dict.get(week, 0)))
-
 
         df = pd.DataFrame(district_matrix_list)
         df.columns = ['week',
@@ -93,8 +93,8 @@ def create_weekly_matrix():
                       'start_date_forecasting']
         update_db('matrix_' + district, df)
         end_time = datetime.now()
-        extra_str = '--> ' + district + ' | calculation time: ' + str(end_time-start_time)
-        print_progress(completed=j+1, total=total_districts, extra=extra_str)
+        extra_str = '--> ' + district + ' | calculation time: ' + str(end_time - start_time)
+        print_progress(completed=j + 1, total=total_districts, extra=extra_str)
 
 
 def get_weekly_mobility_data(district, mob_data, start_date):
@@ -199,18 +199,21 @@ def get_weekly_policy_data(start_date):
 def get_weekly_variant_data(start_date):
     variant_data = get_all_table_data(table_name='ecdc_varient_data')
     weekly_variant_dict = {}
-    start_date_obj = datetime.strptime(start_date, '%Y-%m-%d')
-    start_week = start_date_obj.isocalendar()[1]
     no_weeks = 1
     week_variant = ''
     weeks_percentage = 0
+    today_date_obj = datetime.today()
+    today_week = today_date_obj.isocalendar()[1]
+    start_date_obj = datetime.strptime(start_date, '%Y-%m-%d')
+    start_week = start_date_obj.isocalendar()[1]
     active_week = int(variant_data['year_week'][0].split("-")[1])
-    week_gaps = active_week - start_week
+    start_week_gaps = active_week - start_week
+    end_week_gaps = today_week - int(variant_data['year_week'].iloc[-1].split("-")[1])
 
-    while week_gaps > 0:
+    while start_week_gaps > 0:
         weekly_variant_dict[no_weeks] = 'Other'
         no_weeks = no_weeks + 1
-        week_gaps = week_gaps - 1
+        start_week_gaps = start_week_gaps - 1
 
     for i, row in variant_data.iterrows():
         this_date = row['year_week'].split("-")
@@ -225,6 +228,11 @@ def get_weekly_variant_data(start_date):
             no_weeks = no_weeks + 1
             active_week = this_week
             weeks_percentage = 0
+
+    while end_week_gaps > 0:
+        weekly_variant_dict[no_weeks] = 'B.1.1.529'
+        no_weeks = no_weeks + 1
+        end_week_gaps = end_week_gaps - 1
 
     return weekly_variant_dict
 
@@ -318,20 +326,21 @@ def get_weekly_beta_v2(district, start_date, end_date, debug=False):
 
     start_time = time.time()
 
-
     for week_num, current_interval in enumerate(intervals_grid):
 
         # For Debugging:
         # if week_num == 64:
         #    print('stop')
 
-
         # Get DataFrame indices:
         start_idx_train = \
-        all_smoothen_cases.loc[all_smoothen_cases['date_str'] == current_interval['start_day_train_str']].index[0]
-        end_idx_train = all_smoothen_cases.loc[all_smoothen_cases['date_str'] == current_interval['end_day_train_str']].index[0]
-        start_idx_val = all_smoothen_cases.loc[all_smoothen_cases['date_str'] == current_interval['start_day_val_str']].index[0]
-        end_idx_val = all_smoothen_cases.loc[all_smoothen_cases['date_str'] == current_interval['end_day_val_str']].index[0]
+            all_smoothen_cases.loc[all_smoothen_cases['date_str'] == current_interval['start_day_train_str']].index[0]
+        end_idx_train = \
+        all_smoothen_cases.loc[all_smoothen_cases['date_str'] == current_interval['end_day_train_str']].index[0]
+        start_idx_val = \
+        all_smoothen_cases.loc[all_smoothen_cases['date_str'] == current_interval['start_day_val_str']].index[0]
+        end_idx_val = \
+        all_smoothen_cases.loc[all_smoothen_cases['date_str'] == current_interval['end_day_val_str']].index[0]
 
         # Get infection counts for training and for validation:
         y_train = all_smoothen_cases[Column.SEVEN_DAY_SMOOTHEN].iloc[start_idx_train:end_idx_train + 1].reset_index(
@@ -342,7 +351,7 @@ def get_weekly_beta_v2(district, start_date, end_date, debug=False):
         start_vals_train = get_starting_values(district, current_interval['start_day_train_str'])
         fixed_model_params_train = get_model_params(district, current_interval['start_day_train_str'])
 
-        ## 1) Run Pipeline for training period:
+        ## 1) Run Pipeline for training period(compute beta_t -1):
         training_pipeline_results = seirv_pipeline(y_train=y_train,
                                                    start_vals_fixed=start_vals_train,
                                                    fixed_model_params=fixed_model_params_train,
@@ -352,7 +361,7 @@ def get_weekly_beta_v2(district, start_date, end_date, debug=False):
         ## 2) Run fitting again for validation period: -> "What would've been the perfect beta?"
 
         fixed_start_vals_from_training = {
-            'N': start_vals_train[0],
+            'N': start_vals_train['N'],
             'V0': training_pipeline_results['model_start_vals_forecast_period']['V'],
             'R0': training_pipeline_results['model_start_vals_forecast_period']['R'],
             'E0': training_pipeline_results['model_start_vals_forecast_period']['E'],
@@ -376,13 +385,10 @@ def get_weekly_beta_v2(district, start_date, end_date, debug=False):
         # index starts with 0 -> +1
         # starts with training period of 14 days, so the first beta estimate corresponds to end of week two and not week one-> +1:
         # 1 + 1 -> 2 index shift
-        weekly_beta_t_minus_1_values[week_num+2] = training_pipeline_results['model_params_forecast_period']['beta']
-        weekly_beta_values[week_num+2] = validation_pipeline_result['fitted_params']['beta']
-        weekly_infections[week_num+2] = y_val.mean()
-        weekly_forecasting_start_date[week_num+2] = current_interval['start_day_val_str']
-
-
-
+        weekly_beta_t_minus_1_values[week_num + 2] = training_pipeline_results['model_params_forecast_period']['beta']
+        weekly_beta_values[week_num + 2] = validation_pipeline_result['fitted_params']['beta']
+        weekly_infections[week_num + 2] = y_val.mean()
+        weekly_forecasting_start_date[week_num + 2] = current_interval['start_day_val_str']
 
     end_time = time.time()
     # print(f'Duration: {end_time-start_time}')
@@ -437,15 +443,22 @@ def create_complete_matrix_data(debug=True):
     districts_list = districts['district'].tolist()
 
     final_df = pd.DataFrame([])
+    no_weather_dist = []
 
-    for district in districts_list:
+    for i, district in enumerate(districts_list):
+        print_progress(completed=i+1, total=len(districts_list))
         district_df = get_all_table_data(table_name='matrix_' + district)
+        if district == 'Garmisch-Partenkirchen':
+            replacement_data = get_all_table_data(table_name='matrix_Weilheim_Schongau')
+            district_df['wind'] = replacement_data['wind']
+            district_df['temperature'] = replacement_data['temperature']
+
         district_df['district'] = district
         final_df = pd.concat([final_df, district_df])
 
     final_df.fillna(0)
     final_df.to_csv('../Assets/Data/all_matrix_data_v2.csv')
-
+    print(no_weather_dist)
 
     ## Debugging:
     if debug:
@@ -454,7 +467,6 @@ def create_complete_matrix_data(debug=True):
 
         # group by district:
         temp_df = df_outliers.groupby(['district'])['district'].count()
-
 
     # update_db('all_matrix_data', final_df)
 
@@ -472,14 +484,32 @@ def get_predictors_for_ml_layer(district, start_date):
     # GET WEATHER DATA
     temperature, wind = get_weather_data(district, start_date)
 
-    # GET LAST WEEK BETA TODO : Lukas should check this!
-    start_date_obj = datetime.strptime(start_date, '%Y-%m-%d')- timedelta(days=14)
-    corrected_start_date = start_date_obj.strftime('%Y-%m-%d')
-    end_date_obj = start_date
-    result_tuple = get_weekly_beta_v2(district, corrected_start_date, end_date_obj)
-    beta = result_tuple[0][2]
+    # Create dictionary:
+    ml_predictors_dict = {
+        # One-hot-encode variant data:
+        'B.1.1.7': 1 if variant == 'B.1.1.7' else 0,
+        'B.1.617.2': 1 if variant == 'B.1.617.2' else 0,
+        'B.1.1.529': 1 if variant == 'B.1.1.529' else 0,
+        'policy_index': policy_index,
+        'mobility': mobility,
+        'temperature': temperature,
+        'wind': wind,
+    }
 
-    return policy_index, variant, mobility, temperature, wind, beta
+    return ml_predictors_dict
+
+
+def prepare_all_beta_predictors(y_train_last_two_weeks: np.array, previous_beta: float,
+                                ml_predictors=dict) -> pd.Series:
+    mean_infections_last_two_weeks = y_train_last_two_weeks.mean()
+
+    ml_predictors['infections'] = mean_infections_last_two_weeks
+    ml_predictors['beta_t_minus_1'] = previous_beta
+
+    df = pd.DataFrame(columns=list(ml_predictors.keys()))
+    df.loc[0] = list(ml_predictors.values())
+
+    return df
 
 
 if __name__ == '__main__':
@@ -501,7 +531,7 @@ if __name__ == '__main__':
     # create_weekly_matrix()
     # get_weekly_variant_data('2020-03-01')
     # weekly_mobility_dict = get_weekly_mobility_data('Stadt Neustadt a.d. W.', get_all_table_data(table_name='destatis_mobility_data'),  '2020-03-01')
-    create_weekly_matrix()
-    # create_complete_matrix_data()
-    # get_weekly_beta('Münster','2021-02-01')
+    # create_weekly_matrix()
+    create_complete_matrix_data()
+    # get_weekly_beta_v2('Münster','2021-02-01', '2022-01-01')
     # get_predictors_for_ml_layer('Münster', '2021-01-15')

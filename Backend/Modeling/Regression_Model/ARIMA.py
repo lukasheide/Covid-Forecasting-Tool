@@ -35,8 +35,8 @@ def run_sarima(y_train, y_val):
         i +=1
 
     predictions = final_model.predict(len(y_val))
-    #print(final_model.summary())
-    print(compute_evaluation_metrics(y_val, predictions))
+    # print(final_model.summary())
+    # print(compute_evaluation_metrics(y_val, predictions))
     model_results = {'season': j, 'model': final_model}
     return model_results
 

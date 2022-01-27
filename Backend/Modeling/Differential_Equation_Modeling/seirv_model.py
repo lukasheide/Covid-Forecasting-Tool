@@ -5,6 +5,9 @@ from Backend.Modeling.Differential_Equation_Modeling.model_params import params_
 from Backend.Modeling.Differential_Equation_Modeling.optimization_functions import weigh_residuals
 from scipy.optimize import curve_fit, leastsq, least_squares
 import matplotlib.pyplot as plt
+
+from Backend.Modeling.Differential_Equation_Modeling.seirv_mechanics import solve_ode, ode_seirv, \
+    compute_daily_infections
 from Backend.Visualization.modeling_results import plot_train_and_val_infections, plot_train_and_fitted_infections_line_plot, plot_train_fitted_and_validation
 from Backend.Modeling.Util.pipeline_util import models_params_to_dictionary, models_compartment_values_to_dictionary
 
@@ -178,12 +181,12 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple, fixed_model_para
     fitted_and_fixed_model_params = tuple(opt_params[:1]) + tuple(fixed_params)
 
     # Compute starting values for each compartment:
-    N = start_vals_fixed[0]
+    N = start_vals_fixed['N']
     E0 = opt_params[1]
     I0 = opt_params[2]
     U0 = I0 * fixed_model_params['rho'] / (1 - fixed_model_params['rho'])
-    R0 = start_vals_fixed[1]
-    V0 = start_vals_fixed[2]
+    R0 = start_vals_fixed['R']
+    V0 = start_vals_fixed['V']
     S0 = N - E0 - I0 - R0 - V0
 
     # pack all together and add start value 0 for cumulated infections:
@@ -472,9 +475,9 @@ def solve_ode_for_fitting_partly_fitted_y0(fixed_start_vals, fixed_params, fit_p
 
     #  2c) Get y0:
     #  Starting values for I, R and V are given. E0 is fitted and S0 is then computed as the last missing value.
-    N = fixed_start_vals[0]
-    R0 = fixed_start_vals[1]
-    V0 = fixed_start_vals[2]
+    N = fixed_start_vals['N']
+    R0 = fixed_start_vals['R']
+    V0 = fixed_start_vals['V']
 
     # Compute U0 and S0:
     # Expected number of individuals in undetected compartment: Depends on "Dunkelziffer" factor
@@ -555,58 +558,6 @@ def solve_ode_for_fitting_fixed_y0(y0, t_grid, fit_params):
 
     return predicted_daily_infections  # return only Infection counts
 
-
-def solve_ode(y0, t, params):
-    ode_result = odeint(func=ode_seirv, y0=y0, t=t, args=params).T
-
-    # cumulated infections:
-    cum_infections = ode_result[6, :]
-
-    # compute daily new infections from cumulated infections:
-    daily_infections = compute_daily_infections(cum_infections)
-
-    # combine the numbers of individuals for each compartment over time + cumulated infections + daily infections:
-    # to ensure that the sizes of both arrays fit the starting values for each compartment are dropped (t=0):
-    cropped_ode_result = ode_result[:, 1:]
-
-    result = np.vstack([cropped_ode_result, daily_infections])
-
-    return result
-
-
-def ode_seirv(y0, t, beta, gamma_I, gamma_U, delta, theta, rho):
-    S, E, I, U, R, V, V_cum = y0
-    N = S + E + I + U + R + V
-
-    ## Differential equations:
-    # Susceptible:
-    dSdt = -beta / N * S * (I + U)
-
-    # Exposed:
-    dEdt = beta / N * S * (I + U) + \
-           theta * beta / N * V * (I + U) - \
-           delta * E
-
-    # Infectious - Detected:
-    dIdt = (1 - rho) * delta * E - gamma_I * I
-
-    # Infectious - Undetected:
-    dUdt = rho * delta * E - gamma_U * U
-
-    # Recovered:
-    dRdt = gamma_I * I + gamma_U * U
-
-    # Vaccinated:
-    dVdt = - theta * beta / N * V * (I + U)
-
-    ## Cumulated Detected Infection Counts:
-    dICumdt = (1 - rho) * delta * E
-
-    return dSdt, dEdt, dIdt, dUdt, dRdt, dVdt, dICumdt
-
-
-def compute_daily_infections(cumulated_infections: np.array) -> np.array:
-    return np.diff(cumulated_infections)
 
 
 def seirv_model_pipeline_DEPRECATED(y_train: np.array, start_vals_fitting: tuple, len_pred_period=14):

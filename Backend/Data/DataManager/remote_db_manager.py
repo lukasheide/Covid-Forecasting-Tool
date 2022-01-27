@@ -32,7 +32,7 @@ def upload_db_file():
     transport.connect(username=Server.username, password=Server.password)
     sftp = SFTPClient.from_transport(transport)
 
-    # create a copy of the existing database file
+    # create a local copy of the existing database file
     original = '../Assets/Data/opendaten.db'
     target = '../Assets/Data/opendaten_backup.db'
     shutil.copy2(original, target)
@@ -53,9 +53,10 @@ def upload_db_file():
     transport.close()
 
 
+
 if __name__ == '__main__':
 
-    task = 'upload'
+    task = 'download'
 
     if task == 'upload':
         upload_db_file()

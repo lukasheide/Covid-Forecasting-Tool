@@ -1,3 +1,4 @@
+import joblib
 import pandas as pd
 from datetime import date
 
@@ -7,13 +8,18 @@ from Backend.Data.DataManager.db_calls import start_pipeline, insert_param_and_s
     get_all_table_data
 from Backend.Data.DataManager.matrix_data import get_predictors_for_ml_layer
 from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_pipeline
-from Backend.Modeling.Regression_Model.ARIMA import sarima_pipeline_pred
+from Backend.Modeling.Differential_Equation_Modeling.seirv_model_and_ml import seirv_ml_layer
+from Backend.Modeling.Regression_Model.ARIMA import sarima_pipeline_pred, sarima_pipeline_val
 from Backend.Evaluation.metrics import compute_evaluation_metrics
 from Backend.Modeling.Util.pipeline_util import train_test_split, get_list_of_random_dates, get_list_of_random_districts
+from Backend.Modeling.forecast import forecast_all_models
 from Backend.Modeling.model_validation import sarima_pipeline
 from Backend.Visualization.modeling_results import plot_train_fitted_and_validation, plot_sarima_pred_plot, \
     plot_sarima_val_line_plot, plot_train_fitted_and_predictions
 from Backend.Modeling.Regression_Model.ARIMA import run_sarima, sarima_model_predictions
+
+import xgboost as xgb
+from sklearn.preprocessing import StandardScaler
 
 
 def forecasting_pipeline():
@@ -26,6 +32,17 @@ def forecasting_pipeline():
     train_length_sarima = 28
     training_period_max = max(train_length_diffeqmodel, train_length_sarima)
 
+    # ML Layer:
+    ml_model_path = '../Assets/MachineLearningLayer/Models/xgb_model_lukas.pkl'
+    standardizer_model_path = '../Assets/MachineLearningLayer/Models/standardizer_model.pkl'
+
+    # Ensemble Weights:
+    ensemble_model_share = {
+        'seirv_last_beta': 0.5,
+        'seirv_ml_beta': 0,
+        'sarima': 0.5
+    }
+
     debug = False
 
     ################################################################
@@ -33,6 +50,14 @@ def forecasting_pipeline():
     # 1) Compute pipeline parameters:
     opendata = get_all_table_data(table_name='district_list')
     districts = opendata['district'].tolist()
+
+    # Import ML-Model:
+    with open(ml_model_path, 'rb') as fid:
+        ml_model = joblib.load(fid)
+
+    # Import Standardizer:
+    with open(standardizer_model_path, 'rb') as fid:
+        standardizer_obj = joblib.load(fid)
 
 
     # Iterate over all districts:
@@ -66,36 +91,24 @@ def forecasting_pipeline():
 
 
         ### 3) Models
-
-        ## 3.1) SEIRV + Last Beta
-        seirv_beta_results = seirv_pipeline(y_train=y_train_seirv,
-                                            start_vals_fixed=start_vals_seirv,
-                                            fixed_model_params=fixed_model_params_seirv,
-                                            forecast_horizon=forecasting_horizon,
-                                            allow_randomness_fixed_beta=False, district=district)
-
-        ## 3.2) SEIRV + Machine Learning Layer
-
-
-        ## 3.3) SARIMA
-        # input: y_train_sarima (6 weeks), forecast_horizon (14 days)
-        # output: {y_pred_mean, y_pred_upper, y_pred_lower, params}
-        sarima_results = sarima_pipeline_pred(y_train=y_train_sarima,
-                                             forecasting_horizon=forecasting_horizon)
-
-
-        ## 3.4) Ensemble Model
-
+        # Run all four models:
+        seirv_last_beta_only_results, seirv_ml_results, sarima_results, ensemble_results = \
+            forecast_all_models(y_train_seirv, y_train_sarima, forecasting_horizon,
+                                ml_training_data, start_vals_seirv, fixed_model_params_seirv,
+                                standardizer_obj, ml_model, district, ensemble_model_share)
 
         ## 4) Debugging Visualization
         if debug:
             pass #todo
 
-        ## 5) Upload to DB
+        ## 5) Convert 7-day average to 7-day-incident:
 
-        # 5.1) Delete existing data in table for current district
 
-        # 5.2) Upload data for current district to table:
+        ## 6) Upload to DB
+
+        # 6.1) If exists, delete existing data in table for current district
+
+        # 6.2) Upload data for current district to table:
         # With the following Columns:
         # [1] date
         # [2] historical_infections (training data -> is NA in forecasting period)
@@ -105,14 +118,22 @@ def forecasting_pipeline():
         ## [5] Seirv_last_beta_LOWER_PREDICTION
         # [6-8] SEIRV-Model + Machine Learning layer
         ## [6] Seirv_ml_beta_MEAN_PREDICTION
-        ## [7] Seirv_ml_beta_MEAN_PREDICTION
-        ## [8] Seirv_ml_beta_MEAN_PREDICTION
+        ## [7] Seirv_ml_beta_UPPER_PREDICTION
+        ## [8] Seirv_ml_beta_LOWER_PREDICTION
         # [9-11] SArima
         ## ...
         # [12-14] Ensemble Model
         ## ...
 
-
+        pass
+        # Metadata - Table:
+        # [1] Pipeline-ID
+        # [2] Full_Run                          -> set to 1 if pipeline is run on all districts and 0 if only on a subset
+        # [3] Timestamp of Start of Pipeline
+        # [4] Training-Start-Day
+        # [5] Training-End-Day
+        # [6] Forecasting-Start-Day
+        # [7] Forecasting-End-Day
 
 
 
