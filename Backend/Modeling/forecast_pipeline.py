@@ -1,3 +1,4 @@
+import joblib
 import pandas as pd
 from datetime import date
 
@@ -11,6 +12,7 @@ from Backend.Modeling.Differential_Equation_Modeling.seirv_model_and_ml import s
 from Backend.Modeling.Regression_Model.ARIMA import sarima_pipeline_pred, sarima_pipeline_val
 from Backend.Evaluation.metrics import compute_evaluation_metrics
 from Backend.Modeling.Util.pipeline_util import train_test_split, get_list_of_random_dates, get_list_of_random_districts
+from Backend.Modeling.forecast import forecast_all_models
 from Backend.Modeling.model_validation import sarima_pipeline
 from Backend.Visualization.modeling_results import plot_train_fitted_and_validation, plot_sarima_pred_plot, \
     plot_sarima_val_line_plot, plot_train_fitted_and_predictions
@@ -41,6 +43,14 @@ def forecasting_pipeline():
     # 1) Compute pipeline parameters:
     opendata = get_all_table_data(table_name='district_list')
     districts = opendata['district'].tolist()
+
+    # Import ML-Model:
+    with open(ml_model_path, 'rb') as fid:
+        ml_model = joblib.load(fid)
+
+    # Import Standardizer:
+    with open(standardizer_model_path, 'rb') as fid:
+        standardizer_obj = joblib.load(fid)
 
 
     # Iterate over all districts:
@@ -74,27 +84,11 @@ def forecasting_pipeline():
 
 
         ### 3) Models
-        ## 3.1) SEIRV + Last Beta
-        seirv_beta_results = seirv_pipeline(y_train=y_train_seirv,
-                                            start_vals_fixed=start_vals_seirv,
-                                            fixed_model_params=fixed_model_params_seirv,
-                                            forecast_horizon=forecasting_horizon,
-                                            allow_randomness_fixed_beta=False, district=district)
-
-        ## 3.2) SEIRV + Machine Learning Layer
-        seirv_ml_results = seirv_ml_layer(y_train_seirv, start_vals_seirv, fixed_model_params_seirv,
-                                          forecasting_horizon, ml_training_data, standardizer_obj, ml_model)
-
-
-        ## 3.3) SARIMA
-        # input: y_train_sarima (6 weeks), forecast_horizon (14 days)
-        # output: {y_pred_mean, y_pred_upper, y_pred_lower, params}
-        sarima_results = sarima_pipeline_pred(y_train=y_train_sarima,
-                                              forecasting_horizon=forecasting_horizon)
-
-
-        ## 3.4) Ensemble Model
-
+        # Run all four models:
+        seirv_last_beta_only_results, seirv_ml_results, sarima_results, ensemble_results = \
+            forecast_all_models(y_train_seirv, y_train_sarima, forecasting_horizon,
+                                ml_training_data, start_vals_seirv, fixed_model_params_seirv,
+                                standardizer_obj, ml_model, district)
 
         ## 4) Debugging Visualization
         if debug:
