@@ -265,3 +265,19 @@ def plot_beta_matrix_estimation(y_train_true, y_val_true, y_train_pred_full, y_v
 
 def visualize_multiple_models(y_train, y_pred_full_diffeq, y_forecast_diffeq, y_forecast_sarima):
     pass
+
+
+def plot_all_forecasts(forecast_dictionary, y_train, forecasting_horizon):
+    plt.clf()
+
+    # Colorcodes for each model:
+    diff_eq_last_beta_color = '#ff7f0f'
+    # ...
+
+    # Get length of periods:
+    len_train = len(y_train)
+    len_forecast = forecasting_horizon
+    len_total = len_train + len_forecast
+
+    t_grid_train = np.linspace(1, len_train, len_train)
+    t_grid_forecasting = np.linspace(1, len_train, len_train)

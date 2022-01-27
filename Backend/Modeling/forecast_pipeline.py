@@ -15,7 +15,7 @@ from Backend.Modeling.Util.pipeline_util import train_test_split, get_list_of_ra
 from Backend.Modeling.forecast import forecast_all_models, convert_all_forecasts_to_incidences
 from Backend.Modeling.model_validation import sarima_pipeline
 from Backend.Visualization.modeling_results import plot_train_fitted_and_validation, plot_sarima_pred_plot, \
-    plot_sarima_val_line_plot, plot_train_fitted_and_predictions
+    plot_sarima_val_line_plot, plot_train_fitted_and_predictions, plot_all_forecasts
 from Backend.Modeling.Regression_Model.ARIMA import run_sarima, sarima_model_predictions
 
 import xgboost as xgb
@@ -43,7 +43,7 @@ def forecasting_pipeline():
         'sarima': 0.5
     }
 
-    debug = False
+    debug = True
 
     ################################################################
 
@@ -99,7 +99,7 @@ def forecasting_pipeline():
 
         ## 4) Debugging Visualization
         if debug:
-            pass #todo
+            plot_all_forecasts(forecast_dictionary=all_combined_seven_day_average, y_train=y_train_sarima, forecasting_horizon=forecasting_horizon)
 
         ## 5) Convert 7-day average to 7-day-incident:
         all_combined_incidence = convert_all_forecasts_to_incidences(all_combined_seven_day_average, start_vals_seirv['N'])
