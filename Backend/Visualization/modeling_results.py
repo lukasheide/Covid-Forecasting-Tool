@@ -2,9 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
+from Backend.Data.DataManager.data_util import create_dates_array
+
 
 ## True Data:
 # train:
+
 orange = '#ff7f0f'
 # validation:
 black = '#0f0f0f'
@@ -267,10 +270,14 @@ def visualize_multiple_models(y_train, y_pred_full_diffeq, y_forecast_diffeq, y_
     pass
 
 
-def plot_all_forecasts(forecast_dictionary, y_train, forecasting_horizon):
+def plot_all_forecasts(forecast_dictionary, y_train, start_date_str, forecasting_horizon, district):
     plt.clf()
 
+    # Get dates array:
+    dates_array = create_dates_array(start_date_str=start_date_str, num_days=len(y_train) + forecasting_horizon)
+
     # Colorcodes for each model:
+    y_train_color = '#0f0f0f'
     diff_eq_last_beta_color = '#ff7f0f'
     # ...
 
@@ -279,5 +286,26 @@ def plot_all_forecasts(forecast_dictionary, y_train, forecasting_horizon):
     len_forecast = forecasting_horizon
     len_total = len_train + len_forecast
 
-    t_grid_train = np.linspace(1, len_train, len_train)
-    t_grid_forecasting = np.linspace(1, len_train, len_train)
+    t_grid_train = dates_array[:len_train]
+    t_grid_forecasting = dates_array[-forecasting_horizon:]
+    t_grid_all = dates_array
+
+
+    ## Create plots:
+    # Training Data:
+    plt.scatter(x=t_grid_train, y=y_train, s=40, color=y_train_color, zorder=15, label='Training Data')
+
+    ## Forecasts:
+    # Diff Eq Last Beta:
+    y_pred_mean_diff_eq_last_beta = forecast_dictionary['y_pred_seirv_last_beta_mean']
+    plt.plot(t_grid_forecasting, y_pred_mean_diff_eq_last_beta, color=purple, zorder=5, linewidth=2.5, label='DiffEqLastBeta Point Estimate')
+
+
+    ## Making stuff pretty:
+    # Axis description:
+    plt.title(f'Forecast for {district}')
+    plt.ylabel('7-day incidences')
+    plt.xlabel('Days')
+    plt.legend(loc="upper right")
+
+    plt.show()

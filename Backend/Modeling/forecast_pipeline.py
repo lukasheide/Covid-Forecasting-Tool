@@ -15,7 +15,8 @@ from Backend.Modeling.Differential_Equation_Modeling.seirv_model_and_ml import s
 from Backend.Modeling.Regression_Model.ARIMA import sarima_pipeline_pred, sarima_pipeline_val
 from Backend.Evaluation.metrics import compute_evaluation_metrics
 from Backend.Modeling.Util.pipeline_util import train_test_split, get_list_of_random_dates, get_list_of_random_districts
-from Backend.Modeling.forecast import forecast_all_models, convert_all_forecasts_to_incidences
+from Backend.Modeling.forecast import forecast_all_models, convert_all_forecasts_to_incidences, \
+    convert_seven_day_averages
 from Backend.Modeling.model_validation import sarima_pipeline
 from Backend.Visualization.modeling_results import plot_train_fitted_and_validation, plot_sarima_pred_plot, \
     plot_sarima_val_line_plot, plot_train_fitted_and_predictions, plot_all_forecasts
@@ -25,7 +26,7 @@ import xgboost as xgb
 from sklearn.preprocessing import StandardScaler
 
 
-def forecasting_pipeline(full_run=False, debug=False):
+def forecasting_pipeline(full_run=False, debug=True):
     #################### Pipeline Configuration: ####################
     training_end_date = '2022-01-16'
     forecasting_horizon = 14
@@ -109,13 +110,16 @@ def forecasting_pipeline(full_run=False, debug=False):
                                 ml_training_data, start_vals_seirv, fixed_model_params_seirv,
                                 standardizer_obj, ml_model, district, ensemble_model_share)
 
-        ## 4) Debugging Visualization
-        if debug:
-            pass  # todo
-            plot_all_forecasts(forecast_dictionary=all_combined_seven_day_average, y_train=y_train_sarima, forecasting_horizon=forecasting_horizon)
 
-        ## 5) Convert 7-day average to 7-day-incident:
+        ## 4) Convert 7-day average to 7-day-incident:
         all_combined_incidence = convert_all_forecasts_to_incidences(all_combined_seven_day_average, start_vals_seirv['N'])
+        y_train_incidence = convert_seven_day_averages(y_train_sarima, start_vals_seirv['N'])
+
+        ## 5) Debugging Visualization
+        if debug:
+            plot_all_forecasts(forecast_dictionary=all_combined_incidence, y_train=y_train_incidence,
+                               start_date_str=training_start_date.strftime('%Y-%m-%d'), forecasting_horizon=forecasting_horizon,
+                               district=district)
 
         ## 6) Upload to DB
         column_names = get_forecasting_df_columns()
