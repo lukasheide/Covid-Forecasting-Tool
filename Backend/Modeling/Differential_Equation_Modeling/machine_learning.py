@@ -160,7 +160,7 @@ def ml_testing(X_test, y_test, model):
     return(scores["rmse"])
 
 #test the fitted model: coompare pred and beta t-1
-def ml_testing_beta(X_test, y_test, model):
+def ml_testing_beta(X_test, y_test):
     beta_t_1 = X_test['beta_t_minus_1']
     pred = model.predict(X_test)
     scores = compute_evaluation_metrics(y_val=y_test,y_pred=pred)
@@ -188,6 +188,9 @@ def run_all(X_train, y_train, X_test, y_test):
             min = rmse[i][0]
             best_model = rmse[i][1]
     save_model(best_model)
+    rmse.to_csv("rmse.csv")
+    best_rmse, beta_rmse = ml_testing_beta(X_test, y_test, best_model)
+    beta_rmse.to_csv("beta_rmse.csv")
     return best_model
 
 #save the given model
@@ -204,12 +207,3 @@ def load_model():
 
 
 X_train, X_test, y_train, y_test = create_tuple()
-#X_test = pd.read_csv("x_test.csv")
-#X_train = pd.read_csv("x_train.csv")
-#y_test = pd.read_csv("y_test.csv")
-#y_train = pd.read_csv("y_train.csv")
-#fitted_model = run_all(X_train, y_train, X_test, y_test)
-predict_tuple = [0,1,0,83.92999999999999,-14.0,0.3999999999999999,8.642857142857142,125.69387755102044,0.0447375155108553,0.0899554552236932]
-fitted_model = load_model()
-rmse, rmse_beta_t_1 = ml_testing_beta(X_test, y_test, fitted_model)
-print(predict_beta(fitted_model, predict_tuple))
