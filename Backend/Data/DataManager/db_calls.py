@@ -237,6 +237,8 @@ def get_mobility_data(district, date=None):
 
 
 def get_weather_data(district, date=None):
+    if district == 'Garmisch-Partenkirchen':
+        district == 'Weilheim-Schongau'
     location = get_district_data(district, [Column.LATITUDE, Column.LONGITUDE])
     dist_lat = float(location[Column.LATITUDE].iloc[0])
     dist_lon = float(location[Column.LONGITUDE].iloc[0])
