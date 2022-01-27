@@ -1,11 +1,14 @@
 import joblib
+from datetime import datetime, timedelta
+import numpy as np
 import pandas as pd
 from datetime import date
 
 from Backend.Data.DataManager.data_access_methods import get_smoothen_cases, get_starting_values, get_model_params
-from Backend.Data.DataManager.data_util import Column, date_int_str, compute_end_date_of_validation_period
+from Backend.Data.DataManager.data_util import Column, date_int_str, compute_end_date_of_validation_period, \
+    create_dates_array, get_forecasting_df_columns
 from Backend.Data.DataManager.db_calls import start_pipeline, insert_param_and_start_vals, insert_prediction_vals, \
-    get_all_table_data
+    get_all_table_data, start_forecast_pipeline, update_db
 from Backend.Data.DataManager.matrix_data import get_predictors_for_ml_layer
 from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_pipeline
 from Backend.Modeling.Differential_Equation_Modeling.seirv_model_and_ml import seirv_ml_layer
@@ -22,8 +25,7 @@ import xgboost as xgb
 from sklearn.preprocessing import StandardScaler
 
 
-def forecasting_pipeline():
-
+def forecasting_pipeline(full_run=False, debug=False):
     #################### Pipeline Configuration: ####################
     training_end_date = '2022-01-16'
     forecasting_horizon = 14
@@ -43,13 +45,25 @@ def forecasting_pipeline():
         'sarima': 0.5
     }
 
-    debug = True
+    ##### write starting values of the pipeline to DB ########
+    training_start_date = datetime.strptime(training_end_date, '%Y-%m-%d') - timedelta(
+        days=train_length_sarima)
+    forecast_start_date = datetime.strptime(training_end_date, '%Y-%m-%d') + timedelta(days=1)
+    forecast_end_date = forecast_start_date + timedelta(days=forecasting_horizon)
 
+    pipeline_id = start_forecast_pipeline(t_start_date=training_start_date.strftime('%Y-%m-%d'),
+                                          t_end_date=training_end_date,
+                                          f_start_date=forecast_start_date.strftime('%Y-%m-%d'),
+                                          f_end_date=forecast_end_date.strftime('%Y-%m-%d'),
+                                          full_run=full_run)
     ################################################################
 
     # 1) Compute pipeline parameters:
-    opendata = get_all_table_data(table_name='district_list')
-    districts = opendata['district'].tolist()
+    districts = ['Münster', 'Potsdam', 'Segeberg', 'Rosenheim, Kreis', 'Hochtaunus', 'Dortmund', 'Essen', 'Bielefeld',
+                 'Warendorf', 'München, Landeshauptstadt']
+    if full_run:
+        opendata = get_all_table_data(table_name='district_list')
+        districts = opendata['district'].tolist()
 
     # Import ML-Model:
     with open(ml_model_path, 'rb') as fid:
@@ -59,11 +73,10 @@ def forecasting_pipeline():
     with open(standardizer_model_path, 'rb') as fid:
         standardizer_obj = joblib.load(fid)
 
-
     # Iterate over all districts:
-    results_dict = {}
     for i, district in enumerate(districts):
-        print(f'Computing district {district}: {i+1} / {len(districts)}')
+
+        print(f'Computing district {district}: {i + 1} / {len(districts)}')
 
         ### 2) Import Training Data
         ## 2a) Import Historical Infections
@@ -89,7 +102,6 @@ def forecasting_pipeline():
 
         # this is used for the machine learning layer later on
 
-
         ### 3) Models
         # Run all four models:
         seirv_last_beta_only_results, seirv_ml_results, sarima_results, ensemble_results, all_combined_seven_day_average = \
@@ -99,12 +111,37 @@ def forecasting_pipeline():
 
         ## 4) Debugging Visualization
         if debug:
+            pass  # todo
             plot_all_forecasts(forecast_dictionary=all_combined_seven_day_average, y_train=y_train_sarima, forecasting_horizon=forecasting_horizon)
 
         ## 5) Convert 7-day average to 7-day-incident:
         all_combined_incidence = convert_all_forecasts_to_incidences(all_combined_seven_day_average, start_vals_seirv['N'])
 
         ## 6) Upload to DB
+        column_names = get_forecasting_df_columns()
+        final_forecast_df = pd.DataFrame(columns=column_names)
+
+        # Create dates array from start_date_training to end_date_forecasting:
+        dates_array = create_dates_array(start_date_str=train_start_date_SARIMA, num_days=training_period_max+forecasting_horizon)
+
+        # Add dates:
+        final_forecast_df['date'] = dates_array
+
+        # Add cases:
+        final_forecast_df['cases'] = y_train_sarima
+
+        # Add district name:
+        final_forecast_df['district_name'] = district
+
+        # Add district name:
+        final_forecast_df['pipeline_id'] = pipeline_id
+
+        # Add forecasts:
+        for k, v in all_combined_seven_day_average.items():
+            final_forecast_df[k].iloc[-forecasting_horizon:] = v
+
+        update_db(table_name='district_forecast', dataframe=final_forecast_df, replace=False)
+
 
         # 6.1) If exists, delete existing data in table for current district
 
@@ -125,7 +162,7 @@ def forecasting_pipeline():
         # [12-14] Ensemble Model
         ## ...
 
-        pass
+    pass
         # Metadata - Table:
         # [1] Pipeline-ID
         # [2] Full_Run                          -> set to 1 if pipeline is run on all districts and 0 if only on a subset

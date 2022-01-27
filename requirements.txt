@@ -88,3 +88,4 @@ meteostat==1.5.10
 pmdarima
 paramiko
 isoweek
+xgboost
