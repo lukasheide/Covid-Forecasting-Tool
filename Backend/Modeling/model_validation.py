@@ -15,6 +15,7 @@ from Backend.Evaluation.metrics import compute_evaluation_metrics
 from Backend.Modeling.Differential_Equation_Modeling.seirv_model_and_ml import seirv_ml_layer
 from Backend.Modeling.Util.pipeline_util import train_test_split, get_list_of_random_dates, \
     get_list_of_random_districts, date_difference_strings
+from Backend.Modeling.forecast import forecast_all_models
 from Backend.Visualization.modeling_results import plot_train_fitted_and_validation, plot_sarima_pred_plot, \
     plot_sarima_val_line_plot, plot_train_fitted_and_predictions, visualize_multiple_models
 from Backend.Modeling.Regression_Model.ARIMA import run_sarima, sarima_model_predictions, sarima_pipeline_val
@@ -420,25 +421,10 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
             ml_matrix_predictors = get_predictors_for_ml_layer(district, train_start_date_diff_eq_str)
 
             ### 3) Models
-
-            ## 3.1) SEIRV + Last Beta
-            seirv_last_beta_only_results = seirv_pipeline(y_train=y_train_diffeq,
-                                                          start_vals_fixed=start_vals_seirv,
-                                                          fixed_model_params=fixed_model_params_seirv,
-                                                          forecast_horizon=forecasting_horizon,
-                                                          allow_randomness_fixed_beta=False, district=district)
-
-            ## 3.2) SEIRV + Machine Learning Layer
-            seirv_ml_results = seirv_ml_layer(y_train_diffeq, start_vals_seirv, fixed_model_params_seirv,
-                                              forecasting_horizon, ml_matrix_predictors, standardizer_obj, ml_model)
-
-            ## 3.3) SARIMA
-            # input: y_train_sarima (6 weeks), forecast_horizon (14 days)
-            # output: {y_pred_mean, y_pred_upper, y_pred_lower, params}
-            sarima_results = sarima_pipeline_val(y_train=y_train_sarima,
-                                                 forecasting_horizon=forecasting_horizon)
-
-            ## 3.4) Ensemble Model
+            seirv_last_beta_only_results, seirv_ml_results, sarima_results, ensemble_results = \
+                forecast_all_models(y_train_diffeq, y_train_sarima, forecasting_horizon,
+                                    ml_matrix_predictors, start_vals_seirv, fixed_model_params_seirv,
+                                    standardizer_obj, ml_model, district)
 
             # Combine results:
             y_pred = {

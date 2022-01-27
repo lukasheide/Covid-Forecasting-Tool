@@ -5,6 +5,9 @@ from Backend.Modeling.Differential_Equation_Modeling.model_params import params_
 from Backend.Modeling.Differential_Equation_Modeling.optimization_functions import weigh_residuals
 from scipy.optimize import curve_fit, leastsq, least_squares
 import matplotlib.pyplot as plt
+
+from Backend.Modeling.Differential_Equation_Modeling.seirv_mechanics import solve_ode, ode_seirv, \
+    compute_daily_infections
 from Backend.Visualization.modeling_results import plot_train_and_val_infections, plot_train_and_fitted_infections_line_plot, plot_train_fitted_and_validation
 from Backend.Modeling.Util.pipeline_util import models_params_to_dictionary, models_compartment_values_to_dictionary
 
@@ -555,58 +558,6 @@ def solve_ode_for_fitting_fixed_y0(y0, t_grid, fit_params):
 
     return predicted_daily_infections  # return only Infection counts
 
-
-def solve_ode(y0, t, params):
-    ode_result = odeint(func=ode_seirv, y0=y0, t=t, args=params).T
-
-    # cumulated infections:
-    cum_infections = ode_result[6, :]
-
-    # compute daily new infections from cumulated infections:
-    daily_infections = compute_daily_infections(cum_infections)
-
-    # combine the numbers of individuals for each compartment over time + cumulated infections + daily infections:
-    # to ensure that the sizes of both arrays fit the starting values for each compartment are dropped (t=0):
-    cropped_ode_result = ode_result[:, 1:]
-
-    result = np.vstack([cropped_ode_result, daily_infections])
-
-    return result
-
-
-def ode_seirv(y0, t, beta, gamma_I, gamma_U, delta, theta, rho):
-    S, E, I, U, R, V, V_cum = y0
-    N = S + E + I + U + R + V
-
-    ## Differential equations:
-    # Susceptible:
-    dSdt = -beta / N * S * (I + U)
-
-    # Exposed:
-    dEdt = beta / N * S * (I + U) + \
-           theta * beta / N * V * (I + U) - \
-           delta * E
-
-    # Infectious - Detected:
-    dIdt = (1 - rho) * delta * E - gamma_I * I
-
-    # Infectious - Undetected:
-    dUdt = rho * delta * E - gamma_U * U
-
-    # Recovered:
-    dRdt = gamma_I * I + gamma_U * U
-
-    # Vaccinated:
-    dVdt = - theta * beta / N * V * (I + U)
-
-    ## Cumulated Detected Infection Counts:
-    dICumdt = (1 - rho) * delta * E
-
-    return dSdt, dEdt, dIdt, dUdt, dRdt, dVdt, dICumdt
-
-
-def compute_daily_infections(cumulated_infections: np.array) -> np.array:
-    return np.diff(cumulated_infections)
 
 
 def seirv_model_pipeline_DEPRECATED(y_train: np.array, start_vals_fitting: tuple, len_pred_period=14):
