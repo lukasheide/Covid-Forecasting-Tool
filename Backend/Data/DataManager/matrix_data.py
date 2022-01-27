@@ -487,9 +487,9 @@ def get_predictors_for_ml_layer(district, start_date):
     # Create dictionary:
     ml_predictors_dict = {
         # One-hot-encode variant data:
+        'B.1.1.529': 1 if variant == 'B.1.1.529' else 0,
         'B.1.1.7': 1 if variant == 'B.1.1.7' else 0,
         'B.1.617.2': 1 if variant == 'B.1.617.2' else 0,
-        'B.1.1.529': 1 if variant == 'B.1.1.529' else 0,
         'policy_index': policy_index,
         'mobility': mobility,
         'temperature': temperature,

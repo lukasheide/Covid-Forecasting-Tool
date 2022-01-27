@@ -40,7 +40,7 @@ def forecast_all_models(y_train_diffeq, y_train_sarima, forecasting_horizon, ml_
 
     all_combined = {
         # seirv_last_beta:
-        'y_pred_seirv_last_beta_mean': None,
+        'y_pred_seirv_last_beta_mean': seirv_last_beta_only_results[''],
         'y_pred_seirv_last_beta_upper': None,
         'y_pred_seirv_last_beta_lower': None,
 
