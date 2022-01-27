@@ -18,11 +18,14 @@ def get_db_connection():
     return sqlite3.connect('../Assets/Data/opendaten.db')
 
 
-def update_db(table_name, dataframe):
+def update_db(table_name, dataframe, replace=True):
     table_name = format_name(table_name)
+    exec_type = 'replace'
     # prepare_table(table_name) this will not need to be used
+    if not replace:
+        exec_type = 'append'
     engine = get_engine()
-    dataframe.to_sql(table_name, engine, if_exists='replace', index=False)
+    dataframe.to_sql(table_name, engine, if_exists=exec_type, index=False)
 
 
 def update_db_with_index(table_name, dataframe, index_label):
@@ -207,7 +210,7 @@ def get_mobility_data(district, date=None):
     engine = get_engine()
 
     if date is not None:
-        query_sql = 'SELECT "%s" '\
+        query_sql = 'SELECT "%s" ' \
                     'FROM destatis_mobility_data ' \
                     'WHERE Kreisname = "%s" ' % (date, district,)
 
@@ -216,11 +219,11 @@ def get_mobility_data(district, date=None):
         if result.empty:
             # couldnt find a quesry to get the last column data
             # therefore, read the whole table and prepare the df to do the task
-            #end_date = [*mob_data.columns[-1:]][0]
+            # end_date = [*mob_data.columns[-1:]][0]
             mob_data = get_all_table_data(table_name='destatis_mobility_data')
             dist_mobility = mob_data.loc[mob_data['Kreisname'] == district]
             result = dist_mobility.iloc[:, -1].iloc[0]
-            print('no variant data for the given date, latest available week data is selected!')
+            print('no mobility data for the given date, latest available week data is selected!')
             return result
 
         return result[date].tolist()[0]
@@ -232,7 +235,7 @@ def get_mobility_data(district, date=None):
         mob_data = get_all_table_data(table_name='destatis_mobility_data')
         dist_mobility = mob_data.loc[mob_data['Kreisname'] == district]
         result = dist_mobility.iloc[:, -1].iloc[0]
-        print('no variant data for the given date, latest available week data is selected!')
+        print('no mobility data for the given date, latest available week data is selected!')
         return result
 
 
@@ -303,6 +306,47 @@ def clean_create_model_store():
     connection.close()
 
 
+def clean_create_forecast_store():
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    # clean
+    cursor.executescript('DROP TABLE IF EXISTS district_forecast;')
+    cursor.executescript('DROP TABLE IF EXISTS forecast_pipeline;')
+
+    create_sql = "CREATE TABLE IF NOT EXISTS forecast_pipeline( " \
+                 "pipeline_id INTEGER PRIMARY KEY, " \
+                 "train_start_date TEXT NOT NULL," \
+                 "train_end_date TEXT NOT NULL," \
+                 "frcst_start_date TEXT NOT NULL," \
+                 "frcst_end_date TEXT NOT NULL," \
+                 "full_run BOOLEAN NOT NULL," \
+                 "started_on TEXT NOT NULL);"
+    cursor.executescript(create_sql)
+
+    create_prediction_sql = "CREATE TABLE IF NOT EXISTS district_forecast( " \
+                            "prediction_id INTEGER PRIMARY KEY," \
+                            "pipeline_id INTEGER NOT NULL," \
+                            "district_name TEXT NOT NULL," \
+                            "date TEXT NOT NULL," \
+                            "cases REAL," \
+                            "y_pred_seirv_last_beta_mean TEXT," \
+                            "y_pred_seirv_last_beta_upper TEXT," \
+                            "y_pred_seirv_last_beta_lower TEXT," \
+                            "y_pred_seirv_ml_beta_mean TEXT," \
+                            "y_pred_seirv_ml_beta_upper TEXT," \
+                            "y_pred_seirv_ml_beta_lower TEXT," \
+                            "y_pred_sarima_mean TEXT," \
+                            "y_pred_sarima_upper TEXT," \
+                            "y_pred_sarima_lower TEXT," \
+                            "y_pred_ensemble_mean TEXT," \
+                            "y_pred_ensemble_upper TEXT," \
+                            "y_pred_ensemble_lower TEXT," \
+                            "FOREIGN KEY(pipeline_id) " \
+                            "REFERENCES forecast_pipeline(pipeline_id));"
+    cursor.executescript(create_prediction_sql)
+
+
 def start_pipeline(end_date, validation_duration, visualize, validate, verbose):
     connection = get_db_connection()
     cursor = connection.cursor()
@@ -312,8 +356,30 @@ def start_pipeline(end_date, validation_duration, visualize, validate, verbose):
               'verbose, ' \
               'validate, ' \
               'started_on) values (?, ?, ?, ?, ?, ?)'
-    cursor.execute(sql_srt, (end_date, validation_duration, visualize, validate, verbose, datetime.now().strftime("%d-%b-%Y (%H:%M:%S.%f)")))
+    cursor.execute(sql_srt, (
+        end_date, validation_duration, visualize, validate, verbose, datetime.now().strftime("%d-%b-%Y (%H:%M:%S.%f)")))
     cursor.execute('SELECT MAX(pipeline_id) FROM pipeline;')
+    pipeline_id = cursor.fetchone()[0]
+
+    connection.commit()
+    connection.close()
+
+    return pipeline_id
+
+
+def start_forecast_pipeline(t_start_date, t_end_date, f_start_date, f_end_date, full_run):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    sql_srt = 'INSERT INTO forecast_pipeline (' \
+              'train_start_date, ' \
+              'train_end_date, ' \
+              'frcst_start_date, ' \
+              'frcst_end_date, ' \
+              'full_run, ' \
+              'started_on) values (?, ?, ?, ?, ?, ?)'
+    cursor.execute(sql_srt, (
+    t_start_date, t_end_date, f_start_date, f_end_date, full_run, datetime.now().strftime("%d-%b-%Y (%H:%M:%S.%f)")))
+    cursor.execute('SELECT MAX(pipeline_id) FROM forecast_pipeline;')
     pipeline_id = cursor.fetchone()[0]
 
     connection.commit()
@@ -376,4 +442,6 @@ if __name__ == '__main__':
     #                                                                              Column.VACCINATION_PERCENTAGE.value,
     #                                                                              Column.CURRENT_INFECTIOUS.value])
     # get_table_data_by_duration()
-    clean_create_model_store()
+    # clean_create_model_store()
+    clean_create_forecast_store()
+    pass
