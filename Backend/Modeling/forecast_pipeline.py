@@ -117,14 +117,14 @@ def forecasting_pipeline():
         ## [5] Seirv_last_beta_LOWER_PREDICTION
         # [6-8] SEIRV-Model + Machine Learning layer
         ## [6] Seirv_ml_beta_MEAN_PREDICTION
-        ## [7] Seirv_ml_beta_MEAN_PREDICTION
-        ## [8] Seirv_ml_beta_MEAN_PREDICTION
+        ## [7] Seirv_ml_beta_UPPER_PREDICTION
+        ## [8] Seirv_ml_beta_LOWER_PREDICTION
         # [9-11] SArima
         ## ...
         # [12-14] Ensemble Model
         ## ...
 
-
+        pass
         # Metadata - Table:
         # [1] Pipeline-ID
         # [2] Full_Run                          -> set to 1 if pipeline is run on all districts and 0 if only on a subset

@@ -6,11 +6,11 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 # Set time period
-start = datetime(2020, 3, 1)
+start = datetime(2021, 3, 1)
 end = datetime.today()
 
 # Create Point for Muenster, DE
-district = Point(51.9625101, 7.6251879)
+district = Point(47.4923741, 11.0962815)
 
 # Get daily data for 2018
 data = Daily(district, start, end)

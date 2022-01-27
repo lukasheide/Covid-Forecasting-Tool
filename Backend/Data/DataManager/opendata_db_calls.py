@@ -295,8 +295,8 @@ def update_district_data(district):
                            daily_incidents_rate.get(date, 0),
                            daily_vacc_list.get(date, 0),
                            daily_booster_list.get(date, 0),
-                           cum_vacc_list.get(date, cum_vac)))
-                           # vacc_percentage))
+                           cum_vacc_list.get(date, cum_vac),
+                           vacc_percentage))
 
     df = pd.DataFrame(final_data)
     df.columns = ['date',
@@ -313,8 +313,8 @@ def update_district_data(district):
                   'daily_incidents_rate',
                   'daily_vacc',
                   'daily_booster',
-                  'cum_vacc']
-                  # 'vacc_percentage']
+                  'cum_vacc',
+                  'vacc_percentage']
     df['date'] = df['date'].apply(lambda x: x.replace('d', ''))
 
     # Compute 7 day cases:
