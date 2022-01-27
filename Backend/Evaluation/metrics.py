@@ -15,7 +15,7 @@ def compute_evaluation_metrics(y_val, y_pred):
 
     # Compute metrics:
     metrics = {
-        'rmse': mean_squared_error(y_true=actual, y_pred=pred),
+        'rmse': mean_squared_error(y_true=actual, y_pred=pred, squared=False),
         'mape': mean_absolute_percentage_error(y_true=actual, y_pred=pred),
         'mae': mean_absolute_error(y_true=actual, y_pred=pred)
     }

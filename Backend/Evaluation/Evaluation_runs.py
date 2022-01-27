@@ -5,7 +5,17 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from Backend.Visualization.modeling_results import plot_evaluation_metrics
 
+def ml_evaluation():
+    rmse = pd.read_csv('rmse.csv')
+    plt.bar(rmse.Model, rmse.RMSE)
 
+
+
+
+
+
+
+    ######DEPRECATED######
 def sarima_evaluation(dates, districts, forecasting_horizon):
         metrics = []
         # runs for different dates
@@ -19,7 +29,7 @@ def sarima_evaluation(dates, districts, forecasting_horizon):
                              validation_duration=forecasting_horizon,
                              visualize=True,
                              verbose=False,
-                             validate=False,
+                             validate=True,
                              evaluate=False))
 
         #create dataframe with metrics(rmse)
@@ -49,8 +59,8 @@ def plot_metrics(dataframe):
 #if __name__ == '__generalization_evaluation__':
 districts = ['Berlin', 'Segeberg', 'Münster', 'Rosenheim', 'Fulda']
 #districts = ['Essen', 'Münster']
-#dates = ['2020-06-20', '2021-06-20', '2021-11-15', '2021-12-08']
-dates = ['2022-01-16']
+dates = ['2020-06-20', '2021-06-20', '2021-11-15', '2021-12-08']
+#dates = ['2022-01-16']
 #compare_metrics(districts, dates)
 sarima_evaluation(dates, districts, 14)
 
