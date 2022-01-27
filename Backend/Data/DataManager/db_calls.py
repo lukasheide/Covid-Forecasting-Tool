@@ -182,7 +182,7 @@ def get_variant_data(date=None):
 
         if result.empty:
             query_sql = 'SELECT variant ' \
-                        'FROM ecdc_variant_data ' \
+                        'FROM ecdc_varient_data ' \
                         'WHERE percent_variant > 0 ' \
                         'ORDER BY year_week, percent_variant DESC ' \
                         'LIMIT 1'
@@ -193,7 +193,7 @@ def get_variant_data(date=None):
 
     else:
         query_sql = 'SELECT variant ' \
-                    'FROM ecdc_variant_data ' \
+                    'FROM ecdc_varient_data ' \
                     'WHERE percent_variant > 0 ' \
                     'ORDER BY year_week, percent_variant DESC ' \
                     'LIMIT 1'
