@@ -40,31 +40,40 @@ def forecast_all_models(y_train_diffeq, y_train_sarima, forecasting_horizon, ml_
 
     all_combined = {
         # seirv_last_beta:
-        'y_pred_seirv_last_beta_mean': seirv_last_beta_only_results[''],
+        'y_pred_seirv_last_beta_mean': seirv_last_beta_only_results['y_pred_without_train_period'],
         'y_pred_seirv_last_beta_upper': None,
         'y_pred_seirv_last_beta_lower': None,
 
         # seirv_ml_beta:
-        'y_pred_seirv_last_beta_mean': None,
-        'y_pred_seirv_last_beta_upper': None,
-        'y_pred_seirv_last_beta_lower': None,
+        'y_pred_seirv_ml_beta_mean': seirv_ml_results['y_pred_mean'],
+        'y_pred_seirv_ml_beta_upper': None,
+        'y_pred_seirv_ml_beta_lower': None,
 
         # sarima:
-        'y_pred_seirv_last_beta_mean': None,
-        'y_pred_seirv_last_beta_upper': None,
-        'y_pred_seirv_last_beta_lower': None,
+        'y_pred_sarima_mean': sarima_results['predictions'],
+        'y_pred_sarima_upper': None,
+        'y_pred_sarima_lower': None,
 
         # ensemble:
-        'y_pred_seirv_last_beta_mean': None,
-        'y_pred_seirv_last_beta_upper': None,
-        'y_pred_seirv_last_beta_lower': None,
-
+        'y_pred_ensemble_mean': ensemble_results['y_pred_mean'],
+        'y_pred_ensemble_upper': None,
+        'y_pred_ensemble_lower': None,
     }
 
     return seirv_last_beta_only_results, seirv_ml_results, sarima_results, ensemble_results, all_combined
 
 
+def convert_all_forecasts_to_incidences(forecasts: dict, pop_size_district: int) -> dict:
+    results_dict = {}
+
+        for k, v in forecasts.items():
+        if v is not None:
+            results_dict[k] = convert_seven_day_averages(v, pop_size_district)
+        else:
+            results_dict[k] = None
+
+
 def convert_seven_day_averages(forecast_array: np.array, pop_size_district: int) -> np.array:
     # Multiply with 7 to go from 7 day average to 7 day sum
     # Then divide by population size and multiply with 100k to get incidences
-    return forecast_array * 7 / pop_size_district * 100_000
+    return np.array(forecast_array) * 7 / pop_size_district * 100_000

@@ -12,7 +12,7 @@ from Backend.Modeling.Differential_Equation_Modeling.seirv_model_and_ml import s
 from Backend.Modeling.Regression_Model.ARIMA import sarima_pipeline_pred, sarima_pipeline_val
 from Backend.Evaluation.metrics import compute_evaluation_metrics
 from Backend.Modeling.Util.pipeline_util import train_test_split, get_list_of_random_dates, get_list_of_random_districts
-from Backend.Modeling.forecast import forecast_all_models
+from Backend.Modeling.forecast import forecast_all_models, convert_all_forecasts_to_incidences
 from Backend.Modeling.model_validation import sarima_pipeline
 from Backend.Visualization.modeling_results import plot_train_fitted_and_validation, plot_sarima_pred_plot, \
     plot_sarima_val_line_plot, plot_train_fitted_and_predictions
@@ -92,7 +92,7 @@ def forecasting_pipeline():
 
         ### 3) Models
         # Run all four models:
-        seirv_last_beta_only_results, seirv_ml_results, sarima_results, ensemble_results, all_combined = \
+        seirv_last_beta_only_results, seirv_ml_results, sarima_results, ensemble_results, all_combined_seven_day_average = \
             forecast_all_models(y_train_seirv, y_train_sarima, forecasting_horizon,
                                 ml_training_data, start_vals_seirv, fixed_model_params_seirv,
                                 standardizer_obj, ml_model, district, ensemble_model_share)
@@ -102,7 +102,7 @@ def forecasting_pipeline():
             pass #todo
 
         ## 5) Convert 7-day average to 7-day-incident:
-
+        all_combined_incidence = convert_all_forecasts_to_incidences(all_combined_seven_day_average, start_vals_seirv['N'])
 
         ## 6) Upload to DB
 
