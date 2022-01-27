@@ -428,7 +428,7 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
             ml_matrix_predictors = get_predictors_for_ml_layer(district, train_start_date_diff_eq_str)
 
             ### 3) Models
-            seirv_last_beta_only_results, seirv_ml_results, sarima_results, ensemble_results = \
+            seirv_last_beta_only_results, seirv_ml_results, sarima_results, ensemble_results, all_combined = \
                 forecast_all_models(y_train_diffeq, y_train_sarima, forecasting_horizon,
                                     ml_matrix_predictors, start_vals_seirv, fixed_model_params_seirv,
                                     standardizer_obj, ml_model, district, ensemble_model_share)

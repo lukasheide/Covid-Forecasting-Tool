@@ -92,7 +92,7 @@ def forecasting_pipeline():
 
         ### 3) Models
         # Run all four models:
-        seirv_last_beta_only_results, seirv_ml_results, sarima_results, ensemble_results = \
+        seirv_last_beta_only_results, seirv_ml_results, sarima_results, ensemble_results, all_combined = \
             forecast_all_models(y_train_seirv, y_train_sarima, forecasting_horizon,
                                 ml_training_data, start_vals_seirv, fixed_model_params_seirv,
                                 standardizer_obj, ml_model, district, ensemble_model_share)

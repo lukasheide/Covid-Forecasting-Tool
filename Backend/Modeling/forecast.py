@@ -29,7 +29,8 @@ def forecast_all_models(y_train_diffeq, y_train_sarima, forecasting_horizon, ml_
 
     ## 3.4) Ensemble Model
     # Ensemble Share:
-    ensemble_point_y_pred = ensemble_model_share['seirv_last_beta'] * seirv_last_beta_only_results['y_pred_without_train_period'] + \
+    ensemble_point_y_pred = ensemble_model_share['seirv_last_beta'] * seirv_last_beta_only_results[
+        'y_pred_without_train_period'] + \
                             ensemble_model_share['seirv_ml_beta'] * seirv_ml_results['y_pred_mean'] + \
                             ensemble_model_share['sarima'] * sarima_results['predictions']
 
@@ -37,8 +38,33 @@ def forecast_all_models(y_train_diffeq, y_train_sarima, forecasting_horizon, ml_
         'y_pred_mean': ensemble_point_y_pred
     }
 
-    return seirv_last_beta_only_results, seirv_ml_results, sarima_results, ensemble_results
+    all_combined = {
+        # seirv_last_beta:
+        'y_pred_seirv_last_beta_mean': None,
+        'y_pred_seirv_last_beta_upper': None,
+        'y_pred_seirv_last_beta_lower': None,
+
+        # seirv_ml_beta:
+        'y_pred_seirv_last_beta_mean': None,
+        'y_pred_seirv_last_beta_upper': None,
+        'y_pred_seirv_last_beta_lower': None,
+
+        # sarima:
+        'y_pred_seirv_last_beta_mean': None,
+        'y_pred_seirv_last_beta_upper': None,
+        'y_pred_seirv_last_beta_lower': None,
+
+        # ensemble:
+        'y_pred_seirv_last_beta_mean': None,
+        'y_pred_seirv_last_beta_upper': None,
+        'y_pred_seirv_last_beta_lower': None,
+
+    }
+
+    return seirv_last_beta_only_results, seirv_ml_results, sarima_results, ensemble_results, all_combined
 
 
-
-def convert_seven_day_averages(forecast_array:np.array, pop_size_district:int) -> np.array:
+def convert_seven_day_averages(forecast_array: np.array, pop_size_district: int) -> np.array:
+    # Multiply with 7 to go from 7 day average to 7 day sum
+    # Then divide by population size and multiply with 100k to get incidences
+    return forecast_array * 7 / pop_size_district * 100_000
