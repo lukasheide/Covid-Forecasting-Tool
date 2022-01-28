@@ -26,7 +26,12 @@ def create_weekly_matrix():
     opendata = get_all_table_data(table_name='district_list')
     district_list = opendata['district'].tolist()
     district_list.sort()
-    total_districts = len(district_list)
+
+    # For Debugging:
+    start_with_district = 'Höxter'
+    start_idx = district_list.index(start_with_district)
+    district_list = district_list[start_idx:]
+
     mob_data = get_all_table_data(table_name='destatis_mobility_data')
     start_date = '2020-03-16'
     end_date = '2022-01-24'

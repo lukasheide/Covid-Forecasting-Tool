@@ -342,20 +342,32 @@ def model_validation_pipeline_v2_wrapper():
 
     ################################################################
 
-    for pipeline_interval in pipeline_intervals:
-        model_validation_pipeline_v2(pipeline_start_date=pipeline_interval[0], pipeline_end_date=pipeline_interval[1],
-                                     forecasting_horizon=forecasting_horizon,
-                                     train_length_diffeqmodel=train_length_diffeqmodel,
-                                     train_length_sarima=train_length_sarima, training_period_max=training_period_max,
-                                     ml_model_path=ml_model_path, standardizer_model_path=standardizer_model_path,
-                                     ensemble_model_share=ensemble_model_share,
-                                     districts=districts)
+    results_list = {}
+    for num, pipeline_interval in enumerate(pipeline_intervals):
+        results_list[num] = (
+            model_validation_pipeline_v2(pipeline_start_date=pipeline_interval[0], pipeline_end_date=pipeline_interval[1],
+                                         forecasting_horizon=forecasting_horizon,
+                                         train_length_diffeqmodel=train_length_diffeqmodel,
+                                         train_length_sarima=train_length_sarima, training_period_max=training_period_max,
+                                         ml_model_path=ml_model_path, standardizer_model_path=standardizer_model_path,
+                                         ensemble_model_share=ensemble_model_share,
+                                         districts=districts)
+        )
+
+
+    # Inspect Results:
+
+    pass
 
 
 def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecasting_horizon, train_length_diffeqmodel,
                                  train_length_sarima, training_period_max,
-                                 ml_model_path, standardizer_model_path, ensemble_model_share,
-                                 districts, debug=True):
+                                 ml_model_path, standardizer_model_path, ensemble_model_share, districts,
+                                 run_diff_eq_last_beta=True,
+                                 run_diff_eq_ml_beta=False,
+                                 run_sarima=False,
+                                 run_ensemble=True,
+                                 debug=False):
     # Create time_grid:
     intervals_grid = get_weekly_intervals_grid(pipeline_start_date, pipeline_end_date, training_period_max,
                                                forecasting_horizon)
@@ -364,12 +376,16 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
     duration_full = date_difference_strings(d1=pipeline_start_date, d2=pipeline_end_date)
 
     # Import ML-Model:
-    with open(ml_model_path, 'rb') as fid:
-        ml_model = joblib.load(fid)
+    if run_diff_eq_ml_beta:
+        with open(ml_model_path, 'rb') as fid:
+            ml_model = joblib.load(fid)
 
-    # Import Standardizer:
-    with open(standardizer_model_path, 'rb') as fid:
-        standardizer_obj = joblib.load(fid)
+        # Import Standardizer:
+        with open(standardizer_model_path, 'rb') as fid:
+            standardizer_obj = joblib.load(fid)
+    else:
+        ml_model = None
+        standardizer_obj = None
 
     # Iterate over districts:
     results_dict = {}
@@ -391,15 +407,12 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
             ## 2a) Import Historical Infections
 
             # Training indices:
-            idx_train_start_sarima = \
-                infections_df.loc[infections_df['date_str'] == current_interval['start_day_train_str']].index[0]
+            idx_train_start_sarima = infections_df.loc[infections_df['date_str'] == current_interval['start_day_train_str']].index[0]
             idx_train_start_diffeq = idx_train_start_sarima + (train_length_sarima - train_length_diffeqmodel)
-            idx_train_end = infections_df.loc[infections_df['date_str'] == current_interval['end_day_train_str']].index[
-                0]
+            idx_train_end = infections_df.loc[infections_df['date_str'] == current_interval['end_day_train_str']].index[0]
 
             # Validation indices:
-            idx_val_start = infections_df.loc[infections_df['date_str'] == current_interval['start_day_val_str']].index[
-                0]
+            idx_val_start = infections_df.loc[infections_df['date_str'] == current_interval['start_day_val_str']].index[0]
             idx_val_end = infections_df.loc[infections_df['date_str'] == current_interval['end_day_val_str']].index[0]
 
             # Get arrays from dataframe:
@@ -413,17 +426,26 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
             train_start_date_diffeq_obj = current_interval['start_day_train_obj'] + timedelta(days=14)
             train_start_date_diff_eq_str = train_start_date_diffeq_obj.strftime('%Y-%m-%d')
 
-            start_vals_seirv = get_starting_values(district, train_start_date_diff_eq_str)
-            fixed_model_params_seirv = get_model_params(district, train_start_date_diff_eq_str)
+            if run_diff_eq_last_beta or run_diff_eq_ml_beta:
+                start_vals_seirv = get_starting_values(district, train_start_date_diff_eq_str)
+                fixed_model_params_seirv = get_model_params(district, train_start_date_diff_eq_str)
+            else:
+                start_vals_seirv = None
+                fixed_model_params_seirv = None
 
             ## 2c) Import Data for Machine Learning Matrix:
-            ml_matrix_predictors = get_predictors_for_ml_layer(district, train_start_date_diff_eq_str)
+            if run_diff_eq_ml_beta:
+                ml_matrix_predictors = get_predictors_for_ml_layer(district, train_start_date_diff_eq_str)
+            else:
+                ml_matrix_predictors = None
 
             ### 3) Models
             seirv_last_beta_only_results, seirv_ml_results, sarima_results, ensemble_results, all_combined = \
                 forecast_all_models(y_train_diffeq, y_train_sarima, forecasting_horizon,
                                     ml_matrix_predictors, start_vals_seirv, fixed_model_params_seirv,
-                                    standardizer_obj, ml_model, district, ensemble_model_share)
+                                    standardizer_obj, ml_model, district, ensemble_model_share,
+                                    run_diff_eq_last_beta, run_diff_eq_ml_beta, run_sarima, run_ensemble
+                                    )
 
             # Combine results:
             y_pred = {
@@ -467,10 +489,10 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
                 'metrics': metrics
             })
 
-        # Append everything to results dict:F
+        # Append everything to results dict:
         results_dict[district] = weekly_results
 
-    pass
+    return results_dict
 
 
 if __name__ == '__main__':
