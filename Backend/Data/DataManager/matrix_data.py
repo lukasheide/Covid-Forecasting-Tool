@@ -3,13 +3,14 @@ from math import floor
 
 from meteostat import Point, Daily
 from Backend.Data.DataManager.data_access_methods import get_starting_values, get_model_params
-from Backend.Data.DataManager.data_util import Column, date_int_str, print_progress
+from Backend.Data.DataManager.data_util import Column, date_int_str, print_progress, \
+    print_progress_with_computation_time_estimate
 from Backend.Data.DataManager.db_calls import get_all_table_data, get_district_data, get_table_data_by_duration, \
     update_db, get_policy_data, get_variant_data, get_mobility_data, get_weather_data
 
 from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_pipeline, fit_seirv_model, \
     fit_seirv_model_only_beta
-from Backend.Visualization.modeling_results import plot_train_and_fitted_infections_line_plot, \
+from Backend.Visualization.plotting import plot_train_and_fitted_infections_line_plot, \
     plot_beta_matrix_estimation
 
 from isoweek import Week
@@ -20,13 +21,20 @@ import pandas as pd
 
 
 def create_weekly_matrix():
+    start_time_pipeline = datetime.now()
+
     opendata = get_all_table_data(table_name='district_list')
     district_list = opendata['district'].tolist()
     district_list.sort()
     total_districts = len(district_list)
     mob_data = get_all_table_data(table_name='destatis_mobility_data')
     start_date = '2020-03-16'
-    end_date = '2022-01-16'
+    end_date = '2022-01-24'
+
+    # start_date = '2021-11-01'
+    # end_date = '2021-12-01'
+
+
     # GET INTERVENTION DATA
     weekly_policy_dict = get_weekly_policy_data(start_date)
     # GET VARIANT DATA
@@ -36,7 +44,9 @@ def create_weekly_matrix():
     # end_date = [*mob_data.columns[-1:]][0]
 
     # only one city for debugging:
-    # district_list = ['Bielefeld']
+    # district_list = ['Essen', 'Bielefeld', 'Münster', 'Dortmund', 'Bochum', 'Warendorf']
+
+
 
     for j, district in enumerate(district_list):
         # print(district)
@@ -94,7 +104,7 @@ def create_weekly_matrix():
         update_db('matrix_' + district, df)
         end_time = datetime.now()
         extra_str = '--> ' + district + ' | calculation time: ' + str(end_time - start_time)
-        print_progress(completed=j + 1, total=total_districts, extra=extra_str)
+        print_progress_with_computation_time_estimate(completed=j + 1, total=len(district_list), extra=extra_str, start_time=start_time_pipeline)
 
 
 def get_weekly_mobility_data(district, mob_data, start_date):
@@ -361,11 +371,12 @@ def get_weekly_beta_v2(district, start_date, end_date, debug=False):
         ## 2) Run fitting again for validation period: -> "What would've been the perfect beta?"
 
         fixed_start_vals_from_training = {
-            'N': start_vals_train['N'],
-            'V0': training_pipeline_results['model_start_vals_forecast_period']['V'],
-            'R0': training_pipeline_results['model_start_vals_forecast_period']['R'],
+            'S0': training_pipeline_results['model_start_vals_forecast_period']['S'],
             'E0': training_pipeline_results['model_start_vals_forecast_period']['E'],
             'I0': training_pipeline_results['model_start_vals_forecast_period']['I'],
+            'U0': training_pipeline_results['model_start_vals_forecast_period']['U'],
+            'R0': training_pipeline_results['model_start_vals_forecast_period']['R'],
+            'V0': training_pipeline_results['model_start_vals_forecast_period']['V'],
         }
 
         validation_pipeline_result = fit_seirv_model_only_beta(y_val,
@@ -457,7 +468,7 @@ def create_complete_matrix_data(debug=True):
         final_df = pd.concat([final_df, district_df])
 
     final_df.fillna(0)
-    final_df.to_csv('../Assets/Data/all_matrix_data_v2.csv')
+    final_df.to_csv('../Assets/Data/all_matrix_data_v3.csv')
     print(no_weather_dist)
 
     ## Debugging:
@@ -531,7 +542,7 @@ if __name__ == '__main__':
     # create_weekly_matrix()
     # get_weekly_variant_data('2020-03-01')
     # weekly_mobility_dict = get_weekly_mobility_data('Stadt Neustadt a.d. W.', get_all_table_data(table_name='destatis_mobility_data'),  '2020-03-01')
-    # create_weekly_matrix()
+    create_weekly_matrix()
     create_complete_matrix_data()
     # get_weekly_beta_v2('Münster','2021-02-01', '2022-01-01')
     # get_predictors_for_ml_layer('Münster', '2021-01-15')

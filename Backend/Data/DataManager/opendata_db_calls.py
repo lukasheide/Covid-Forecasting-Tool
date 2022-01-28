@@ -6,7 +6,7 @@ import pandas as pd
 import requests
 import re
 
-from Backend.Data.DataManager.data_util import print_progress
+from Backend.Data.DataManager.data_util import print_progress, print_progress_with_computation_time_estimate
 from Backend.Data.DataManager.db_functions import update_db, get_table_data
 from Backend.Data.DataManager.remote_db_manager import upload_db_file
 from Backend.Modeling.Vaccination_Efficiency.get_vaccination_effectiveness_fast import get_vaccination_effectiveness
@@ -71,9 +71,11 @@ def update_all_district_data():
     no_of_districts = len(district_list['district'])
     print('retrieving data from Corona Daten Platform:')
 
+    start_time = datetime.datetime.now()
+
     for i, district in enumerate(district_list['district']):
         update_district_data(district)
-        print_progress(completed=i+1, total=no_of_districts, extra=district)
+        print_progress_with_computation_time_estimate(completed=i+1, total=no_of_districts, start_time=start_time, extra=district)
 
 
 def parallel_corona_datenplatform_api_requests(district):

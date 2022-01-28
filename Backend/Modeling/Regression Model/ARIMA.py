@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import pmdarima as pmd
 from statsmodels.tsa.stattools import adfuller
-from Backend.Visualization.modeling_results import plot_sarima_model_line_plot
+from Backend.Visualization.plotting import plot_sarima_model_line_plot
 from Backend.Evaluation.metrics import compute_evaluation_metrics
 
 #reading csv file including date, cases, class

@@ -16,7 +16,7 @@ from Backend.Modeling.Differential_Equation_Modeling.seirv_model_and_ml import s
 from Backend.Modeling.Util.pipeline_util import train_test_split, get_list_of_random_dates, \
     get_list_of_random_districts, date_difference_strings
 from Backend.Modeling.forecast import forecast_all_models
-from Backend.Visualization.modeling_results import plot_train_fitted_and_validation, plot_sarima_pred_plot, \
+from Backend.Visualization.plotting import plot_train_fitted_and_validation, plot_sarima_pred_plot, \
     plot_sarima_val_line_plot, plot_train_fitted_and_predictions, visualize_multiple_models
 from Backend.Modeling.Regression_Model.ARIMA import run_sarima, sarima_model_predictions, sarima_pipeline_val
 
@@ -313,16 +313,16 @@ def sarima_pipeline(train_end_date: date, duration: int, districts: list, valida
 
 def model_validation_pipeline_v2_wrapper():
     # Small helper function for determining date shifted by a given number of weeks
-    target_date = '2021-11-01'
-    num_weeks_shift = 8
-    shifted_date_obj = datetime.strptime(target_date, '%Y-%m-%d') + timedelta(days=7 * num_weeks_shift)
+    target_date = '2021-11-03'
+    num_days_shift = 14
+    shifted_date_obj = datetime.strptime(target_date, '%Y-%m-%d') - timedelta(days=num_days_shift)
     shifted_date_str = shifted_date_obj.strftime('%Y-%m-%d')
     # print(f'Date 8 weeks after target_date: {shifted_date_str}')
 
     #################### Pipeline Configuration: ####################
     # For each interval
     pipeline_intervals = [
-        ('2021-11-01', '2022-01-15'),  # pipeline_start_dates
+        ('2021-11-20', '2022-01-15'),  # pipeline_start_dates
         ('2021-08-01', '2021-10-01'),  # pipeline_end_dates:
     ]
 
@@ -336,7 +336,7 @@ def model_validation_pipeline_v2_wrapper():
     districts = opendata['district'].tolist()
     districts.sort()
 
-    districts = ['Bielefeld', 'Münster']
+    districts = ['Münster']
 
     ensemble_model_share = {
         'seirv_last_beta': 0.5,
@@ -445,6 +445,13 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
                                               'y_pred_including_train_period'],
                                           y_forecast_diffeq=y_pred['Diff_Eq_Last_Beta'],
                                           y_forecast_sarima=None)
+
+                # Train + VAL - SEIRV
+                plot_train_fitted_and_validation(y_train=y_train_diffeq,
+                                                 y_pred=seirv_last_beta_only_results['y_pred_including_train_period'],
+                                                 y_val=y_val)
+
+
 
             ## 5) Evaluation - Compute metrics:
             metrics = {
