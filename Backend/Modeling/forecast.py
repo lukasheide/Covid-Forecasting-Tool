@@ -51,8 +51,8 @@ def forecast_all_models(y_train_diffeq, y_train_sarima, forecasting_horizon, ml_
 
         # sarima:
         'y_pred_sarima_mean': sarima_results['predictions'],
-        'y_pred_sarima_upper': None,
-        'y_pred_sarima_lower': None,
+        'y_pred_sarima_upper': sarima_results['upper'],
+        'y_pred_sarima_lower': sarima_results['lower'],
 
         # ensemble:
         'y_pred_ensemble_mean': ensemble_results['y_pred_mean'],
@@ -71,6 +71,8 @@ def convert_all_forecasts_to_incidences(forecasts: dict, pop_size_district: int)
             results_dict[k] = convert_seven_day_averages(v, pop_size_district)
         else:
             results_dict[k] = None
+
+    return results_dict
 
 
 def convert_seven_day_averages(forecast_array: np.array, pop_size_district: int) -> np.array:

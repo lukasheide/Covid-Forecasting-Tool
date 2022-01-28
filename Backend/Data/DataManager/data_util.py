@@ -1,6 +1,7 @@
 import datetime
 import sys
-import os
+import numpy as np
+from datetime import datetime, timedelta
 
 
 class Column:
@@ -70,7 +71,7 @@ def validate_dates_for_query(start_date, end_date):
     :param end_date: should be in DD-MM-YYYY format
     """
     if validate_date(start_date) and validate_date(end_date):
-        today = int(datetime.datetime.today().strftime('%Y%m%d'))
+        today = int(datetime.today().strftime('%Y%m%d'))
         from_date = date_str_to_int(start_date)
         to_date = date_str_to_int(end_date)
 
@@ -85,7 +86,7 @@ def validate_dates_for_query(start_date, end_date):
 
 def validate_date(date):
     date_positions = date.split("-")
-    current_year = int(datetime.datetime.today().strftime('%Y'))
+    current_year = int(datetime.today().strftime('%Y'))
 
     if 0 < int(date_positions[0]) <= current_year \
             and 0 < int(date_positions[1]) <= 12 \
@@ -102,7 +103,7 @@ def date_str_to_int(date_str):
 
 
 def date_int_str(date_int):
-    date = datetime.datetime.strptime(date_int, '%Y%m%d')
+    date = datetime.strptime(date_int, '%Y%m%d')
     date = date.strftime('%Y-%m-%d')
 
     return date
@@ -260,7 +261,7 @@ def get_correct_district_name(wrong_name):
 
 
 def compute_end_date_of_validation_period(train_end_date, duration):
-    current_day = datetime.datetime.strptime(train_end_date, '%Y-%m-%d')
+    current_day = datetime.strptime(train_end_date, '%Y-%m-%d')
     current_day = current_day + datetime.timedelta(days=duration)
 
     return current_day.strftime('%Y-%m-%d')
@@ -278,3 +279,39 @@ def print_progress(completed, total, extra=''):
     progress_str = progress_str + "]"
     sys.stdout.write('\r')
     sys.stdout.write('\r' + progress_str + " " + str(round(completed / total * 100, 2)) + "% " + extra)
+
+
+def get_forecasting_df_columns():
+
+    column_names = [
+        'pipeline_id'
+        , 'district_name'
+        , 'date'
+        , 'cases'
+        , 'y_pred_seirv_last_beta_mean'
+        , 'y_pred_seirv_last_beta_upper'
+        , 'y_pred_seirv_last_beta_lower'
+        , 'y_pred_seirv_ml_beta_mean'
+        , 'y_pred_seirv_ml_beta_upper'
+        , 'y_pred_seirv_ml_beta_lower'
+        , 'y_pred_sarima_mean'
+        , 'y_pred_sarima_upper'
+        , 'y_pred_sarima_lower'
+        , 'y_pred_ensemble_mean'
+        , 'y_pred_ensemble_upper'
+        , 'y_pred_ensemble_lower']
+
+    return column_names
+
+
+def create_dates_array(start_date_str, num_days):
+
+    start_date_obj = datetime.strptime(start_date_str, '%Y-%m-%d')
+    current_date_obj = start_date_obj
+
+    date_list = []
+    for i in range(num_days):
+        current_date_obj = current_date_obj + timedelta(days=1)
+        date_list.append(current_date_obj.strftime('%Y-%m-%d'))
+
+    return np.array(date_list)
