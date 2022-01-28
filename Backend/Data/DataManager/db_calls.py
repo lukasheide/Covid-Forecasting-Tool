@@ -241,7 +241,7 @@ def get_mobility_data(district, date=None):
 
 def get_weather_data(district, date=None):
     if district == 'Garmisch-Partenkirchen':
-        district == 'Weilheim-Schongau'
+        district = 'Weilheim-Schongau'
     location = get_district_data(district, [Column.LATITUDE, Column.LONGITUDE])
     dist_lat = float(location[Column.LATITUDE].iloc[0])
     dist_lon = float(location[Column.LONGITUDE].iloc[0])
@@ -255,6 +255,20 @@ def get_weather_data(district, date=None):
     wind = data['wspd'][0]
 
     return temperature, wind
+
+
+def get_district_forecast_data(district):
+    engine = get_engine()
+
+    query_sql = 'SELECT * ' \
+                'FROM district_forecast ' \
+                'WHERE district_name = "%s" ' \
+                'AND pipeline_id = (' \
+                'SELECT MAX(df2.pipeline_id) ' \
+                'FROM district_forecast df2 WHERE district_name = "%s")' \
+                % (district, district)
+
+    return pd.read_sql(query_sql, engine)
 
 
 def clean_create_model_store():
@@ -444,4 +458,5 @@ if __name__ == '__main__':
     # get_table_data_by_duration()
     # clean_create_model_store()
     clean_create_forecast_store()
-    pass
+    # get_district_forecast_data('Münster')
+    # pass
