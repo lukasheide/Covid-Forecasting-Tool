@@ -71,14 +71,6 @@ def diff_eq_pipeline(train_end_date: date, duration: int, districts: list, valid
                                          allow_randomness_fixed_beta=False, random_runs=100, district=district)
         y_pred_without_train_period = pipeline_result['y_pred_without_train_period']
 
-        # Run Sarima model
-        # sarima_result = sarima_pipeline(y_train, y_val)
-
-        # returned:
-        # I) y_pred for both training and validation period,
-        # II) Model Params (greek letters)
-        # III) Model Starting values (number of people for each compartment at time t)
-
         ## 3) Evaluate the results
 
         # 3a) Visualize results (mainly for debugging)

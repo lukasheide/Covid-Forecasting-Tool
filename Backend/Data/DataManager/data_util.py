@@ -288,7 +288,7 @@ def print_progress_with_computation_time_estimate(completed, total, start_time, 
     progress_str = "["
 
     duration_since_start_in_s = getDuration(start_time, datetime.now(), 'seconds')
-    estimated_seconds_until_end = duration_since_start_in_s * total / completed   # multiply with percentage of tasks left divided by tasks done
+    estimated_seconds_until_end = duration_since_start_in_s * (total - completed) / completed   # multiply with percentage of tasks left divided by tasks done
 
     estimated_end_time = datetime.now() + timedelta(seconds=estimated_seconds_until_end)
     end_time_str = estimated_end_time.strftime('%H:%M:%S')
