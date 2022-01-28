@@ -22,7 +22,7 @@ def run_sarima(y_train, y_val):
     i = 1
 
     #iteration to find the best fitting length of a season
-    while i < 8:
+    while i < 2:
         arima_model = sarimamodel(y_train, i)
         predictions = arima_model.predict(len(y_val))
         evaluations = compute_evaluation_metrics(y_val, predictions)
