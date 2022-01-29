@@ -9,7 +9,7 @@ def sarimamodel(timeseriesarray):
                                          start_p=1,
                                          start_q=1,
                                          max_p=3, max_q=3,
-                                         trace=True,
+                                         trace=False,
                                          error_action='ignore',
                                          suppress_warnings=True,
                                          stepwise=True, test = "adf",
