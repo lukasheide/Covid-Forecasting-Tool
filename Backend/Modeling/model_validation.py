@@ -5,7 +5,7 @@ import pandas as pd
 from datetime import date, datetime, timedelta
 from Backend.Data.DataManager.data_access_methods import get_smoothen_cases, get_starting_values, get_model_params
 from Backend.Data.DataManager.data_util import Column, date_int_str, compute_end_date_of_validation_period, \
-    create_dates_array
+    create_dates_array, print_progress_with_computation_time_estimate
 from Backend.Data.DataManager.db_calls import start_pipeline, insert_param_and_start_vals, insert_prediction_vals, \
     get_all_table_data
 from Backend.Data.DataManager.matrix_data import get_weekly_intervals_grid, get_predictors_for_ml_layer, \
@@ -18,7 +18,7 @@ from Backend.Modeling.Util.pipeline_util import train_test_split, get_list_of_ra
     get_list_of_random_districts, date_difference_strings
 from Backend.Modeling.forecast import forecast_all_models
 from Backend.Visualization.plotting import plot_train_fitted_and_validation, plot_sarima_pred_plot, \
-    plot_sarima_val_line_plot, plot_train_fitted_and_predictions, visualize_multiple_models
+    plot_sarima_val_line_plot, plot_train_fitted_and_predictions, plot_all_forecasts
 from Backend.Modeling.Regression_Model.ARIMA import run_sarima, sarima_model_predictions, sarima_pipeline_val
 import copy
 from Backend.Modeling.Regression_Model.ARIMA import run_sarima, sarima_model_predictions, sarima_pipeline
@@ -315,10 +315,15 @@ def model_validation_pipeline_v2_wrapper():
     # print(f'Date 8 weeks after target_date: {shifted_date_str}')
 
     #################### Pipeline Configuration: ####################
-    # For each interval
+    # # For each interval
+
+    # pipeline_intervals = [
+    #     ('2021-11-01', '2022-01-25'),  # pipeline_start_dates
+    #     ('2021-08-01', '2021-10-01'),  # pipeline_end_dates:
+    # ]
+
     pipeline_intervals = [
-        ('2021-11-01', '2022-01-15'),  # pipeline_start_dates
-        ('2021-08-01', '2021-10-01'),  # pipeline_end_dates:
+        ('2021-11-01', '2022-01-25')
     ]
 
     forecasting_horizon = 14
@@ -331,7 +336,7 @@ def model_validation_pipeline_v2_wrapper():
     districts = opendata['district'].tolist()
     districts.sort()
 
-    districts = ['Münster', 'Bielefeld']
+    # districts = ['Münster', 'Bielefeld']
 
     ensemble_model_share = {
         'seirv_last_beta': 0.5,
@@ -490,8 +495,10 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
 
     # Iterate over districts:
     results_dict = {}
+    start_time = datetime.now()
     for i, district in enumerate(districts):
-        print(f'Computing district {district}: {i + 1} / {len(districts)}')
+        # print(f'Computing district {district}: {i + 1} / {len(districts)}')
+        print_progress_with_computation_time_estimate(completed=i + 1, total=len(districts), start_time=start_time)
 
         ## 2a) Import Historical Infections
         # Import Training Data:
@@ -565,17 +572,20 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
 
             ## 4) Visualization:
             if debug:
-                visualize_multiple_models(y_train=y_train_diffeq,
-                                          y_pred_full_diffeq=seirv_last_beta_only_results[
-                                              'y_pred_including_train_period'],
-                                          y_forecast_diffeq=y_pred['Diff_Eq_Last_Beta'],
-                                          y_forecast_sarima=None)
+                plot_all_forecasts(forecast_dictionary=all_combined, y_train=y_train_diffeq,
+                                   start_date_str=current_interval['start_day_train_str'],
+                                   forecasting_horizon=forecasting_horizon,
+                                   district=district,
+                                   plot_diff_eq_last_beta=True,
+                                   plot_diff_eq_ml_beta=True,
+                                   plot_sarima=False,
+                                   plot_ensemble=True
+                                   )
 
                 # Train + VAL - SEIRV
                 plot_train_fitted_and_validation(y_train=y_train_diffeq,
                                                  y_pred=seirv_last_beta_only_results['y_pred_including_train_period'],
                                                  y_val=y_val)
-
 
 
             ## 5) Evaluation - Compute metrics:

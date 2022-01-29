@@ -40,11 +40,14 @@ def seirv_ml_layer(y_train_diffeq, start_vals_seirv, fixed_model_params_seirv, f
     ml_matrix_predictors_all_standardized = standardizer_obj.transform(ml_matrix_predictors_all)
 
     # Apply Machine Learning Model to obtain beta:
-    beta_pred = ml_model.predict(ml_matrix_predictors_all)[0]
+    beta_pred_ml = ml_model.predict(ml_matrix_predictors_all)[0]
+    beta_pred_last_beta = model_params_tuple[0]
+
+    opt_beta = 0.85*beta_pred_last_beta + 0.15*beta_pred_ml
 
     # Overwrite fitted beta with ML beta:
     model_params_temp = list(model_params_tuple)
-    model_params_temp[0] = beta_pred
+    model_params_temp[0] = opt_beta
     model_params_tuple = tuple(model_params_temp)
 
     ## 4) Forecast with obtained beta guess:

@@ -261,10 +261,6 @@ def plot_beta_matrix_estimation(y_train_true, y_val_true, y_train_pred_full, y_v
     plt.show()
 
 
-def visualize_multiple_models(y_train, y_pred_full_diffeq, y_forecast_diffeq, y_forecast_sarima):
-    pass
-
-
 def plot_all_forecasts(forecast_dictionary, y_train, start_date_str, forecasting_horizon, district,
                        plot_diff_eq_last_beta=True,
                        plot_diff_eq_ml_beta=True,
