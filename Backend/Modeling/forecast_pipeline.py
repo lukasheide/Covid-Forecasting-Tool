@@ -10,6 +10,11 @@ from Backend.Data.DataManager.data_util import Column, date_int_str, compute_end
 from Backend.Data.DataManager.db_calls import start_pipeline, insert_param_and_start_vals, insert_prediction_vals, \
     get_all_table_data, start_forecast_pipeline, update_db, end_forecast_pipeline
 from Backend.Data.DataManager.matrix_data import get_predictors_for_ml_layer
+from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_pipeline
+from Backend.Modeling.Differential_Equation_Modeling.seirv_model_and_ml import seirv_ml_layer
+from Backend.Modeling.Regression_Model.ARIMA import sarima_pipeline_val
+from Backend.Evaluation.metrics import compute_evaluation_metrics
+from Backend.Modeling.Util.pipeline_util import train_test_split, get_list_of_random_dates, get_list_of_random_districts
 from Backend.Modeling.forecast import forecast_all_models, convert_all_forecasts_to_incidences, \
     convert_seven_day_averages
 from Backend.Modeling.model_validation import sarima_pipeline
@@ -21,7 +26,7 @@ import xgboost as xgb
 from sklearn.preprocessing import StandardScaler
 
 
-def forecasting_pipeline(full_run=False, debug=True):
+def forecasting_pipeline(full_run=False, debug=False):
     #################### Pipeline Configuration: ####################
     training_end_date = '2022-01-16'
     forecasting_horizon = 14
@@ -114,7 +119,12 @@ def forecasting_pipeline(full_run=False, debug=True):
         if debug:
             plot_all_forecasts(forecast_dictionary=all_combined_incidence, y_train=y_train_incidence,
                                start_date_str=training_start_date.strftime('%Y-%m-%d'), forecasting_horizon=forecasting_horizon,
-                               district=district)
+                               district=district,
+                               plot_diff_eq_last_beta=True,
+                               plot_diff_eq_ml_beta=True,
+                               plot_sarima=False,
+                               plot_ensemble=True
+                               )
 
         ## 6) Upload to DB
         column_names = get_forecasting_df_columns()
