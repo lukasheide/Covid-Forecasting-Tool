@@ -364,8 +364,8 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
                                  train_length_sarima, training_period_max,
                                  ml_model_path, standardizer_model_path, ensemble_model_share, districts,
                                  run_diff_eq_last_beta=True,
-                                 run_diff_eq_ml_beta=False,
-                                 run_sarima=False,
+                                 run_diff_eq_ml_beta=True,
+                                 run_sarima=True,
                                  run_ensemble=True,
                                  debug=False):
     # Create time_grid:
