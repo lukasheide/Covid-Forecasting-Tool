@@ -314,7 +314,7 @@ def model_validation_pipeline_v2_wrapper():
     #################### Pipeline Configuration: ####################
     # For each interval
     pipeline_intervals = [
-        ('2021-11-20', '2022-01-15'),  # pipeline_start_dates
+        ('2021-11-01', '2022-01-15'),  # pipeline_start_dates
         ('2021-08-01', '2021-10-01'),  # pipeline_end_dates:
     ]
 
@@ -328,7 +328,7 @@ def model_validation_pipeline_v2_wrapper():
     districts = opendata['district'].tolist()
     districts.sort()
 
-    districts = ['Münster']
+    districts = ['Münster', 'Bielefeld']
 
     ensemble_model_share = {
         'seirv_last_beta': 0.5,
@@ -342,12 +342,12 @@ def model_validation_pipeline_v2_wrapper():
 
     ################################################################
 
-    results_list = {}
+    results_dict = {}
     for num, pipeline_interval in enumerate(pipeline_intervals):
         print(f'################## Starting Model Validation Pipeline for pipeline interval {num+1}/{len(pipeline_intervals)} '
               f'for time interval: {pipeline_interval[0]} until {pipeline_interval[1]} ################## ')
 
-        results_list[num] = (
+        results_dict[num] = (
             model_validation_pipeline_v2(pipeline_start_date=pipeline_interval[0], pipeline_end_date=pipeline_interval[1],
                                          forecasting_horizon=forecasting_horizon,
                                          train_length_diffeqmodel=train_length_diffeqmodel,
@@ -453,6 +453,16 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
             # Combine results:
             y_pred = {
                 'Diff_Eq_Last_Beta': seirv_last_beta_only_results['y_pred_without_train_period'],
+                'Diff_Eq_ML_Beta': seirv_ml_results['y_pred_mean'],
+                'Sarima': sarima_results['predictions'],
+                'Ensemble': ensemble_results['y_pred_mean'],
+            }
+
+            residuals = {
+                'Diff_Eq_Last_Beta': y_pred['Diff_Eq_Last_Beta'] - y_val,
+                'Diff_Eq_ML_Beta': y_pred['Diff_Eq_ML_Beta'] - y_val,
+                'Sarima': y_pred['Sarima'] - y_val,
+                'Ensemble': y_pred['Ensemble'] - y_val,
             }
 
             ## 4) Visualization:
@@ -473,6 +483,9 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
             ## 5) Evaluation - Compute metrics:
             metrics = {
                 'Diff_Eq_Last_Beta': compute_evaluation_metrics(y_pred=y_pred['Diff_Eq_Last_Beta'], y_val=y_val),
+                'Diff_Eq_ML_Beta': compute_evaluation_metrics(y_pred=y_pred['Diff_Eq_ML_Beta'], y_val=y_val),
+                'Sarima': compute_evaluation_metrics(y_pred=y_pred['Sarima'], y_val=y_val),
+                'Ensemble': compute_evaluation_metrics(y_pred=y_pred['Ensemble'], y_val=y_val),
             }
 
             ## 6) Append everything to result list:
@@ -489,6 +502,7 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
                 'y_train_diffeq': y_train_diffeq,
                 'y_val': y_val,
                 'y_pred': y_pred,
+                'residuals': residuals,
                 'metrics': metrics
             })
 
