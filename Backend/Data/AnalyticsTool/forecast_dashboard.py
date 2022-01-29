@@ -31,12 +31,12 @@ all_district_forecasts = pd.DataFrame()
 
 
 # default dist_list subset
-# district_list = ['Münster', 'Potsdam', 'Segeberg', 'Rosenheim, Kreis', 'Hochtaunus', 'Dortmund', 'Essen', 'Bielefeld',
-#                  'Warendorf', 'München, Landeshauptstadt']
+district_list = ['Münster', 'Potsdam', 'Segeberg', 'Rosenheim, Kreis', 'Hochtaunus', 'Dortmund', 'Essen', 'Bielefeld',
+                 'Warendorf', 'München, Landeshauptstadt']
 
-district_list = get_table_data("district_list", 0, 0, "district", False)
-district_list = district_list.sort_values("district", ascending=True)
-district_list = district_list['district']
+# district_list = get_table_data("district_list", 0, 0, "district", False)
+# district_list = district_list.sort_values("district", ascending=True)
+# district_list = district_list['district']
 
 
 ########### app layout is defined here ##############
@@ -58,15 +58,25 @@ app.layout = html.Div([
                                                     value='Münster'
                                                 ),
                                             html.Hr(),
-                                            dcc.RadioItems(
-                                                id='model-radio',
+                                            # dcc.RadioItems(
+                                            #     id='model-radio',
+                                            #     options=[
+                                            #         {'label': 'SEVIR + last beta', 'value': 'sevir_last_beta'},
+                                            #         {'label': 'SEVIR + ML beta', 'value': 'sevir_ml_beta'},
+                                            #         {'label': 'SARIMA', 'value': 'sarima'},
+                                            #         {'label': 'Ensemble', 'value': 'ensemble'},
+                                            #     ],
+                                            #     value='sevir_last_beta', className="six columns"
+                                            # ),
+                                            dcc.Checklist(
+                                                id='model-check',
                                                 options=[
                                                     {'label': 'SEVIR + last beta', 'value': 'sevir_last_beta'},
                                                     {'label': 'SEVIR + ML beta', 'value': 'sevir_ml_beta'},
                                                     {'label': 'SARIMA', 'value': 'sarima'},
                                                     {'label': 'Ensemble', 'value': 'ensemble'},
                                                 ],
-                                                value='sevir_last_beta', className="six columns"
+                                                value='sevir_last_beta',
                                             ),
                                             dcc.RadioItems(
                                                 id='show-type-radio',
@@ -108,16 +118,16 @@ app.layout = html.Div([
 @app.callback(
     Output(component_id='dist-forecast-graph', component_property='figure'),
     Input(component_id='district-dropdown', component_property='value'),
-    Input(component_id='model-radio', component_property='value'),
+    # Input(component_id='model-radio', component_property='value'),
+    Input(component_id='model-check', component_property='value'),
     Input(component_id='show-type-radio', component_property='value')
 )
-def get_dist_forecast_plot(district, model, show_type):
+def get_dist_forecast_plot(district, checkbox, show_type):
     dist_forecast_df = get_district_forecast_data(district)
 
     fig = make_subplots(specs=[[{"secondary_y": True}]])
     dates_array = create_dates_array(start_date_str=dist_forecast_df['date'][0],
-                                     num_days=len(dist_forecast_df['cases'].dropna()) + 14,
-                                     month_day_only=False)
+                                     num_days=len(dist_forecast_df['cases'].dropna()) + 14)
 
     # Add traces
     y_common_train = dist_forecast_df['cases'].dropna()
@@ -126,41 +136,77 @@ def get_dist_forecast_plot(district, model, show_type):
         secondary_y=False,
     )
 
-    if model == 'sevir_last_beta':
+    # if model == 'sevir_last_beta':
+    #     y = dist_forecast_df['y_pred_seirv_last_beta_mean'].dropna()
+    #     y_fixed = pd.concat([pd.Series(y_common_train.iloc[-1]), y])
+    #     fig.add_trace(
+    #         go.Scatter(x=dates_array[-15:], y=y_fixed,
+    #                    name="forecast data"),
+    #         secondary_y=False,
+    #     )
+    #
+    # if model == 'sevir_ml_beta':
+    #     y = dist_forecast_df['y_pred_seirv_ml_beta_mean'].dropna()
+    #     y_fixed = pd.concat([pd.Series(y_common_train.iloc[-1]), y])
+    #     fig.add_trace(
+    #         go.Scatter(x=dates_array[-15:], y=y_fixed,
+    #                    name="forecast data"),
+    #         secondary_y=False,
+    #     )
+    #
+    # if model == 'sarima':
+    #     y = dist_forecast_df['y_pred_sarima_mean'].dropna()
+    #     y_fixed = pd.concat([pd.Series(y_common_train.iloc[-1]), y])
+    #     fig.add_trace(
+    #         go.Scatter(x=dates_array[-15:], y=y_fixed,
+    #                    name="forecast data"),
+    #         secondary_y=False,
+    #     )
+    #
+    # if model == 'ensemble':
+    #     y = dist_forecast_df['y_pred_ensemble_mean'].dropna()
+    #     y_fixed = pd.concat([pd.Series(y_common_train.iloc[-1]), y])
+    #     fig.add_trace(
+    #         go.Scatter(x=dates_array[-15:], y=y_fixed,
+    #                    name="forecast data"),
+    #         secondary_y=False,
+    #     )
+
+    if ('sevir_last_beta' in checkbox):
+        # print('yes')
         y = dist_forecast_df['y_pred_seirv_last_beta_mean'].dropna()
         y_fixed = pd.concat([pd.Series(y_common_train.iloc[-1]), y])
         fig.add_trace(
             go.Scatter(x=dates_array[-15:], y=y_fixed,
-                       name="forecast data"),
+                       name="SEIURV last beta"),
             secondary_y=False,
         )
-
-    if model == 'sevir_ml_beta':
+    if ('sevir_ml_beta' in checkbox):
         y = dist_forecast_df['y_pred_seirv_ml_beta_mean'].dropna()
         y_fixed = pd.concat([pd.Series(y_common_train.iloc[-1]), y])
         fig.add_trace(
             go.Scatter(x=dates_array[-15:], y=y_fixed,
-                       name="forecast data"),
+                       name="SEIURV ML beta"),
             secondary_y=False,
         )
-
-    if model == 'sarima':
+    if ('sarima' in checkbox):
         y = dist_forecast_df['y_pred_sarima_mean'].dropna()
         y_fixed = pd.concat([pd.Series(y_common_train.iloc[-1]), y])
         fig.add_trace(
             go.Scatter(x=dates_array[-15:], y=y_fixed,
-                       name="forecast data"),
+                       name="ARIMA"),
             secondary_y=False,
         )
-
-    if model == 'ensemble':
+    if ('ensemble'in checkbox):
         y = dist_forecast_df['y_pred_ensemble_mean'].dropna()
         y_fixed = pd.concat([pd.Series(y_common_train.iloc[-1]), y])
         fig.add_trace(
             go.Scatter(x=dates_array[-15:], y=y_fixed,
-                       name="forecast data"),
+                       name="Ensemble"),
             secondary_y=False,
         )
+    # fig = px.line(dist_forecast_df[mask], x=dates_array[-15:], y=y_fixed,
+    #                    name="forecast data")
 
     # Add figure title
     fig.update_layout(
