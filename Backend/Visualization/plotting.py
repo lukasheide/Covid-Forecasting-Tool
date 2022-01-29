@@ -193,7 +193,7 @@ def plot_sarima_val_line_plot(train_array, test_array, predictions: int, pred_st
     plt.ylabel("7-day average infections")
     plt.legend(loc="upper left")
 
-    plt.show()
+    #plt.show()
 
     plt.savefig(f'../Assets/Forecasts/Plots/Sarima_Evaluate_{district}_StartDate_{pred_start_date}.png')
 

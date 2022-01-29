@@ -20,6 +20,7 @@ from Backend.Visualization.plotting import plot_train_fitted_and_validation, plo
     plot_sarima_val_line_plot, plot_train_fitted_and_predictions, visualize_multiple_models
 from Backend.Modeling.Regression_Model.ARIMA import run_sarima, sarima_model_predictions, sarima_pipeline_val
 import copy
+from Backend.Modeling.Regression_Model.ARIMA import run_sarima, sarima_model_predictions, sarima_pipeline
 
 import xgboost as xgb
 from sklearn.preprocessing import StandardScaler
@@ -195,7 +196,7 @@ def diff_eq_pipeline_wrapper(**kwargs):
 
 
 # SARIMA Model
-def sarima_pipeline(train_end_date: date, duration: int, districts: list, validation_duration: int,
+def sarima_pipeline_old(train_end_date: date, duration: int, districts: list, validation_duration: int,
                     visualize=False, verbose=False, validate=True, evaluate=False, with_db_update=False) -> None:
     if with_db_update:
         download_db_file()
@@ -218,7 +219,7 @@ def sarima_pipeline(train_end_date: date, duration: int, districts: list, valida
         y_train = smoothen_cases['seven_day_infec']
 
         if validate == False:
-            sarima_pipeline_val(y_train, validation_duration)
+            #sarima_pipeline_val(y_train, validation_duration)
 
             format = "%Y-%m-%d"
             train_end_date = datetime.datetime.strptime(train_end_date, format)

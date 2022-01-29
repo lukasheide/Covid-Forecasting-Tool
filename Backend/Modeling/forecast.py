@@ -3,7 +3,7 @@ import pandas as pd
 
 from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_pipeline
 from Backend.Modeling.Differential_Equation_Modeling.seirv_model_and_ml import seirv_ml_layer
-from Backend.Modeling.Regression_Model.ARIMA import sarima_pipeline_val
+from Backend.Modeling.Regression_Model.ARIMA import sarima_pipeline
 
 
 def forecast_all_models(y_train_diffeq, y_train_sarima, forecasting_horizon, ml_matrix_predictors,
@@ -29,7 +29,7 @@ def forecast_all_models(y_train_diffeq, y_train_sarima, forecasting_horizon, ml_
     # input: y_train_sarima (6 weeks), forecast_horizon (14 days)
     # output: {y_pred_mean, y_pred_upper, y_pred_lower, params}
     if run_sarima:
-        sarima_results = sarima_pipeline_val(y_train=y_train_sarima,
+        sarima_results = sarima_pipeline(y_train=y_train_sarima,
                                              forecasting_horizon=forecasting_horizon)
 
     ## 3.4) Ensemble Model
