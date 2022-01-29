@@ -323,7 +323,8 @@ def model_validation_pipeline_v2_wrapper():
     # ]
 
     pipeline_intervals = [
-        ('2021-11-01', '2022-01-25')
+        ('2021-10-01', '2022-01-25'),
+        ('2020-11-01', '2021-01-01'),
     ]
 
     forecasting_horizon = 14

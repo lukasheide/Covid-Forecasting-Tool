@@ -6,7 +6,7 @@ from datetime import date
 
 from Backend.Data.DataManager.data_access_methods import get_smoothen_cases, get_starting_values, get_model_params
 from Backend.Data.DataManager.data_util import Column, date_int_str, compute_end_date_of_validation_period, \
-    create_dates_array, get_forecasting_df_columns
+    create_dates_array, get_forecasting_df_columns, print_progress_with_computation_time_estimate
 from Backend.Data.DataManager.db_calls import start_pipeline, insert_param_and_start_vals, insert_prediction_vals, \
     get_all_table_data, start_forecast_pipeline, update_db, end_forecast_pipeline
 from Backend.Data.DataManager.matrix_data import get_predictors_for_ml_layer
@@ -66,6 +66,7 @@ def forecasting_pipeline(full_run=False, debug=False):
     if full_run:
         opendata = get_all_table_data(table_name='district_list')
         districts = opendata['district'].tolist()
+        districts.sort()
     else:
         districts = manual_districts
 
@@ -77,10 +78,13 @@ def forecasting_pipeline(full_run=False, debug=False):
     with open(standardizer_model_path, 'rb') as fid:
         standardizer_obj = joblib.load(fid)
 
+
+    start_time_pipeline = datetime.now()
     # Iterate over all districts:
     for i, district in enumerate(districts):
-
-        print(f'Computing district {district}: {i + 1} / {len(districts)}')
+        # print(f'Computing district {district}: {i + 1} / {len(districts)}')
+        print_progress_with_computation_time_estimate(completed=i + 1, total=len(districts),
+                                                      start_time=start_time_pipeline)
 
         ### 2) Import Training Data
         ## 2a) Import Historical Infections
