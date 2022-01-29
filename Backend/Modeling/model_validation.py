@@ -344,6 +344,9 @@ def model_validation_pipeline_v2_wrapper():
 
     results_list = {}
     for num, pipeline_interval in enumerate(pipeline_intervals):
+        print(f'################## Starting Model Validation Pipeline for pipeline interval {num+1}/{len(pipeline_intervals)} '
+              f'for time interval: {pipeline_interval[0]} until {pipeline_interval[1]} ################## ')
+
         results_list[num] = (
             model_validation_pipeline_v2(pipeline_start_date=pipeline_interval[0], pipeline_end_date=pipeline_interval[1],
                                          forecasting_horizon=forecasting_horizon,
