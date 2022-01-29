@@ -376,7 +376,7 @@ def get_forecasting_df_columns():
     return column_names
 
 
-def create_dates_array(start_date_str, num_days):
+def create_dates_array(start_date_str, num_days, month_day_only=False):
 
     start_date_obj = datetime.strptime(start_date_str, '%Y-%m-%d')
     current_date_obj = start_date_obj
@@ -384,6 +384,10 @@ def create_dates_array(start_date_str, num_days):
     date_list = []
     for i in range(num_days):
         current_date_obj = current_date_obj + timedelta(days=1)
-        date_list.append(current_date_obj.strftime('%Y-%m-%d'))
+        if month_day_only:
+            date_list.append(current_date_obj.strftime('%m-%d'))
+
+        else:
+            date_list.append(current_date_obj.strftime('%Y-%m-%d'))
 
     return np.array(date_list)

@@ -216,7 +216,7 @@ def get_mobility_data(district, date=None):
 
         result = pd.read_sql(query_sql, engine)
 
-        if result.empty:
+        if result.iloc[:,0].tolist()[0] == date:
             # couldnt find a quesry to get the last column data
             # therefore, read the whole table and prepare the df to do the task
             # end_date = [*mob_data.columns[-1:]][0]
@@ -267,6 +267,18 @@ def get_district_forecast_data(district):
                 'SELECT MAX(df2.pipeline_id) ' \
                 'FROM district_forecast df2 WHERE district_name = "%s")' \
                 % (district, district)
+
+    return pd.read_sql(query_sql, engine)
+
+
+def get_all_latest_forecasts():
+    engine = get_engine()
+
+    query_sql = 'SELECT * ' \
+                'FROM district_forecast ' \
+                'WHERE pipeline_id = (' \
+                'SELECT MAX(fp.pipeline_id) ' \
+                'FROM forecast_pipeline fp WHERE full_run = TRUE AND completed = TRUE) ;' \
 
     return pd.read_sql(query_sql, engine)
 
@@ -335,7 +347,9 @@ def clean_create_forecast_store():
                  "frcst_start_date TEXT NOT NULL," \
                  "frcst_end_date TEXT NOT NULL," \
                  "full_run BOOLEAN NOT NULL," \
-                 "started_on TEXT NOT NULL);"
+                 "started_on TEXT NOT NULL," \
+                 "completed BOOLEAN NOT NULL," \
+                 "ended_on TEXT );"
     cursor.executescript(create_sql)
 
     create_prediction_sql = "CREATE TABLE IF NOT EXISTS district_forecast( " \
@@ -369,9 +383,17 @@ def start_pipeline(end_date, validation_duration, visualize, validate, verbose):
               'visualize, ' \
               'verbose, ' \
               'validate, ' \
-              'started_on) values (?, ?, ?, ?, ?, ?)'
+              'started_on,' \
+              'completed,' \
+              'ended_on) values (?, ?, ?, ?, ?, ?, ?, ?)'
     cursor.execute(sql_srt, (
-        end_date, validation_duration, visualize, validate, verbose, datetime.now().strftime("%d-%b-%Y (%H:%M:%S.%f)")))
+        end_date,
+        validation_duration,
+        visualize,
+        validate,
+        verbose,
+        datetime.now().strftime("%d-%b-%Y (%H:%M:%S.%f)"),
+        False))
     cursor.execute('SELECT MAX(pipeline_id) FROM pipeline;')
     pipeline_id = cursor.fetchone()[0]
 
@@ -390,9 +412,16 @@ def start_forecast_pipeline(t_start_date, t_end_date, f_start_date, f_end_date, 
               'frcst_start_date, ' \
               'frcst_end_date, ' \
               'full_run, ' \
-              'started_on) values (?, ?, ?, ?, ?, ?)'
+              'started_on,' \
+              'completed) values (?, ?, ?, ?, ?, ?, ?)'
     cursor.execute(sql_srt, (
-    t_start_date, t_end_date, f_start_date, f_end_date, full_run, datetime.now().strftime("%d-%b-%Y (%H:%M:%S.%f)")))
+        t_start_date,
+        t_end_date,
+        f_start_date,
+        f_end_date,
+        full_run,
+        datetime.now().strftime("%d-%b-%Y (%H:%M:%S.%f)"),
+        False))
     cursor.execute('SELECT MAX(pipeline_id) FROM forecast_pipeline;')
     pipeline_id = cursor.fetchone()[0]
 
@@ -400,6 +429,23 @@ def start_forecast_pipeline(t_start_date, t_end_date, f_start_date, f_end_date, 
     connection.close()
 
     return pipeline_id
+
+
+def end_forecast_pipeline(pipeline_id):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    query_sql = 'UPDATE forecast_pipeline ' \
+                'SET completed = ?, ended_on = ? ' \
+                'WHERE pipeline_id = ? ;' \
+
+    cursor.execute(query_sql, (
+        True,
+        datetime.now().strftime("%d-%b-%Y (%H:%M:%S.%f)"),
+        pipeline_id))
+
+    connection.commit()
+    connection.close()
 
 
 def insert_param_and_start_vals(pipeline_id, district_name, start_vals, model_params):
@@ -458,5 +504,7 @@ if __name__ == '__main__':
     # get_table_data_by_duration()
     # clean_create_model_store()
     clean_create_forecast_store()
+    # df = get_all_latest_forecasts()
     # get_district_forecast_data('Münster')
     # pass
+    # get_mobility_data("Münster", date='2022-01-27')

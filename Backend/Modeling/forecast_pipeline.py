@@ -6,13 +6,13 @@ from datetime import date
 
 from Backend.Data.DataManager.data_access_methods import get_smoothen_cases, get_starting_values, get_model_params
 from Backend.Data.DataManager.data_util import Column, date_int_str, compute_end_date_of_validation_period, \
-    create_dates_array, get_forecasting_df_columns
+    create_dates_array, get_forecasting_df_columns, print_progress_with_computation_time_estimate
 from Backend.Data.DataManager.db_calls import start_pipeline, insert_param_and_start_vals, insert_prediction_vals, \
-    get_all_table_data, start_forecast_pipeline, update_db
+    get_all_table_data, start_forecast_pipeline, update_db, end_forecast_pipeline
 from Backend.Data.DataManager.matrix_data import get_predictors_for_ml_layer
 from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_pipeline
 from Backend.Modeling.Differential_Equation_Modeling.seirv_model_and_ml import seirv_ml_layer
-from Backend.Modeling.Regression_Model.ARIMA import sarima_pipeline_pred, sarima_pipeline_val
+from Backend.Modeling.Regression_Model.ARIMA import sarima_pipeline_val
 from Backend.Evaluation.metrics import compute_evaluation_metrics
 from Backend.Modeling.Util.pipeline_util import train_test_split, get_list_of_random_dates, get_list_of_random_districts
 from Backend.Modeling.forecast import forecast_all_models, convert_all_forecasts_to_incidences, \
@@ -26,9 +26,9 @@ import xgboost as xgb
 from sklearn.preprocessing import StandardScaler
 
 
-def forecasting_pipeline(full_run=False, debug=True):
+def forecasting_pipeline(full_run=False, debug=False):
     #################### Pipeline Configuration: ####################
-    training_end_date = '2022-01-16'
+    training_end_date = '2022-01-27'
     forecasting_horizon = 14
 
     train_length_diffeqmodel = 14
@@ -60,11 +60,15 @@ def forecasting_pipeline(full_run=False, debug=True):
     ################################################################
 
     # 1) Compute pipeline parameters:
-    districts = ['Münster', 'Potsdam', 'Segeberg', 'Rosenheim, Kreis', 'Hochtaunus', 'Dortmund', 'Essen', 'Bielefeld',
-                 'Warendorf', 'München, Landeshauptstadt']
+    manual_districts = ['Münster', 'Potsdam', 'Segeberg', 'Rosenheim, Kreis', 'Hochtaunus', 'Dortmund', 'Essen', 'Bielefeld',
+                        'Warendorf', 'München, Landeshauptstadt']
+
     if full_run:
         opendata = get_all_table_data(table_name='district_list')
         districts = opendata['district'].tolist()
+        districts.sort()
+    else:
+        districts = manual_districts
 
     # Import ML-Model:
     with open(ml_model_path, 'rb') as fid:
@@ -74,10 +78,13 @@ def forecasting_pipeline(full_run=False, debug=True):
     with open(standardizer_model_path, 'rb') as fid:
         standardizer_obj = joblib.load(fid)
 
+
+    start_time_pipeline = datetime.now()
     # Iterate over all districts:
     for i, district in enumerate(districts):
-
-        print(f'Computing district {district}: {i + 1} / {len(districts)}')
+        # print(f'Computing district {district}: {i + 1} / {len(districts)}')
+        print_progress_with_computation_time_estimate(completed=i + 1, total=len(districts),
+                                                      start_time=start_time_pipeline)
 
         ### 2) Import Training Data
         ## 2a) Import Historical Infections
@@ -119,7 +126,12 @@ def forecasting_pipeline(full_run=False, debug=True):
         if debug:
             plot_all_forecasts(forecast_dictionary=all_combined_incidence, y_train=y_train_incidence,
                                start_date_str=training_start_date.strftime('%Y-%m-%d'), forecasting_horizon=forecasting_horizon,
-                               district=district)
+                               district=district,
+                               plot_diff_eq_last_beta=True,
+                               plot_diff_eq_ml_beta=True,
+                               plot_sarima=False,
+                               plot_ensemble=True
+                               )
 
         ## 6) Upload to DB
         column_names = get_forecasting_df_columns()
@@ -165,7 +177,7 @@ def forecasting_pipeline(full_run=False, debug=True):
         ## ...
         # [12-14] Ensemble Model
         ## ...
-
+    end_forecast_pipeline(pipeline_id)
     pass
         # Metadata - Table:
         # [1] Pipeline-ID
@@ -181,4 +193,4 @@ def forecasting_pipeline(full_run=False, debug=True):
 
 
 if __name__ == '__main__':
-    forecasting_pipeline()
+    forecasting_pipeline(full_run=True, debug=False)

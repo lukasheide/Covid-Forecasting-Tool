@@ -9,6 +9,8 @@ import re
 from Backend.Data.DataManager.data_util import print_progress, print_progress_with_computation_time_estimate
 from Backend.Data.DataManager.db_functions import update_db, get_table_data
 from Backend.Data.DataManager.remote_db_manager import upload_db_file
+from Backend.Data.data_scraping.db_data_update_calls import update_ecdc_variant_table, update_destatis_mobility_table, \
+    update_oxcgrt_policy_table
 from Backend.Modeling.Vaccination_Efficiency.get_vaccination_effectiveness_fast import get_vaccination_effectiveness
 from Backend.Modeling.Differential_Equation_Modeling.starting_values import get_starting_values
 
@@ -407,6 +409,12 @@ if __name__ == '__main__':
     # update_district_list()
     # update_district_details()
     # update_population_map()
+
+    ## Everything related to predictors:
+    update_ecdc_variant_table()
+    update_destatis_mobility_table()
+    update_oxcgrt_policy_table()
+
     update_all_district_data()
     # update_district_data("Münster")
     # result_df = get_data_by_date_and_attr('Rhein-Neckar-Kreis', 20210101, 20211031, ["daily_infec", "daily_deaths"])
