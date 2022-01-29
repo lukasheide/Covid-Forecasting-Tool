@@ -216,7 +216,7 @@ def get_mobility_data(district, date=None):
 
         result = pd.read_sql(query_sql, engine)
 
-        if result.empty:
+        if result.iloc[:,0].tolist()[0] == date:
             # couldnt find a quesry to get the last column data
             # therefore, read the whole table and prepare the df to do the task
             # end_date = [*mob_data.columns[-1:]][0]
@@ -276,11 +276,9 @@ def get_all_latest_forecasts():
 
     query_sql = 'SELECT * ' \
                 'FROM district_forecast ' \
-                'WHERE district_name = "%s" ' \
-                'AND pipeline_id = (' \
-                'SELECT MAX(df2.pipeline_id) ' \
-                'FROM district_forecast df2 WHERE district_name = "%s")' \
-                % (district, district)
+                'WHERE pipeline_id = (' \
+                'SELECT MAX(fp.pipeline_id) ' \
+                'FROM forecast_pipeline fp WHERE full_run = TRUE AND completed = TRUE) ;' \
 
     return pd.read_sql(query_sql, engine)
 
@@ -506,5 +504,7 @@ if __name__ == '__main__':
     # get_table_data_by_duration()
     # clean_create_model_store()
     clean_create_forecast_store()
+    # df = get_all_latest_forecasts()
     # get_district_forecast_data('Münster')
     # pass
+    # get_mobility_data("Münster", date='2022-01-27')
