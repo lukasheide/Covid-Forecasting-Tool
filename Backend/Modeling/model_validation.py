@@ -497,7 +497,6 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
     results_dict = {}
     start_time = datetime.now()
     for i, district in enumerate(districts):
-        # print(f'Computing district {district}: {i + 1} / {len(districts)}')
         print_progress_with_computation_time_estimate(completed=i + 1, total=len(districts), start_time=start_time)
 
         ## 2a) Import Historical Infections

@@ -28,7 +28,7 @@ from sklearn.preprocessing import StandardScaler
 
 def forecasting_pipeline(full_run=False, debug=False):
     #################### Pipeline Configuration: ####################
-    training_end_date = '2022-01-16'
+    training_end_date = '2022-01-27'
     forecasting_horizon = 14
 
     train_length_diffeqmodel = 14
@@ -60,11 +60,14 @@ def forecasting_pipeline(full_run=False, debug=False):
     ################################################################
 
     # 1) Compute pipeline parameters:
-    districts = ['Münster', 'Potsdam', 'Segeberg', 'Rosenheim, Kreis', 'Hochtaunus', 'Dortmund', 'Essen', 'Bielefeld',
-                 'Warendorf', 'München, Landeshauptstadt']
+    manual_districts = ['Münster', 'Potsdam', 'Segeberg', 'Rosenheim, Kreis', 'Hochtaunus', 'Dortmund', 'Essen', 'Bielefeld',
+                        'Warendorf', 'München, Landeshauptstadt']
+
     if full_run:
         opendata = get_all_table_data(table_name='district_list')
         districts = opendata['district'].tolist()
+    else:
+        districts = manual_districts
 
     # Import ML-Model:
     with open(ml_model_path, 'rb') as fid:
@@ -186,4 +189,4 @@ def forecasting_pipeline(full_run=False, debug=False):
 
 
 if __name__ == '__main__':
-    forecasting_pipeline(full_run=False, debug=False)
+    forecasting_pipeline(full_run=True, debug=False)
