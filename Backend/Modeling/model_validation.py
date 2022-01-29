@@ -19,6 +19,7 @@ from Backend.Modeling.forecast import forecast_all_models
 from Backend.Visualization.plotting import plot_train_fitted_and_validation, plot_sarima_pred_plot, \
     plot_sarima_val_line_plot, plot_train_fitted_and_predictions, visualize_multiple_models
 from Backend.Modeling.Regression_Model.ARIMA import run_sarima, sarima_model_predictions, sarima_pipeline_val
+import copy
 
 import xgboost as xgb
 from sklearn.preprocessing import StandardScaler
@@ -321,7 +322,7 @@ def model_validation_pipeline_v2_wrapper():
     forecasting_horizon = 14
 
     train_length_diffeqmodel = 14
-    train_length_sarima = 42
+    train_length_sarima = 28
     training_period_max = max(train_length_diffeqmodel, train_length_sarima)
 
     opendata = get_all_table_data(table_name='district_list')
@@ -361,6 +362,38 @@ def model_validation_pipeline_v2_wrapper():
     # Inspect Results:
 
     pass
+
+    # Create Lvl1-DataFrame:
+    ## Unbox dictionary:
+
+    unpacked_1 = []
+
+    for pipeline_num, v1 in results_dict.items():
+        for district, v2 in v1.items():
+            for week, v3 in enumerate(v2):
+                unpacked_1.append({
+                    'pipeline_num': pipeline_num,
+                    'district': district,
+                    'week': week,
+
+                    # unpack everything on level 3:
+                    **v3
+                })
+
+
+    unpacked_2 = copy.deepcopy(unpacked_1)
+
+    # Delete all time series data and keep only the rest:
+    time_series_keys = ['y_train_sarima', 'y_train_diffeq', 'y_val', 'y_pred', 'residuals']
+
+    for item in unpacked_2:
+        for k in list(item.keys()):
+            if k in time_series_keys:
+                del item[k]
+
+
+
+
 
 
 def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecasting_horizon, train_length_diffeqmodel,
