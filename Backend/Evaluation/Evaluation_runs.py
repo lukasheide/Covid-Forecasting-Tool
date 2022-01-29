@@ -3,7 +3,7 @@ import matplotlib
 matplotlib.interactive(True)
 import matplotlib.pyplot as plt
 import pandas as pd
-from Backend.Visualization.modeling_results import plot_evaluation_metrics
+from Backend.Visualization.plotting import plot_evaluation_metrics
 
 def ml_evaluation():
     rmse = pd.read_csv('rmse.csv')

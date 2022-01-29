@@ -4,7 +4,7 @@ import pmdarima as pmd
 from statsmodels.tsa.stattools import adfuller
 from sklearn.metrics import mean_squared_error
 from math import sqrt
-from Backend.Visualization.modeling_results import plot_train_fitted_and_validation
+from Backend.Visualization.plotting import plot_train_fitted_and_validation
 import matplotlib.pyplot as plt
 
 #reading csv file including date, cases, class

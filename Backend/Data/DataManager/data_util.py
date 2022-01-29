@@ -1,5 +1,7 @@
 import datetime
 import sys
+import time
+
 import numpy as np
 from datetime import datetime, timedelta
 
@@ -267,7 +269,7 @@ def compute_end_date_of_validation_period(train_end_date, duration):
     return current_day.strftime('%Y-%m-%d')
 
 
-def print_progress(completed, total, extra=''):
+def print_progress(completed, total, extra='', ):
     progress = round((completed / total) * 100 / 10)
     progress_str = "["
 
@@ -279,6 +281,76 @@ def print_progress(completed, total, extra=''):
     progress_str = progress_str + "]"
     sys.stdout.write('\r')
     sys.stdout.write('\r' + progress_str + " " + str(round(completed / total * 100, 2)) + "% " + extra)
+
+
+def print_progress_with_computation_time_estimate(completed, total, start_time, extra='', ):
+    progress = round((completed / total) * 100 / 10)
+    progress_str = "["
+
+    duration_since_start_in_s = getDuration(start_time, datetime.now(), 'seconds')
+    estimated_seconds_until_end = duration_since_start_in_s * (total - completed) / completed   # multiply with percentage of tasks left divided by tasks done
+
+    estimated_end_time = datetime.now() + timedelta(seconds=estimated_seconds_until_end)
+    end_time_str = estimated_end_time.strftime('%H:%M:%S')
+
+    computation_time_so_far_str = f'   |  Time Since Start: {datetime.now() - start_time}'
+    computation_time_estimate_str = f'   |  Estimated End Time: {end_time_str}'
+
+
+    for i in range(progress):
+        progress_str = progress_str + "="
+    for i in range(10 - progress):
+        progress_str = progress_str + " "
+
+    progress_str = progress_str + "]"
+    sys.stdout.write('\r')
+    sys.stdout.write('\r' + progress_str + " " + str(round(completed / total * 100, 2)) + "% " + extra +
+                     computation_time_so_far_str + computation_time_estimate_str)
+
+
+def getDuration(then, now=datetime.now(), interval="default"):
+    # Returns a duration as specified by variable interval
+    # Functions, except totalDuration, returns [quotient, remainder]
+
+    duration = now - then  # For build-in functions
+    duration_in_s = duration.total_seconds()
+
+    def years():
+        return divmod(duration_in_s, 31536000)  # Seconds in a year=31536000.
+
+    def days(seconds=None):
+        return divmod(seconds if seconds != None else duration_in_s, 86400)  # Seconds in a day = 86400
+
+    def hours(seconds=None):
+        return divmod(seconds if seconds != None else duration_in_s, 3600)  # Seconds in an hour = 3600
+
+    def minutes(seconds=None):
+        return divmod(seconds if seconds != None else duration_in_s, 60)  # Seconds in a minute = 60
+
+    def seconds(seconds=None):
+        if seconds != None:
+            return divmod(seconds, 1)
+        return duration_in_s
+
+    def totalDuration():
+        y = years()
+        d = days(y[1])  # Use remainder to calculate next variable
+        h = hours(d[1])
+        m = minutes(h[1])
+        s = seconds(m[1])
+
+        return "Time between dates: {} years, {} days, {} hours, {} minutes and {} seconds".format(int(y[0]), int(d[0]),
+                                                                                                   int(h[0]), int(m[0]),
+                                                                                                   int(s[0]))
+
+    return {
+        'years': int(years()[0]),
+        'days': int(days()[0]),
+        'hours': int(hours()[0]),
+        'minutes': int(minutes()[0]),
+        'seconds': int(seconds()),
+        'default': totalDuration()
+    }[interval]
 
 
 def get_forecasting_df_columns():

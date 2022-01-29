@@ -18,7 +18,7 @@ from Backend.Modeling.Util.pipeline_util import train_test_split, get_list_of_ra
 from Backend.Modeling.forecast import forecast_all_models, convert_all_forecasts_to_incidences, \
     convert_seven_day_averages
 from Backend.Modeling.model_validation import sarima_pipeline
-from Backend.Visualization.modeling_results import plot_train_fitted_and_validation, plot_sarima_pred_plot, \
+from Backend.Visualization.plotting import plot_train_fitted_and_validation, plot_sarima_pred_plot, \
     plot_sarima_val_line_plot, plot_train_fitted_and_predictions, plot_all_forecasts
 from Backend.Modeling.Regression_Model.ARIMA import run_sarima, sarima_model_predictions
 

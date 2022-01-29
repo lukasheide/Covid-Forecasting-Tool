@@ -2,13 +2,14 @@ import numpy as np
 from scipy.integrate import odeint
 from Backend.Modeling.Differential_Equation_Modeling.model_params import params_SEIRV_fixed, params_SEIRV_fit, \
     draw_value_from_param_distribution, draw_random_beta
-from Backend.Modeling.Differential_Equation_Modeling.optimization_functions import weigh_residuals
+from Backend.Modeling.Differential_Equation_Modeling.optimization_functions import weigh_residuals, \
+    weigh_residuals_reversed
 from scipy.optimize import curve_fit, leastsq, least_squares
 import matplotlib.pyplot as plt
 
 from Backend.Modeling.Differential_Equation_Modeling.seirv_mechanics import solve_ode, ode_seirv, \
     compute_daily_infections
-from Backend.Visualization.modeling_results import plot_train_and_val_infections, plot_train_and_fitted_infections_line_plot, plot_train_fitted_and_validation
+from Backend.Visualization.plotting import plot_train_and_val_infections, plot_train_and_fitted_infections_line_plot, plot_train_fitted_and_validation
 from Backend.Modeling.Util.pipeline_util import models_params_to_dictionary, models_compartment_values_to_dictionary
 
 
@@ -277,8 +278,8 @@ def fit_seirv_model_only_beta(y_train: np.array, start_vals_fixed: tuple, fixed_
         x0=fit_params_start_guess,
         args=(fixed_params, start_vals_fixed, y_train),
         method='trf',
-        ftol=1e-8,
-        xtol=1e-8,
+        ftol=1e-10,
+        xtol=1e-10,
         bounds=(0, np.inf)
     )
 
@@ -291,13 +292,12 @@ def fit_seirv_model_only_beta(y_train: np.array, start_vals_fixed: tuple, fixed_
     fitted_and_fixed_model_params = tuple(opt_params[:1]) + tuple(fixed_params)
 
     # Compute starting values for each compartment:
-    N = start_vals_fixed['N']
+    S0 = start_vals_fixed['S0']
     E0 = start_vals_fixed['E0']
     I0 = start_vals_fixed['I0']
-    U0 = I0 * fixed_model_params['rho'] / (1 - fixed_model_params['rho'])
+    U0 = start_vals_fixed['U0']
     R0 = start_vals_fixed['R0']
     V0 = start_vals_fixed['V0']
-    S0 = N - E0 - I0 - R0 - V0
 
     # pack all together and add start value 0 for cumulated infections:
     y0_train = (S0, E0, I0, U0, R0, V0, 0)
@@ -448,7 +448,7 @@ def compute_weighted_residuals_beta_only(params_to_fit, t_grid, start_vals, y_tr
     residual = y_true - y_fit
 
     # weight residuals:
-    weighted_residuals = weigh_residuals(residual)
+    weighted_residuals = weigh_residuals_reversed(residual)
 
     #### Debugging ####
     # plot_train_and_fitted_infections_line_plot(y_true, y_fit)
@@ -516,16 +516,12 @@ def solve_ode_for_fitting_beta_only(fixed_start_vals, fixed_params, fit_params):
 
     #  2c) Get y0:
     #  Starting values for I, R and V are given. E0 is fitted and S0 is then computed as the last missing value.
-    N = fixed_start_vals['N']
-    R0 = fixed_start_vals['R0']
-    V0 = fixed_start_vals['V0']
+    S0 = fixed_start_vals['S0']
     E0 = fixed_start_vals['E0']
     I0 = fixed_start_vals['I0']
-
-    # Compute U0 and S0:
-    # Expected number of individuals in undetected compartment: Depends on "Dunkelziffer" factor
-    U0 = I0 * rho / (1 - rho)
-    S0 = N - E0 - I0 - U0 - R0 - V0
+    U0 = fixed_start_vals['U0']
+    R0 = fixed_start_vals['R0']
+    V0 = fixed_start_vals['V0']
 
     # pack all together and add cumulated infections:
     y0 = (S0, E0, I0, U0, R0, V0, 0)
