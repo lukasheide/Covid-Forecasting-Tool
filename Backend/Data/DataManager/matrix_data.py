@@ -547,7 +547,7 @@ if __name__ == '__main__':
     # create_weekly_matrix()
     # get_weekly_variant_data('2020-03-01')
     # weekly_mobility_dict = get_weekly_mobility_data('Stadt Neustadt a.d. W.', get_all_table_data(table_name='destatis_mobility_data'),  '2020-03-01')
-    create_weekly_matrix()
+    # create_weekly_matrix()
     create_complete_matrix_data()
     # get_weekly_beta_v2('Münster','2021-02-01', '2022-01-01')
     # get_predictors_for_ml_layer('Münster', '2021-01-15')
