@@ -42,6 +42,11 @@ def seirv_ml_layer(y_train_diffeq, start_vals_seirv, fixed_model_params_seirv, f
     # Apply Machine Learning Model to obtain beta:
     beta_pred = ml_model.predict(ml_matrix_predictors_all)[0]
 
+    # Overwrite fitted beta with ML beta:
+    model_params_temp = list(model_params_tuple)
+    model_params_temp[0] = beta_pred
+    model_params_tuple = tuple(model_params_temp)
+
     ## 4) Forecast with obtained beta guess:
     # Rerun model with new beta guess:
     y_pred_point_estimate = forecast_seirv(all_model_params=model_params_tuple,

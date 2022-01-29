@@ -4,7 +4,8 @@ import joblib
 import pandas as pd
 from datetime import date, datetime, timedelta
 from Backend.Data.DataManager.data_access_methods import get_smoothen_cases, get_starting_values, get_model_params
-from Backend.Data.DataManager.data_util import Column, date_int_str, compute_end_date_of_validation_period
+from Backend.Data.DataManager.data_util import Column, date_int_str, compute_end_date_of_validation_period, \
+    create_dates_array
 from Backend.Data.DataManager.db_calls import start_pipeline, insert_param_and_start_vals, insert_prediction_vals, \
     get_all_table_data
 from Backend.Data.DataManager.matrix_data import get_weekly_intervals_grid, get_predictors_for_ml_layer, \
@@ -360,9 +361,8 @@ def model_validation_pipeline_v2_wrapper():
         )
 
 
-    # Inspect Results:
-
-    pass
+    ### Prepare results for exporting them as a dataframe:
+    # Very complicated unpacking of multiple levels deep dictionary:
 
     # Create Lvl1-DataFrame:
     ## Unbox dictionary:
@@ -384,14 +384,78 @@ def model_validation_pipeline_v2_wrapper():
 
     unpacked_2 = copy.deepcopy(unpacked_1)
 
+
     # Delete all time series data and keep only the rest:
-    time_series_keys = ['y_train_sarima', 'y_train_diffeq', 'y_val', 'y_pred', 'residuals']
+    time_series_keys = ['y_train_sarima', 'y_train_diffeq', 'y_val', 'y_pred', 'residuals',
+                        'dates_training_diffeq', 'dates_training_sarima', 'dates_validation', 'dates_full']
 
     for item in unpacked_2:
         for k in list(item.keys()):
             if k in time_series_keys:
                 del item[k]
 
+    unpacked_3 = []
+    for idx, item in enumerate(unpacked_2):
+        temp_dict = {}
+        for k, v in item.items():
+            if not k == 'metrics':
+                temp_dict[k] = v
+            else:
+                for model, metrics in v.items():
+                    for metric_name, metric_value in metrics.items():
+                        temp_dict[model+'-'+metric_name] = metric_value
+        temp_dict['idx'] = idx
+        unpacked_3.append(temp_dict)
+
+    # Create Tier1 DataFrame:
+    df_lvl1 = pd.DataFrame(unpacked_3)
+
+    # Day-specific data:
+    unpacked_2b = copy.deepcopy(unpacked_1)
+    for item in unpacked_2b:
+        for k in list(item.keys()):
+            if k not in time_series_keys:
+                del item[k]
+
+    # unpack y_pred and residuals:
+    unpacked_3b = []
+    for idx, item in enumerate(unpacked_2b):
+        temp_dict = {}
+        for k, v in item.items():
+            if k not in ['y_pred', 'residuals']:
+                temp_dict[k] = v
+            else:
+                for model, values in v.items():
+                    temp_dict[f'{k}_{model}'] = values
+        temp_dict['idx'] = idx
+        unpacked_3b.append(temp_dict)
+
+    # Delete non forecasting related keys:
+    del_keys = ['y_train_sarima', 'y_train_diffeq', 'dates_training_diffeq', 'dates_training_sarima', 'dates_full']
+    for item in unpacked_3b:
+        for k in list(item.keys()):
+            if k in del_keys:
+                del item[k]
+
+    ## Create Tier2 DataFrame:
+    df_list = []
+    for data_interval in unpacked_3b:
+        df_list.append(
+            pd.DataFrame(data_interval)
+        )
+
+    df_lvl2 = pd.concat(df_list, axis=0)
+
+
+    #### Export both DataFrames for further analysis as CSVs:
+
+    # Run-Information (including metrics)
+    df_lvl1.to_csv(
+        path_or_buf=f'../Assets/Data/Evaluation/model_validation_data_metrics_{datetime.today().strftime("%d_%m")}.csv')
+
+    # Estimates
+    df_lvl2.to_csv(
+        path_or_buf=f'../Assets/Data/Evaluation/model_validation_data_forecasts_{datetime.today().strftime("%d_%m")}.csv')
 
 
 
@@ -537,7 +601,11 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
                 'y_val': y_val,
                 'y_pred': y_pred,
                 'residuals': residuals,
-                'metrics': metrics
+                'metrics': metrics,
+                'dates_training_diffeq': create_dates_array(start_date_str=train_start_date_diff_eq_str, num_days=train_length_diffeqmodel),
+                'dates_training_sarima': create_dates_array(start_date_str=current_interval['start_day_train_str'], num_days=train_length_sarima),
+                'dates_validation': create_dates_array(start_date_str=current_interval['start_day_val_str'], num_days=forecasting_horizon),
+                'dates_full': create_dates_array(start_date_str=current_interval['start_day_train_str'], num_days=train_length_sarima+forecasting_horizon),
             })
 
         # Append everything to results dict:

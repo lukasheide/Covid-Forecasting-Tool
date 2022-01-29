@@ -4,7 +4,6 @@ import pandas as pd
 
 from Backend.Data.DataManager.data_util import create_dates_array
 
-
 ## True Data:
 # train:
 
@@ -19,14 +18,14 @@ lightblue = '#2077b4'
 purple = '#76324e'
 
 
-
 def plot_train_infections(y_train: np.array):
     plt.clf()
     plt.plot(y_train)
     plt.show()
 
 
-def plot_train_fitted_and_predictions(y_train_fitted: np.array, y_train_true:np.array, y_pred_full:np.array, district=None, pred_start_date=None,
+def plot_train_fitted_and_predictions(y_train_fitted: np.array, y_train_true: np.array, y_pred_full: np.array,
+                                      district=None, pred_start_date=None,
                                       save_results=False):
     plt.clf()
 
@@ -35,7 +34,7 @@ def plot_train_fitted_and_predictions(y_train_fitted: np.array, y_train_true:np.
 
     # Create timegrids:
     t_grid_train = np.linspace(1, len_train, len_train)
-    t_grid_pred = np.linspace(len_train+1, len_total, len_train)
+    t_grid_pred = np.linspace(len_train + 1, len_total, len_train)
     t_grid_full = np.linspace(1, len_total, len_total)
 
     # Training data:
@@ -46,7 +45,6 @@ def plot_train_fitted_and_predictions(y_train_fitted: np.array, y_train_true:np.
     plt.plot(t_grid_full, y_pred_full, color=lightblue, zorder=5, linewidth=2.5, label='Fitted Line')
     # Prediction:
     plt.plot(t_grid_pred, y_pred_full[len_train:], color=purple, zorder=10, linewidth=2.5, label='Forecast')
-
 
     # Axis description:
     plt.title(f'Forecast for {district} starting on {pred_start_date}')
@@ -68,11 +66,8 @@ def plot_train_fitted_and_predictions(y_train_fitted: np.array, y_train_true:np.
     plt.show()
 
 
-
-
-
-
-def plot_train_fitted_and_validation(y_train: np.array, y_val: np.array, y_pred: np.array, y_pred_upper=None, y_pred_lower=None):
+def plot_train_fitted_and_validation(y_train: np.array, y_val: np.array, y_pred: np.array, y_pred_upper=None,
+                                     y_pred_lower=None):
     plt.clf()
     len_train = len(y_train)
     len_val = len(y_val)
@@ -81,12 +76,11 @@ def plot_train_fitted_and_validation(y_train: np.array, y_val: np.array, y_pred:
     # Split y_pred into train and val period:
     y_pred_train = y_pred[:len_train]
     y_pred_val = y_pred[len_train:]
-    y_pred_val_plus_one = y_pred[len_train-1:]
-
+    y_pred_val_plus_one = y_pred[len_train - 1:]
 
     t_grid_train = np.linspace(1, len_train, len_train)
-    t_grid_val = np.linspace(len_train+1, len_pred, len_val)
-    t_grid_val_plus_one = np.linspace(len_train, len_pred, len_val+1)
+    t_grid_val = np.linspace(len_train + 1, len_pred, len_val)
+    t_grid_val_plus_one = np.linspace(len_train, len_pred, len_val + 1)
     t_grid_pred = np.linspace(1, len_pred, len_pred)
 
     plt.plot(t_grid_train, y_pred_train, color=lightblue, zorder=5, linewidth=2.5)
@@ -103,7 +97,6 @@ def plot_train_fitted_and_validation(y_train: np.array, y_val: np.array, y_pred:
     plt.show()
 
 
-
 def plot_train_and_fitted_infections_line_plot(y_train: np.array, y_pred: np.array):
     plt.clf()
     len_train = len(y_train)
@@ -115,14 +108,14 @@ def plot_train_and_fitted_infections_line_plot(y_train: np.array, y_pred: np.arr
     y_pred_copy = y_pred.copy()
 
     if len_train != len_pred:
-        if len_pred == len_train-1:
+        if len_pred == len_train - 1:
             y_train_copy = y_train_copy[1:len_train]
             y_pred_copy = y_pred_copy[0:len_pred]
         else:
             y_train_copy = y_train_copy[0:corrected_train_length]
             y_pred_copy = y_pred_copy[0:corrected_train_length]
 
-    t_grid = np.linspace(0, corrected_train_length-1, corrected_train_length)
+    t_grid = np.linspace(0, corrected_train_length - 1, corrected_train_length)
 
     plt.scatter(x=t_grid, y=y_train_copy, s=40, color='#0f0f0f', zorder=10)
     plt.plot(t_grid, y_pred_copy, color='#2077b4', zorder=5, linewidth=2.5)
@@ -149,15 +142,15 @@ def plot_train_and_fitted_infections_DEPRECATED(y_train: np.array, y_pred: np.ar
     len_pred = len(y_pred)
     len_total = len_train + len_pred
     t_grid_train = np.linspace(1, len_train, len_train)
-    t_grid_pred = np.linspace(len_train, len_pred+len_train-1, len_pred)
-    t_grid_total = np.linspace(1, len_total-1, len_total-1)
+    t_grid_pred = np.linspace(len_train, len_pred + len_train - 1, len_pred)
+    t_grid_total = np.linspace(1, len_total - 1, len_total - 1)
 
     plt.plot(t_grid_train, y_train)
     plt.plot(t_grid_pred, y_pred)
     plt.show()
 
 
-def plot_train_and_val_infections(y_train:np.array, y_val:np.array):
+def plot_train_and_val_infections(y_train: np.array, y_val: np.array):
     plt.clf()
 
     if len(y_val) > len(y_train):
@@ -170,19 +163,19 @@ def plot_train_and_val_infections(y_train:np.array, y_val:np.array):
         plt.plot(y_val)
         plt.show()
 
-#create line plot for SARIMA visualization
-def plot_sarima_val_line_plot(train_array, test_array, predictions: int, pred_start_date, district):
 
+# create line plot for SARIMA visualization
+def plot_sarima_val_line_plot(train_array, test_array, predictions: int, pred_start_date, district):
     plt.clf()
 
     len_train = len(train_array)
     len_test = len(test_array)
     len_total = len_train + len_test
-    t_grid_val = np.linspace(len_train, len_total, len_test+1)
+    t_grid_val = np.linspace(len_train, len_total, len_test + 1)
     t_grid_train = np.linspace(1, len_train, len_train)
 
-    pred_array = np.concatenate((train_array[len_train-1:], predictions))
-    val_array = np.concatenate((train_array[len_train-1:], test_array))
+    pred_array = np.concatenate((train_array[len_train - 1:], predictions))
+    val_array = np.concatenate((train_array[len_train - 1:], test_array))
 
     plt.plot(t_grid_val, pred_array, color=purple, zorder=5, linewidth=2.5, label='Forecast')
     plt.plot(t_grid_train, train_array, color=lightblue, zorder=5, linewidth=2.5, label='Training Line')
@@ -193,21 +186,21 @@ def plot_sarima_val_line_plot(train_array, test_array, predictions: int, pred_st
     plt.ylabel("7-day average infections")
     plt.legend(loc="upper left")
 
-    #plt.show()
+    # plt.show()
 
     plt.savefig(f'../Assets/Forecasts/Plots/Sarima_Evaluate_{district}_StartDate_{pred_start_date}.png')
 
-def plot_sarima_pred_plot(y_train, predictions: int, district, pred_start_date):
 
+def plot_sarima_pred_plot(y_train, predictions: int, district, pred_start_date):
     plt.clf()
 
     len_train = len(y_train)
     len_test = len(predictions)
     len_total = len_train + len_test
-    t_grid_val = np.linspace(len_train, len_total, len_test+1)
+    t_grid_val = np.linspace(len_train, len_total, len_test + 1)
     t_grid_train = np.linspace(1, len_train, len_train)
 
-    pred_array = np.concatenate((y_train[len_train-1:], predictions))
+    pred_array = np.concatenate((y_train[len_train - 1:], predictions))
 
     ## Fitted data:
     # Training:
@@ -225,8 +218,8 @@ def plot_sarima_pred_plot(y_train, predictions: int, district, pred_start_date):
 
     plt.savefig(f'../Assets/Forecasts/Plots/Sarima_Forecast_{district}_StartDate_{pred_start_date}.png')
 
-def plot_evaluation_metrics(rmse, districts, i, round):
 
+def plot_evaluation_metrics(rmse, districts, i, round):
     name = (districts[i] + str(round))
     plt.bar(name, rmse)
     plt.xticks(color='orange', rotation=20, horizontalalignment='right')
@@ -238,7 +231,8 @@ def plot_evaluation_metrics(rmse, districts, i, round):
     plt.show()
 
 
-def plot_beta_matrix_estimation(y_train_true, y_val_true, y_train_pred_full, y_val_pred, district, start_date=None, end_date=None):
+def plot_beta_matrix_estimation(y_train_true, y_val_true, y_train_pred_full, y_val_pred, district, start_date=None,
+                                end_date=None):
     plt.clf()
 
     len_train = len(y_train_true)
@@ -246,12 +240,13 @@ def plot_beta_matrix_estimation(y_train_true, y_val_true, y_train_pred_full, y_v
     len_total = len_train + len_val
 
     t_grid_train = np.linspace(1, len_train, len_train)
-    t_grid_val = np.linspace(len_train+1, len_total, len_val)
+    t_grid_val = np.linspace(len_train + 1, len_total, len_val)
     t_grid_total = np.linspace(1, len_total, len_total)
 
     # Training data:
     plt.scatter(x=t_grid_train, y=y_train_true, s=40, color=orange, zorder=15, label='Training Data')
-    plt.plot(t_grid_total, y_train_pred_full, color=lightblue, zorder=5, linewidth=2.5, label='Fitted Line (with beta t-1)')
+    plt.plot(t_grid_total, y_train_pred_full, color=lightblue, zorder=5, linewidth=2.5,
+             label='Fitted Line (with beta t-1)')
 
     # Validation data:
     plt.scatter(x=t_grid_val, y=y_val_true, s=40, color=black, zorder=15, label='Validation Data')
@@ -270,7 +265,12 @@ def visualize_multiple_models(y_train, y_pred_full_diffeq, y_forecast_diffeq, y_
     pass
 
 
-def plot_all_forecasts(forecast_dictionary, y_train, start_date_str, forecasting_horizon, district):
+def plot_all_forecasts(forecast_dictionary, y_train, start_date_str, forecasting_horizon, district,
+                       plot_diff_eq_last_beta=True,
+                       plot_diff_eq_ml_beta=True,
+                       plot_sarima=True,
+                       plot_ensemble=True,
+                       ):
     plt.clf()
 
     # Get dates array:
@@ -278,7 +278,11 @@ def plot_all_forecasts(forecast_dictionary, y_train, start_date_str, forecasting
 
     # Colorcodes for each model:
     y_train_color = '#0f0f0f'
-    diff_eq_last_beta_color = '#ff7f0f'
+    diff_eq_last_beta_color = '#ff7f0f'  # orange
+    diff_eq_ml_beta_color = '#ff5f0f'  # darker orange
+    sarima_color = '#7d134b'  # purple
+    ensemble_color = '#26570d'  # darkgreen
+
     # ...
 
     # Get length of periods:
@@ -290,15 +294,41 @@ def plot_all_forecasts(forecast_dictionary, y_train, start_date_str, forecasting
     t_grid_forecasting = dates_array[-forecasting_horizon:]
     t_grid_all = dates_array
 
-
     ## Create plots:
     # Training Data:
     plt.scatter(x=t_grid_train, y=y_train, s=40, color=y_train_color, zorder=15, label='Training Data')
 
     ## Forecasts:
+
     # Diff Eq Last Beta:
-    y_pred_mean_diff_eq_last_beta = forecast_dictionary['y_pred_seirv_last_beta_mean']
-    plt.plot(t_grid_forecasting, y_pred_mean_diff_eq_last_beta, color=purple, zorder=5, linewidth=2.5, label='DiffEqLastBeta Point Estimate')
+    if plot_diff_eq_last_beta:
+        y_pred_mean_diff_eq_last_beta = forecast_dictionary['y_pred_seirv_last_beta_mean']
+        plt.plot(t_grid_forecasting, y_pred_mean_diff_eq_last_beta, color=diff_eq_last_beta_color, zorder=5, linewidth=2.5,
+                 label='DiffEq_LastBeta')
+
+    # Diff Eq ML Beta:
+    if plot_diff_eq_ml_beta:
+        y_pred_mean_diff_eq_ml_beta = forecast_dictionary['y_pred_seirv_ml_beta_mean']
+        plt.plot(t_grid_forecasting, y_pred_mean_diff_eq_ml_beta, color=diff_eq_ml_beta_color, zorder=5, linewidth=2.5,
+                 label='DiffEq_MLBeta')
+
+    # SArima:
+    if plot_sarima:
+        y_pred_sarima_mean = forecast_dictionary['y_pred_sarima_mean']
+        y_pred_sarima_upper = forecast_dictionary['y_pred_sarima_upper']
+        y_pred_sarima_lower = forecast_dictionary['y_pred_sarima_lower']
+        plt.plot(t_grid_forecasting, y_pred_sarima_mean, color=sarima_color, zorder=5, linewidth=2.5,
+                 label='Arima')
+        plt.plot(t_grid_forecasting, y_pred_sarima_upper, '.', color=sarima_color, zorder=5, linewidth=2.5)
+        plt.plot(t_grid_forecasting, y_pred_sarima_lower, '.', color=sarima_color, zorder=5, linewidth=2.5)
+
+    # Ensemble:
+    if plot_ensemble:
+        y_pred_ensemble_mean = forecast_dictionary['y_pred_ensemble_mean']
+
+        plt.plot(t_grid_forecasting, y_pred_ensemble_mean, color=ensemble_color, zorder=5, linewidth=2.5,
+                 label='Ensemble')
+
 
 
     ## Making stuff pretty:
@@ -306,6 +336,6 @@ def plot_all_forecasts(forecast_dictionary, y_train, start_date_str, forecasting
     plt.title(f'Forecast for {district}')
     plt.ylabel('7-day incidences')
     plt.xlabel('Days')
-    plt.legend(loc="upper right")
+    plt.legend(loc='upper left')
 
     plt.show()
