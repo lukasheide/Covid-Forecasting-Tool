@@ -8,13 +8,8 @@ from Backend.Data.DataManager.data_access_methods import get_smoothen_cases, get
 from Backend.Data.DataManager.data_util import Column, date_int_str, compute_end_date_of_validation_period, \
     create_dates_array, get_forecasting_df_columns
 from Backend.Data.DataManager.db_calls import start_pipeline, insert_param_and_start_vals, insert_prediction_vals, \
-    get_all_table_data, start_forecast_pipeline, update_db
+    get_all_table_data, start_forecast_pipeline, update_db, end_forecast_pipeline
 from Backend.Data.DataManager.matrix_data import get_predictors_for_ml_layer
-from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_pipeline
-from Backend.Modeling.Differential_Equation_Modeling.seirv_model_and_ml import seirv_ml_layer
-from Backend.Modeling.Regression_Model.ARIMA import sarima_pipeline_pred, sarima_pipeline_val
-from Backend.Evaluation.metrics import compute_evaluation_metrics
-from Backend.Modeling.Util.pipeline_util import train_test_split, get_list_of_random_dates, get_list_of_random_districts
 from Backend.Modeling.forecast import forecast_all_models, convert_all_forecasts_to_incidences, \
     convert_seven_day_averages
 from Backend.Modeling.model_validation import sarima_pipeline
@@ -165,7 +160,7 @@ def forecasting_pipeline(full_run=False, debug=True):
         ## ...
         # [12-14] Ensemble Model
         ## ...
-
+    end_forecast_pipeline(pipeline_id)
     pass
         # Metadata - Table:
         # [1] Pipeline-ID
@@ -181,4 +176,4 @@ def forecasting_pipeline(full_run=False, debug=True):
 
 
 if __name__ == '__main__':
-    forecasting_pipeline()
+    forecasting_pipeline(full_run=False, debug=False)
