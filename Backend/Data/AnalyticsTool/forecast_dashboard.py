@@ -63,7 +63,6 @@ app.layout = html.Div([
             html.Div(
                 className="six columns",
                 children=[
-                    #html.H2('Dash - STOCK PRICES'),
                     html.Div([
                             html.Div(
                                 children=[
@@ -75,23 +74,33 @@ app.layout = html.Div([
                                                     style={'backgroundColor':'#111111', 'color':'#ffffff'},
                                                 ),
                                             html.Hr(),
-                                            dcc.Checklist(
-                                                id='model-check',
-                                                options=[
-                                                    {'label': 'SEIURV last beta', 'value': 'sevir_last_beta'},
-                                                    {'label': 'SEIURV ML beta', 'value': 'sevir_ml_beta'},
-                                                    {'label': 'ARIMA', 'value': 'sarima'},
-                                                    {'label': 'Ensemble', 'value': 'ensemble'},
-                                                ],
-                                                value='sevir_last_beta',
-                                            ),
-                                            dcc.Checklist(
-                                                id='show-interval-check',
-                                                options=[
-                                                    {'label': 'show intervals', 'value': 'intervals'},
-                                                ],
-                                                value='intervals',
-                                            ),
+                                            html.Div([
+
+                                                html.Div([
+                                                    html.H6('Forecasting Models', style={'backgroundColor':'#111111', 'color':'white'}),
+                                                    dcc.Checklist(
+                                                        id='model-check',
+                                                        options=[
+                                                            {'label': 'SEIURV last beta', 'value': 'sevir_last_beta'},
+                                                            {'label': 'SEIURV ML beta', 'value': 'sevir_ml_beta'},
+                                                            {'label': 'ARIMA', 'value': 'sarima'},
+                                                            {'label': 'Ensemble', 'value': 'ensemble'},
+                                                        ],
+                                                        value='sevir_last_beta',
+                                                    )], className="six columns",
+                                                        style={'verticalAlign': 'top'}),
+
+                                                html.Div([
+                                                    html.H6('Prediction Intervals', style={'backgroundColor':'#111111', 'color':'white'}),
+                                                    dcc.Checklist(
+                                                        id='show-interval-check',
+                                                        options=[
+                                                            {'label': 'show intervals', 'value': 'intervals'},
+                                                        ],
+                                                        value='intervals',
+                                                    )], className='six columns',
+                                                        style={'verticalAlign': 'top'}),
+                                                ], className='row')
                                         ]),
                             html.Hr(),
                             dcc.Graph(
@@ -315,7 +324,7 @@ def get_dist_forecast_plot(selected_model):
         color=selected_model,
         hover_name='district_name',
         hover_data=['district_name', selected_model],
-        title="Next 14-Day Incident Number",
+        title="7 Day Incidence Forecast",
         mapbox_style="carto-darkmatter",
         # hot blackbody thermal
         color_continuous_scale="Redor",

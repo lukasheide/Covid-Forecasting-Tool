@@ -3,6 +3,8 @@
   color: white;
 }
 
+
+
 #map-forecast-model .VirtualizedSelectFocusedOption {
   background-color: #595959;
   color: white;
@@ -12,7 +14,19 @@
     background-color: #111111;
 }
 
+.Select-input {
+    color: white;
+}
+
+.Select-multi-value-wrapper {
+    color: white;
+}
+
 #react-select-2--value-item {
+    color:white;
+}
+
+#react-select-2--value {
     color:white;
 }
 
