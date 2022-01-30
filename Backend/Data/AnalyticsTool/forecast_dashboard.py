@@ -99,7 +99,7 @@ app.layout = html.Div([
                                 id='dist-forecast-graph',
                                 figure={
                                     'layout': {
-                                        'height': 400,
+                                        'height': 500,
                                         'margin': {'l': 10, 'b': 10, 't': 10, 'r': 10},
                                         'paper_bgcolor': '#7FDBFF',
                                         'plot_bgcolor': '#7FDBFF',
@@ -142,15 +142,16 @@ app.layout = html.Div([
 )
 def get_dist_forecast_plot(district, checkbox, show_type):
     dist_forecast_df = get_district_forecast_data(district)
-
+    training_len = len(dist_forecast_df['cases'].dropna())
+    shown = 21
     fig = make_subplots(specs=[[{"secondary_y": True}]])
     dates_array = create_dates_array(start_date_str=dist_forecast_df['date'][0],
                                      num_days=len(dist_forecast_df['cases'].dropna()) + 14)
 
     # Add traces
-    y_common_train = dist_forecast_df['cases'].dropna()
+    y_common_train = dist_forecast_df['cases'][training_len-shown:training_len].dropna()
     fig.add_trace(
-        go.Scatter(x=dates_array[:28], y=y_common_train, name="train data"),
+        go.Scatter(x=dates_array[training_len-shown:training_len], y=y_common_train, name="train data"),
         secondary_y=False,
     )
 
@@ -274,174 +275,61 @@ def get_dist_forecast_plot(selected_model):
     # data_for_map_df = all_district_forecasts.loc[all_district_forecasts['date'] == dates_list[selected_date]]
     data_for_map_df = all_district_forecasts[all_district_forecasts['cases'].isna()]
     data_for_map_df["id"] = data_for_map_df["district_name"].apply(lambda x: state_id_map[x])
-    data_for_map_df["y_pred_seirv_last_beta_mean"] = data_for_map_df[selected_model] \
+    data_for_map_df[selected_model] = data_for_map_df[selected_model] \
         .apply(pd.to_numeric).round(decimals=2)
-    data_for_map_df["y_pred_seirv_ml_beta_mean"] = data_for_map_df["y_pred_seirv_ml_beta_mean"] \
-        .apply(pd.to_numeric).round(decimals=2)
-    data_for_map_df["y_pred_sarima_mean"] = data_for_map_df["y_pred_sarima_mean"] \
-        .apply(pd.to_numeric).round(decimals=2)
-    data_for_map_df["y_pred_sarima_upper"] = data_for_map_df["y_pred_sarima_upper"] \
-        .apply(pd.to_numeric).round(decimals=2)
-    data_for_map_df["y_pred_sarima_lower"] = data_for_map_df["y_pred_sarima_lower"] \
-        .apply(pd.to_numeric).round(decimals=2)
-    data_for_map_df["y_pred_ensemble_mean"] = data_for_map_df["y_pred_ensemble_mean"] \
-        .apply(pd.to_numeric).round(decimals=2)
+
+    def set_cat(row):
+        if row[selected_model] > 0 and row[selected_model] < 251:
+            return '0 - 250'
+        if row[selected_model] > 251 and row[selected_model] < 501:
+            return '251 - 500'
+        if row[selected_model] > 501 and row[selected_model] < 751:
+            return '501 - 750'
+        if row[selected_model] > 751 and row[selected_model] < 1001:
+            return '751 - 1,000'
+        if row[selected_model] > 1001:
+            return '1,000 and higher'
+
+    # data_for_map_df['range'] = data_for_map_df.apply(set_cat, axis=1)
 
     forecast_map = px.choropleth_mapbox(
         data_for_map_df,
         locations="id",
         geojson=german_districts,
-        color='y_pred_seirv_last_beta_mean',
+        # color='range',
+        color=selected_model,
         hover_name='district_name',
-        hover_data=['district_name'],
+        hover_data=['district_name', selected_model],
         title="Next 14-Day Incident Number",
-        mapbox_style="carto-positron",
+        mapbox_style="carto-darkmatter",
         # hot blackbody thermal
         color_continuous_scale="thermal",
         # color_discrete_map={
-        #     '0': '#fffcfc',
-        #     '1 - 1,000': '#ffdbdb',
-        #     '1,001 - 5,000': '#ffbaba',
-        #     '5,001 - 10,000': '#ff9e9e',
-        #     '10,001 - 30,000': '#ff7373',
-        #     '30,001 - 50,000': '#ff4d4d',
-        #     '50,001 and higher': '#ff0d0d'},
+        #     '0 - 250': '#921315',
+        #     '251 - 500': '#661313',
+        #     '501 - 750': '#D90183',
+        #     '751 - 1,000': '#FE72C5',
+        #     '1,001 and higher': '#620042'},
+        # category_orders={
+        #     'range': [
+        #         '0 - 250',
+        #         '251 - 500',
+        #         '501 - 750',
+        #         '751 - 1,000',
+        #         '1,001 and higher'
+        #     ]
+        # },
         range_color=(0, 2000),
         animation_frame='date',
         center={"lat": 51.1657, "lon": 10.4515},
-        zoom=4.5,
-        opacity=0.9,
-        width=700,
-        height=700,
+        zoom=5,
+        # opacity=0.95,
+        width=830,
+        height=830,
 
     )
 
     return forecast_map
-
-# @app.callback(
-#     Output(component_id='forecast-chloropath', component_property='figure'),
-#     Input(component_id='district-dropdown', component_property='value')
-# )
-# def create_chloropath_map(district):
-#     # Create figure
-#     fig = go.Figure()
-#
-#     # Add traces, one for each slider step
-#     for step in np.arange(0, 5, 0.1):
-#         fig.add_trace(
-#             go.Scatter(
-#                 visible=False,
-#                 line=dict(color="#00CED1", width=6),
-#                 name="𝜈 = " + str(step),
-#                 x=np.arange(0, 10, 0.01),
-#                 y=np.sin(step * np.arange(0, 10, 0.01))))
-#
-#     # Make 10th trace visible
-#     fig.data[10].visible = True
-#
-#     # Create and add slider
-#     steps = []
-#     for i in range(len(fig.data)):
-#         step = dict(
-#             method="update",
-#             args=[{"visible": [False] * len(fig.data)},
-#                   {"title": "Slider switched to step: " + str(i)}],  # layout attribute
-#         )
-#         step["args"][0]["visible"][i] = True  # Toggle i'th trace to "visible"
-#         steps.append(step)
-#
-#     sliders = [dict(
-#         active=10,
-#         currentvalue={"prefix": "Frequency: "},
-#         pad={"t": 50},
-#         steps=steps
-#     )]
-#
-#     fig.update_layout(
-#         sliders=sliders
-#     )
-#
-#     return fig
-
-
-
-####################################################
-
-# app.layout = html.Div([
-#     dcc.Dropdown(
-#         id='district-dropdown',
-#         options=[{'label': k, 'value': k} for k in district_list],
-#         multi=False,
-#         value='Münster'
-#     ),
-#
-#     html.Hr(),
-#
-#     html.Div([
-#         dcc.RadioItems(
-#                 options=[
-#                     {'label': 'New York City', 'value': 'NYC'},
-#                     {'label': 'Montréal', 'value': 'MTL'},
-#                     {'label': 'San Francisco', 'value': 'SF'}
-#                 ],
-#                 value='MTL', className='five columns'
-#             ),
-#         dcc.Graph(id='incidents-correl-heat', figure={}, className='five columns',)
-#
-#     ])
-    #
-    # dcc.Dropdown(id='top-dist-dropdown', multi=True, value='Münster'),
-    #
-    # html.Hr(),
-    #
-    # dcc.Dropdown(id='attr-list-dropdown',
-    #              multi=False,
-    #              options=[{'label': k, 'value': k} for k in attr_list],
-    #              value='cum_vacc'),
-    #
-    # html.Hr(),
-    #
-    # html.Div([
-    #     dcc.Graph(id='attr-graph', figure={}, clickData=None, hoverData=None,
-    #               # I assigned None for demo purposes. By default, these are None, unless you specify otherwise.
-    #               config={
-    #                   'staticPlot': False,  # True, False
-    #                   'scrollZoom': True,  # True, False
-    #                   'doubleClick': 'reset',  # 'reset', 'autosize' or 'reset+autosize', False
-    #                   'showTips': False,  # True, False
-    #                   'displayModeBar': True,  # True, False, 'hover'
-    #                   'watermark': True,
-    #                   # 'modeBarButtonsToRemove': ['pan2d','select2d'],
-    #               }
-    #               )
-    # ])
-
-#
-# @app.callback(
-#     dash.dependencies.Output('top-dist-dropdown', 'options'),
-#     [dash.dependencies.Input('district-dropdown', 'value')])
-# def set_cities_options(selected_country):
-#     return [{'label': i, 'value': i} for i in get_top_relation(selected_country)]
-#
-#
-# @app.callback(
-#     Output(component_id='attr-graph', component_property='figure'),
-#     Input(component_id='district-dropdown', component_property='value'),
-#     Input(component_id='top-dist-dropdown', component_property='value'),
-#     Input(component_id='attr-list-dropdown', component_property='value'),
-# )
-# def update_graph(dist, dists_chosen, attr_chosen):
-#     if type(dists_chosen) is str:
-#         dists_chosen = [dists_chosen]
-#
-#     if type(dists_chosen) is None:
-#         dists_chosen = [dist]
-#
-#     dff = all_district_data[all_district_data.district.isin(dists_chosen)]
-#     fig = px.line(data_frame=dff, x='date', y=attr_chosen, color='district',
-#                   custom_data=['daily_vacc', 'cum_vacc', 'district'])
-#     fig.update_traces(mode='lines+markers')
-#     return fig
 
 
 if __name__ == '__main__':
