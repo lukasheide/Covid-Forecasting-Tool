@@ -73,24 +73,13 @@ app.layout = html.Div([
                                                     multi=False,
                                                     value='Münster',
                                                     style={'backgroundColor':'#111111', 'color':'#ffffff'},
-                                                    #style=dict(color='green'),,
                                                 ),
                                             html.Hr(),
-                                            # dcc.RadioItems(
-                                            #     id='model-radio',
-                                            #     options=[
-                                            #         {'label': 'SEVIR + last beta', 'value': 'sevir_last_beta'},
-                                            #         {'label': 'SEVIR + ML beta', 'value': 'sevir_ml_beta'},
-                                            #         {'label': 'SARIMA', 'value': 'sarima'},
-                                            #         {'label': 'Ensemble', 'value': 'ensemble'},
-                                            #     ],
-                                            #     value='sevir_last_beta', className="six columns"
-                                            # ),
                                             dcc.Checklist(
                                                 id='model-check',
                                                 options=[
-                                                    {'label': 'SEVIR(last beta)', 'value': 'sevir_last_beta'},
-                                                    {'label': 'SEVIR(ML beta)', 'value': 'sevir_ml_beta'},
+                                                    {'label': 'SEIURV last beta', 'value': 'sevir_last_beta'},
+                                                    {'label': 'SEIURV ML beta', 'value': 'sevir_ml_beta'},
                                                     {'label': 'ARIMA', 'value': 'sarima'},
                                                     {'label': 'Ensemble', 'value': 'ensemble'},
                                                 ],
@@ -127,9 +116,9 @@ app.layout = html.Div([
                             dcc.Dropdown(
                                 id='map-forecast-model',
 
-                                options=[{'label': 'SEIRV(Last beta)', 'value': 'y_pred_seirv_last_beta_mean'},
-                                         {'label': 'SEIRV(ML beta)', 'value': 'y_pred_seirv_ml_beta_mean'},
-                                         {'label': 'SARIMA', 'value': 'y_pred_sarima_mean'},
+                                options=[{'label': 'SEIURV last beta', 'value': 'y_pred_seirv_last_beta_mean'},
+                                         {'label': 'SEIURV ML beta', 'value': 'y_pred_seirv_ml_beta_mean'},
+                                         {'label': 'ARIMA', 'value': 'y_pred_sarima_mean'},
                                          {'label': 'Ensemble', 'value': 'y_pred_ensemble_mean'}],
                                 multi=False,
                                 value='y_pred_seirv_last_beta_mean',
@@ -279,7 +268,7 @@ def get_dist_forecast_plot(district, checkbox, show_interval):
     )
 
     # Set x-axis title
-    fig.update_xaxes(title_text="Dates")
+    fig.update_xaxes(title_text="Time")
 
     #set y-axis title
     non_numeric_cols = ['prediction_id', 'pipeline_id', 'district_name', 'date']
@@ -329,7 +318,7 @@ def get_dist_forecast_plot(selected_model):
         title="Next 14-Day Incident Number",
         mapbox_style="carto-darkmatter",
         # hot blackbody thermal
-        color_continuous_scale="thermal",
+        color_continuous_scale="Redor",
         # color_discrete_map={
         #     '0 - 250': '#921315',
         #     '251 - 500': '#661313',
@@ -345,11 +334,11 @@ def get_dist_forecast_plot(selected_model):
         #         '1,001 and higher'
         #     ]
         # },
-        range_color=(0, 2000),
+        range_color=(0, 4000),
         animation_frame='date',
         center={"lat": 51.1657, "lon": 10.4515},
         zoom=5,
-        # opacity=0.95,
+        opacity=0.8,
         width=830,
         height=830,
 

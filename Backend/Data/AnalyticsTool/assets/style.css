@@ -1,4 +1,10 @@
 #district-dropdown .VirtualizedSelectFocusedOption {
+  background-color: #595959;
+  color: white;
+}
+
+#map-forecast-model .VirtualizedSelectFocusedOption {
+  background-color: #595959;
   color: white;
 }
 
@@ -10,6 +16,20 @@
     color:white;
 }
 
+#react-select-3--value-item {
+    color:white;
+}
+
 .Select-menu-outer {
     background-color: #111111;
+}
+
+html {background-color: #111111}
+
+::-webkit-scrollbar {
+  background-color: #595959;
+
+}
+::-webkit-scrollbar-thumb {
+background-color: slategrey;important;
 }
