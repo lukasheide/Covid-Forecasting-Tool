@@ -80,7 +80,7 @@ app.layout = html.Div([
                                                 options=[
                                                     {'label': 'SEVIR(last beta)', 'value': 'sevir_last_beta'},
                                                     {'label': 'SEVIR(ML beta)', 'value': 'sevir_ml_beta'},
-                                                    {'label': 'SARIMA', 'value': 'sarima'},
+                                                    {'label': 'ARIMA', 'value': 'sarima'},
                                                     {'label': 'Ensemble', 'value': 'ensemble'},
                                                 ],
                                                 value='sevir_last_beta',
@@ -154,49 +154,13 @@ def get_dist_forecast_plot(district, checkbox, show_type):
         secondary_y=False,
     )
 
-    # if model == 'sevir_last_beta':
-    #     y = dist_forecast_df['y_pred_seirv_last_beta_mean'].dropna()
-    #     y_fixed = pd.concat([pd.Series(y_common_train.iloc[-1]), y])
-    #     fig.add_trace(
-    #         go.Scatter(x=dates_array[-15:], y=y_fixed,
-    #                    name="forecast data"),
-    #         secondary_y=False,
-    #     )
-    #
-    # if model == 'sevir_ml_beta':
-    #     y = dist_forecast_df['y_pred_seirv_ml_beta_mean'].dropna()
-    #     y_fixed = pd.concat([pd.Series(y_common_train.iloc[-1]), y])
-    #     fig.add_trace(
-    #         go.Scatter(x=dates_array[-15:], y=y_fixed,
-    #                    name="forecast data"),
-    #         secondary_y=False,
-    #     )
-    #
-    # if model == 'sarima':
-    #     y = dist_forecast_df['y_pred_sarima_mean'].dropna()
-    #     y_fixed = pd.concat([pd.Series(y_common_train.iloc[-1]), y])
-    #     fig.add_trace(
-    #         go.Scatter(x=dates_array[-15:], y=y_fixed,
-    #                    name="forecast data"),
-    #         secondary_y=False,
-    #     )
-    #
-    # if model == 'ensemble':
-    #     y = dist_forecast_df['y_pred_ensemble_mean'].dropna()
-    #     y_fixed = pd.concat([pd.Series(y_common_train.iloc[-1]), y])
-    #     fig.add_trace(
-    #         go.Scatter(x=dates_array[-15:], y=y_fixed,
-    #                    name="forecast data"),
-    #         secondary_y=False,
-    #     )
-
     if ('sevir_last_beta' in checkbox):
-        # print('yes')
         y = dist_forecast_df['y_pred_seirv_last_beta_mean'].dropna()
         y_fixed = pd.concat([pd.Series(y_common_train.iloc[-1]), y])
         fig.add_trace(
             go.Scatter(x=dates_array[-15:], y=y_fixed,
-                       name="SEIURV last beta"),
+                       name="SEIURV last beta",
+                       line_color='rgb(0,100,80)'),
             secondary_y=False,
         )
     if ('sevir_ml_beta' in checkbox):
@@ -204,7 +168,8 @@ def get_dist_forecast_plot(district, checkbox, show_type):
         y_fixed = pd.concat([pd.Series(y_common_train.iloc[-1]), y])
         fig.add_trace(
             go.Scatter(x=dates_array[-15:], y=y_fixed,
-                       name="SEIURV ML beta"),
+                       name="SEIURV ML beta",
+                       line_color='rgb(0,176,246)'),
             secondary_y=False,
         )
     if ('sarima' in checkbox):
@@ -212,7 +177,9 @@ def get_dist_forecast_plot(district, checkbox, show_type):
         y_fixed = pd.concat([pd.Series(y_common_train.iloc[-1]), y])
         fig.add_trace(
             go.Scatter(x=dates_array[-15:], y=y_fixed,
+                       line_color='rgb(231,107,243)',
                        name="ARIMA"),
+                       # line = dict(color='green')),
             secondary_y=False,
         )
     if ('ensemble'in checkbox):
@@ -220,11 +187,74 @@ def get_dist_forecast_plot(district, checkbox, show_type):
         y_fixed = pd.concat([pd.Series(y_common_train.iloc[-1]), y])
         fig.add_trace(
             go.Scatter(x=dates_array[-15:], y=y_fixed,
+                       line_color='rgb(230,171,2)',
                        name="Ensemble"),
+
             secondary_y=False,
         )
-    # fig = px.line(dist_forecast_df[mask], x=dates_array[-15:], y=y_fixed,
-    #                    name="forecast data")
+
+    # add upper and lower bounds
+    if ('sevir_last_beta' in checkbox and show_type == 'intervals'):
+        y_upper = dist_forecast_df['y_pred_seirv_last_beta_upper'].dropna().tolist()
+        y_lower = dist_forecast_df['y_pred_seirv_last_beta_lower'].dropna().tolist()
+        y_lower = y_lower[::-1]
+        x = list(dates_array[-15:])
+        x_rev = x[::-1]
+        x = x+x_rev
+        y_interval = y_upper + y_lower
+        fig.add_trace(go.Scatter(x=x,
+                                 y=y_interval,
+                                 fill='toself',
+                                 fillcolor='rgba(0,100,80,0.2)',
+                                 line_color='rgba(255,255,255,0)',
+                                 name="SEIURV last beta",
+                                 showlegend=False))
+    if ('sevir_ml_beta' in checkbox and show_type == 'intervals'):
+        y_upper = dist_forecast_df['y_pred_seirv_ml_beta_upper'].dropna().tolist()
+        y_lower = dist_forecast_df['y_pred_seirv_ml_beta_lower'].dropna().tolist()
+        y_lower = y_lower[::-1]
+        x = list(dates_array[-15:])
+        x_rev = x[::-1]
+        x = x + x_rev
+        y_interval = y_upper + y_lower
+        fig.add_trace(go.Scatter(x=x,
+                                 y=y_interval,
+                                 fill='toself',
+                                 fillcolor='rgba(0,176,246,0.2)',
+                                 line_color='rgba(255,255,255,0)',
+                                 name="SEIURV ML beta",
+                                 showlegend=False))
+    if ('sarima' in checkbox and show_type == 'intervals'):
+        y_upper = dist_forecast_df['y_pred_sarima_upper'].dropna().tolist()
+        y_lower = dist_forecast_df['y_pred_sarima_lower'].dropna().tolist()
+        y_lower = y_lower[::-1]
+        x = list(dates_array[-15:])
+        x_rev = x[::-1]
+        x = x + x_rev
+        y_interval = y_upper + y_lower
+        fig.add_trace(go.Scatter(x=x,
+                                 y=y_interval,
+                                 fill='toself',
+                                 fillcolor='rgba(231,107,243,0.2)',
+                                 line_color='rgba(255,255,255,0)',
+                                 name='ARIMA',
+                                 showlegend=False))
+    if ('ensemble' in checkbox and show_type == 'intervals'):
+        y_upper = dist_forecast_df['y_pred_ensemble_upper'].dropna().tolist()
+        y_lower = dist_forecast_df['y_pred_ensemble_lower'].dropna().tolist()
+        y_lower = y_lower[::-1]
+        x = list(dates_array[-15:])
+        x_rev = x[::-1]
+        x = x + x_rev
+        y_interval = y_upper + y_lower
+        fig.add_trace(go.Scatter(x=x,
+                                 y=y_interval,
+                                 fill='toself',
+                                 fillcolor='rgba(230,171,2,0.2)',
+                                 line_color='rgba(255,255,255,0)',
+                                 name='Ensemble',
+                                 showlegend=False))
+
 
     # Add figure title
     fig.update_layout(
