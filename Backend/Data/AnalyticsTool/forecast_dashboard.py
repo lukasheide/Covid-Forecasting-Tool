@@ -85,7 +85,7 @@ app.layout = html.Div([
                                                             {'label': 'ARIMA', 'value': 'sarima'},
                                                             {'label': 'Ensemble', 'value': 'ensemble'},
                                                         ],
-                                                        value='sevir_last_beta',
+                                                        value='sevir_ml_beta',
                                                     )], className="six columns",
                                                         style={'verticalAlign': 'top'}),
 
