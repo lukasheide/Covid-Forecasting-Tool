@@ -267,6 +267,7 @@ def plot_all_forecasts(forecast_dictionary, y_train, start_date_str, forecasting
                        plot_diff_eq_ml_beta=True,
                        plot_sarima=True,
                        plot_ensemble=True,
+                       plot_predictions_intervals=True
                        ):
     plt.clf()
 
@@ -305,14 +306,30 @@ def plot_all_forecasts(forecast_dictionary, y_train, start_date_str, forecasting
     # Diff Eq Last Beta:
     if plot_diff_eq_last_beta:
         y_pred_mean_diff_eq_last_beta = forecast_dictionary['y_pred_seirv_last_beta_mean']
+        y_pred_upper_diff_eq_last_beta = forecast_dictionary['y_pred_seirv_last_beta_upper']
+        y_pred_lower_diff_eq_last_beta = forecast_dictionary['y_pred_seirv_last_beta_lower']
+
         plt.plot(t_grid_forecasting, y_pred_mean_diff_eq_last_beta, color=diff_eq_last_beta_color, zorder=5, linewidth=2.5,
                  label='DiffEq_LastBeta')
+
+        if plot_predictions_intervals:
+            plt.plot(t_grid_forecasting, y_pred_upper_diff_eq_last_beta, '.', color=diff_eq_ml_beta_color, zorder=5, linewidth=2.5)
+            plt.plot(t_grid_forecasting, y_pred_lower_diff_eq_last_beta, '.', color=diff_eq_ml_beta_color, zorder=5, linewidth=2.5)
+
 
     # Diff Eq ML Beta:
     if plot_diff_eq_ml_beta:
         y_pred_mean_diff_eq_ml_beta = forecast_dictionary['y_pred_seirv_ml_beta_mean']
+        y_pred_upper_diff_eq_ml_beta = forecast_dictionary['y_pred_seirv_ml_beta_upper']
+        y_pred_lower_diff_eq_ml_beta = forecast_dictionary['y_pred_seirv_ml_beta_lower']
+
         plt.plot(t_grid_forecasting, y_pred_mean_diff_eq_ml_beta, color=diff_eq_ml_beta_color, zorder=5, linewidth=2.5,
                  label='DiffEq_MLBeta')
+
+        if plot_predictions_intervals:
+            plt.plot(t_grid_forecasting, y_pred_upper_diff_eq_ml_beta, '.', color=diff_eq_ml_beta_color, zorder=5, linewidth=2.5)
+            plt.plot(t_grid_forecasting, y_pred_lower_diff_eq_ml_beta, '.', color=diff_eq_ml_beta_color, zorder=5, linewidth=2.5)
+
 
     # SArima:
     if plot_sarima:
@@ -321,15 +338,23 @@ def plot_all_forecasts(forecast_dictionary, y_train, start_date_str, forecasting
         y_pred_sarima_lower = forecast_dictionary['y_pred_sarima_lower']
         plt.plot(t_grid_forecasting, y_pred_sarima_mean, color=sarima_color, zorder=5, linewidth=2.5,
                  label='Arima')
-        plt.plot(t_grid_forecasting, y_pred_sarima_upper, '.', color=sarima_color, zorder=5, linewidth=2.5)
-        plt.plot(t_grid_forecasting, y_pred_sarima_lower, '.', color=sarima_color, zorder=5, linewidth=2.5)
+
+        if plot_predictions_intervals:
+            plt.plot(t_grid_forecasting, y_pred_sarima_upper, '.', color=sarima_color, zorder=5, linewidth=2.5)
+            plt.plot(t_grid_forecasting, y_pred_sarima_lower, '.', color=sarima_color, zorder=5, linewidth=2.5)
 
     # Ensemble:
     if plot_ensemble:
         y_pred_ensemble_mean = forecast_dictionary['y_pred_ensemble_mean']
+        y_pred_ensemble_upper = forecast_dictionary['y_pred_ensemble_upper']
+        y_pred_ensemble_lower = forecast_dictionary['y_pred_ensemble_lower']
 
         plt.plot(t_grid_forecasting, y_pred_ensemble_mean, color=ensemble_color, zorder=5, linewidth=2.5,
                  label='Ensemble')
+
+        if plot_predictions_intervals:
+            plt.plot(t_grid_forecasting, y_pred_ensemble_upper, '.', color=ensemble_color, zorder=5, linewidth=2.5)
+            plt.plot(t_grid_forecasting, y_pred_ensemble_lower, '.', color=ensemble_color, zorder=5, linewidth=2.5)
 
 
 

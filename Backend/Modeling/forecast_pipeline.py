@@ -10,6 +10,7 @@ from Backend.Data.DataManager.data_util import Column, date_int_str, compute_end
 from Backend.Data.DataManager.db_calls import start_pipeline, insert_param_and_start_vals, insert_prediction_vals, \
     get_all_table_data, start_forecast_pipeline, update_db, end_forecast_pipeline
 from Backend.Data.DataManager.matrix_data import get_predictors_for_ml_layer
+from Backend.Modeling.Differential_Equation_Modeling.prediction_intervals import get_prediction_intervals
 from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_pipeline
 from Backend.Modeling.Differential_Equation_Modeling.seirv_model_and_ml import seirv_ml_layer
 from Backend.Modeling.Regression_Model.ARIMA import sarima_pipeline_val
@@ -78,6 +79,9 @@ def forecasting_pipeline(full_run=False, debug=False):
     with open(standardizer_model_path, 'rb') as fid:
         standardizer_obj = joblib.load(fid)
 
+    # Import Prediction Intervals:
+    pred_intervals_df = get_prediction_intervals()
+
 
     start_time_pipeline = datetime.now()
     # Iterate over all districts:
@@ -115,7 +119,7 @@ def forecasting_pipeline(full_run=False, debug=False):
         seirv_last_beta_only_results, seirv_ml_results, sarima_results, ensemble_results, all_combined_seven_day_average = \
             forecast_all_models(y_train_seirv, y_train_sarima, forecasting_horizon,
                                 ml_training_data, start_vals_seirv, fixed_model_params_seirv,
-                                standardizer_obj, ml_model, district, ensemble_model_share)
+                                standardizer_obj, ml_model, district, ensemble_model_share, pred_intervals_df)
 
 
         ## 4) Convert 7-day average to 7-day-incident:
@@ -127,10 +131,11 @@ def forecasting_pipeline(full_run=False, debug=False):
             plot_all_forecasts(forecast_dictionary=all_combined_incidence, y_train=y_train_sarima_incidence,
                                start_date_str=training_start_date.strftime('%Y-%m-%d'), forecasting_horizon=forecasting_horizon,
                                district=district,
-                               plot_diff_eq_last_beta=True,
+                               plot_diff_eq_last_beta=False,
                                plot_diff_eq_ml_beta=True,
-                               plot_sarima=False,
-                               plot_ensemble=True
+                               plot_sarima=True,
+                               plot_ensemble=False,
+                               plot_predictions_intervals=True
                                )
 
         ## 6) Upload to DB
@@ -190,7 +195,5 @@ def forecasting_pipeline(full_run=False, debug=False):
 
 
 
-
-
 if __name__ == '__main__':
-    forecasting_pipeline(full_run=True, debug=False)
+    forecasting_pipeline(full_run=True)
