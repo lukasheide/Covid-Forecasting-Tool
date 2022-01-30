@@ -33,3 +33,6 @@ html {background-color: #111111}
 ::-webkit-scrollbar-thumb {
 background-color: slategrey;important;
 }
+
+#model-check label:nth-of-type(1) [type="checkbox"]{
+}
