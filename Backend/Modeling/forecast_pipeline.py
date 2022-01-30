@@ -32,7 +32,7 @@ def forecasting_pipeline(full_run=False, debug=False):
     forecasting_horizon = 14
 
     train_length_diffeqmodel = 14
-    train_length_sarima = 28
+    train_length_sarima = 42
     training_period_max = max(train_length_diffeqmodel, train_length_sarima)
 
     # ML Layer:

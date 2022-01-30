@@ -330,7 +330,7 @@ def model_validation_pipeline_v2_wrapper():
     forecasting_horizon = 14
 
     train_length_diffeqmodel = 14
-    train_length_sarima = 28
+    train_length_sarima = 42
     training_period_max = max(train_length_diffeqmodel, train_length_sarima)
 
     opendata = get_all_table_data(table_name='district_list')
@@ -586,6 +586,11 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
                 plot_train_fitted_and_validation(y_train=y_train_diffeq,
                                                  y_pred=seirv_last_beta_only_results['y_pred_including_train_period'],
                                                  y_val=y_val)
+
+                #Train + VAL - SARima
+               # plot_sarima_val_line_plot(train_array=y_train_sarima, test_array=y_val,
+                #                          predictions=sarima_results["predictions"],
+                 #                         pred_start_date=current_interval['start_day_val_str'], district=district)
 
 
             ## 5) Evaluation - Compute metrics:
