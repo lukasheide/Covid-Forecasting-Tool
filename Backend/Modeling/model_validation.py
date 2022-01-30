@@ -1,7 +1,10 @@
 import datetime
+import random
+import statistics
 
 import joblib
 import pandas as pd
+import numpy as np
 from datetime import date, datetime, timedelta
 from Backend.Data.DataManager.data_access_methods import get_smoothen_cases, get_starting_values, get_model_params
 from Backend.Data.DataManager.data_util import Column, date_int_str, compute_end_date_of_validation_period, \
@@ -323,8 +326,8 @@ def model_validation_pipeline_v2_wrapper():
     # ]
 
     pipeline_intervals = [
-        ('2021-10-01', '2022-01-25'),
-        ('2020-11-01', '2021-01-01'),
+        ('2021-09-01', '2022-01-25'),
+        ('2020-10-01', '2021-02-01'),
     ]
 
     forecasting_horizon = 14
@@ -335,6 +338,10 @@ def model_validation_pipeline_v2_wrapper():
 
     opendata = get_all_table_data(table_name='district_list')
     districts = opendata['district'].tolist()
+
+    # Only sample:
+    districts = random.sample(districts, 120)
+
     districts.sort()
 
     # districts = ['Münster', 'Bielefeld']
@@ -576,16 +583,17 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
                                    start_date_str=current_interval['start_day_train_str'],
                                    forecasting_horizon=forecasting_horizon,
                                    district=district,
+                                   y_val=y_val,
                                    plot_diff_eq_last_beta=True,
                                    plot_diff_eq_ml_beta=True,
-                                   plot_sarima=False,
-                                   plot_ensemble=True
+                                   plot_sarima=True,
+                                   plot_ensemble=True,
                                    )
 
                 # Train + VAL - SEIRV
-                plot_train_fitted_and_validation(y_train=y_train_diffeq,
-                                                 y_pred=seirv_last_beta_only_results['y_pred_including_train_period'],
-                                                 y_val=y_val)
+                # plot_train_fitted_and_validation(y_train=y_train_diffeq,
+                #                                  y_pred=seirv_last_beta_only_results['y_pred_including_train_period'],
+                #                                  y_val=y_val)
 
                 #Train + VAL - SARima
                # plot_sarima_val_line_plot(train_array=y_train_sarima, test_array=y_val,
@@ -615,6 +623,8 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
                 'y_train_diffeq': y_train_diffeq,
                 'y_val': y_val,
                 'y_pred': y_pred,
+                'mean_y_train': np.mean(y_train_diffeq),
+                'mean_y_val': np.mean(y_val),
                 'residuals': residuals,
                 'metrics': metrics,
                 'dates_training_diffeq': create_dates_array(start_date_str=train_start_date_diff_eq_str, num_days=train_length_diffeqmodel),

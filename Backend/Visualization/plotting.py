@@ -262,6 +262,7 @@ def plot_beta_matrix_estimation(y_train_true, y_val_true, y_train_pred_full, y_v
 
 
 def plot_all_forecasts(forecast_dictionary, y_train, start_date_str, forecasting_horizon, district,
+                       y_val=None,
                        plot_diff_eq_last_beta=True,
                        plot_diff_eq_ml_beta=True,
                        plot_sarima=True,
@@ -274,6 +275,7 @@ def plot_all_forecasts(forecast_dictionary, y_train, start_date_str, forecasting
 
     # Colorcodes for each model:
     y_train_color = '#0f0f0f'
+    y_val_color = '#0F4152' # dark green
     diff_eq_last_beta_color = '#ff7f0f'  # orange
     diff_eq_ml_beta_color = '#ff5f0f'  # darker orange
     sarima_color = '#7d134b'  # purple
@@ -293,6 +295,10 @@ def plot_all_forecasts(forecast_dictionary, y_train, start_date_str, forecasting
     ## Create plots:
     # Training Data:
     plt.scatter(x=t_grid_train, y=y_train, s=40, color=y_train_color, zorder=15, label='Training Data')
+
+    # Validation Data:
+    if y_val is not None:
+        plt.scatter(x=t_grid_forecasting, y=y_val, s=40, color=y_val_color, zorder=15, label='Validation Data')
 
     ## Forecasts:
 
