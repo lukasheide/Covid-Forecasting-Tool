@@ -14,6 +14,7 @@ from Backend.Data.DataManager.db_calls import start_pipeline, insert_param_and_s
 from Backend.Data.DataManager.matrix_data import get_weekly_intervals_grid, get_predictors_for_ml_layer, \
     prepare_all_beta_predictors
 from Backend.Data.DataManager.remote_db_manager import download_db_file
+from Backend.Modeling.Differential_Equation_Modeling.prediction_intervals import get_prediction_intervals
 from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_pipeline, forecast_seirv
 from Backend.Evaluation.metrics import compute_evaluation_metrics
 from Backend.Modeling.Differential_Equation_Modeling.seirv_model_and_ml import seirv_ml_layer
@@ -504,6 +505,9 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
         ml_model = None
         standardizer_obj = None
 
+    # Import Prediction Intervals:
+    pred_intervals_df = get_prediction_intervals()
+
     # Iterate over districts:
     results_dict = {}
     start_time = datetime.now()
@@ -562,7 +566,8 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
                 forecast_all_models(y_train_diffeq, y_train_sarima, forecasting_horizon,
                                     ml_matrix_predictors, start_vals_seirv, fixed_model_params_seirv,
                                     standardizer_obj, ml_model, district, ensemble_model_share,
-                                    run_diff_eq_last_beta, run_diff_eq_ml_beta, run_sarima, run_ensemble
+                                    pred_intervals_df,
+                                    run_diff_eq_last_beta, run_diff_eq_ml_beta, run_sarima, run_ensemble,
                                     )
             ## 3a) Try to catch bad ARIMA results
             if sarima_results['predictions'][0] == sarima_results['predictions'][1]:

@@ -23,6 +23,52 @@ df_forecasts <- df_forecasts %>%
 
 #### 2) Residuals Analysis ####
 
+
+### Differentiate forecasts into three different groups based on average incidence for y_val:
+df_forecasts %>% group_by(idx) %>% 
+  summarize(
+    avg_infections = mean(y_val)
+  ) %>% 
+  mutate(
+    group1_avg_infections = quantile(avg_infections, 0.25),
+    group2_avg_infections = quantile(avg_infections, 0.50),
+    group3_avg_infections = quantile(avg_infections, 0.75),
+  )
+
+
+weekly_district_infections <- df_forecasts %>% group_by(idx) %>% 
+  summarize(avg_infections = mean(y_val))
+
+groups_vector <- cut(weekly_district_infections$avg_infections,
+                     breaks = c(-Inf, 25, 50, 100, Inf),
+                     labels= c('c1','c2','c3','c4'))
+
+weekly_district_incidences <- weekly_district_incidences %>% 
+  mutate(
+    class = groups_vector
+  )
+
+df_joined <- inner_join(df_forecasts, weekly_district_incidences, by='idx')
+
+
+upper_bound = 0.75
+lower_bound = 0.25
+
+# Group by class
+df_joined %>% 
+  group_by(class, day_num) %>% 
+  summarise(
+    # Diff Eq Last Beta
+    upper_perc_diff_eq_last_beta = quantile(rel_residuals_Diff_Eq_Last_Beta, upper_bound),
+    lower_perc_diff_eq_last_beta  = quantile(rel_residuals_Diff_Eq_Last_Beta, lower_bound),
+    
+    # Diff Eq Ml Beta
+    upper_perc_diff_eq1_ml_beta  = quantile(rel_residuals_Diff_Eq_Ml_Beta, upper_bound),
+    lower_perc_diff_eq1_ml_beta  = quantile(rel_residuals_Diff_Eq_Ml_Beta, lower_bound)
+  ) %>% view()
+
+
+
 ## Compute relative residuals:
 df_forecasts <- df_forecasts %>% mutate(
   rel_residuals_Diff_Eq_Last_Beta = residuals_Diff_Eq_Last_Beta / y_val,
@@ -123,6 +169,10 @@ df_forecasts %>%
 
 
 
+
+
+
+
 #### 3) Model Performance Analysis ####
 
 ### By Calendar Week
@@ -212,5 +262,7 @@ df_metrics %>%
   labs(y = "Mode of RMSE (Root Mean Squared Error)", fill='Model') +
   theme(text = element_text(size = 12), legend.position = "right") +
   theme_bw()
+
+
 
 

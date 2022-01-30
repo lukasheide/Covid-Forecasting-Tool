@@ -2,11 +2,12 @@ import numpy as np
 import pandas as pd
 
 from Backend.Data.DataManager.matrix_data import prepare_all_beta_predictors
+from Backend.Modeling.Differential_Equation_Modeling.prediction_intervals import compute_prediction_intervals
 from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_pipeline, forecast_seirv
 
 
 def seirv_ml_layer(y_train_diffeq, start_vals_seirv, fixed_model_params_seirv, forecasting_horizon,
-                   ml_matrix_predictors, standardizer_obj, ml_model):
+                   ml_matrix_predictors, standardizer_obj, ml_model, pred_intervals_df=None):
     ## 1) Run Pipeline for training period:
     training_pipeline_results = seirv_pipeline(y_train=y_train_diffeq,
                                                start_vals_fixed=start_vals_seirv,
@@ -43,7 +44,7 @@ def seirv_ml_layer(y_train_diffeq, start_vals_seirv, fixed_model_params_seirv, f
     beta_pred_ml = ml_model.predict(ml_matrix_predictors_all)[0]
     beta_pred_last_beta = model_params_tuple[0]
 
-    opt_beta = 0.75*beta_pred_last_beta + 0.2*beta_pred_ml
+    opt_beta = 0.85*beta_pred_last_beta + 0.15*beta_pred_ml
 
     # Overwrite fitted beta with ML beta:
     model_params_temp = list(model_params_tuple)
@@ -56,8 +57,20 @@ def seirv_ml_layer(y_train_diffeq, start_vals_seirv, fixed_model_params_seirv, f
                                            y0=start_vals_tuple,
                                            forecast_horizon=forecasting_horizon)
 
+    ## 5) Compute Bounds:
+    ## Compute Upper and Lower Bound:
+    if pred_intervals_df is not None:
+        upper_bound, lower_bound = compute_prediction_intervals(
+            y_pred=y_pred_point_estimate,
+            intervals_residuals_df=pred_intervals_df,
+            avg_pred=np.mean(y_pred_point_estimate),
+            model_name='seirv_ml_beta')
+
+
     results_dict = {
-        'y_pred_mean': y_pred_point_estimate
+        'y_pred_mean': y_pred_point_estimate,
+        'y_pred_upper': upper_bound,
+        'y_pred_lower': lower_bound,
     }
 
     return results_dict
