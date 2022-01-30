@@ -1,6 +1,7 @@
 import json
 
 import dash
+import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
 from dash import dcc
 from dash import html
@@ -10,6 +11,7 @@ import numpy as np
 import plotly.graph_objects as go
 import plotly
 import plotly.offline as offline
+import plotly.io as pio
 
 from plotly.graph_objs import *
 from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
@@ -18,9 +20,11 @@ from Backend.Data.DataManager.data_util import create_dates_array
 from Backend.Data.DataManager.db_calls import get_district_forecast_data, get_all_latest_forecasts
 from Backend.Data.DataManager.db_functions import get_table_data
 
+pio.templates.default = 'plotly_dark'
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+# app = dash.Dash(external_stylesheets=[dbc.themes.VAPOR])
 # data for the chloropath maps and set ids
 german_districts = json.load(open("Data/AnalyticsTool/simplified_geo_data.geojson", 'r', encoding='utf-8'))
 dist_id = 1000
@@ -49,9 +53,10 @@ dates_list = all_district_forecasts['date'].unique()[-14:]
 ########### app layout is defined here ##############
 
 app.layout = html.Div([
-    html.Hr(),
+    html.Hr(style={'backgroundColor':'black'},),
     html.Div(
         className="row",
+        style={'backgroundColor':'#111111', 'color':'white'},
         children=[
             html.Div(
                 className="six columns",
@@ -62,7 +67,9 @@ app.layout = html.Div([
                                                     id='district-dropdown',
                                                     options=[{'label': k, 'value': k} for k in district_list],
                                                     multi=False,
-                                                    value='Münster'
+                                                    value='Münster',
+                                                    style={'backgroundColor':'#111111','font-color':'white'},
+                                                    #style=dict(color='green'),,
                                                 ),
                                             html.Hr(),
                                             # dcc.RadioItems(
@@ -85,11 +92,10 @@ app.layout = html.Div([
                                                 ],
                                                 value='sevir_last_beta',
                                             ),
-                                            dcc.RadioItems(
-                                                id='show-type-radio',
+                                            dcc.Checklist(
+                                                id='show-interval-check',
                                                 options=[
                                                     {'label': 'show intervals', 'value': 'intervals'},
-                                                    {'label': 'show fitted', 'value': 'fitted'}
                                                 ],
                                                 value='intervals',
                                             ),
@@ -138,9 +144,9 @@ app.layout = html.Div([
     Input(component_id='district-dropdown', component_property='value'),
     # Input(component_id='model-radio', component_property='value'),
     Input(component_id='model-check', component_property='value'),
-    Input(component_id='show-type-radio', component_property='value')
+    Input(component_id='show-interval-check', component_property='value')
 )
-def get_dist_forecast_plot(district, checkbox, show_type):
+def get_dist_forecast_plot(district, checkbox, show_interval):
     dist_forecast_df = get_district_forecast_data(district)
 
     fig = make_subplots(specs=[[{"secondary_y": True}]])
@@ -150,7 +156,7 @@ def get_dist_forecast_plot(district, checkbox, show_type):
     # Add traces
     y_common_train = dist_forecast_df['cases'].dropna()
     fig.add_trace(
-        go.Scatter(x=dates_array[:28], y=y_common_train, name="train data"),
+        go.Scatter(x=dates_array[:28], y=y_common_train, name="train data", mode='lines+markers'),
         secondary_y=False,
     )
 
@@ -160,7 +166,8 @@ def get_dist_forecast_plot(district, checkbox, show_type):
         fig.add_trace(
             go.Scatter(x=dates_array[-15:], y=y_fixed,
                        name="SEIURV last beta",
-                       line_color='rgb(0,100,80)'),
+                       line_color='rgb(0,100,80)',
+                       mode='lines'),
             secondary_y=False,
         )
     if ('sevir_ml_beta' in checkbox):
@@ -169,7 +176,8 @@ def get_dist_forecast_plot(district, checkbox, show_type):
         fig.add_trace(
             go.Scatter(x=dates_array[-15:], y=y_fixed,
                        name="SEIURV ML beta",
-                       line_color='rgb(0,176,246)'),
+                       line_color='rgb(0,176,246)',
+                       mode='lines'),
             secondary_y=False,
         )
     if ('sarima' in checkbox):
@@ -178,7 +186,8 @@ def get_dist_forecast_plot(district, checkbox, show_type):
         fig.add_trace(
             go.Scatter(x=dates_array[-15:], y=y_fixed,
                        line_color='rgb(231,107,243)',
-                       name="ARIMA"),
+                       name="ARIMA",
+                       mode='lines'),
                        # line = dict(color='green')),
             secondary_y=False,
         )
@@ -188,13 +197,14 @@ def get_dist_forecast_plot(district, checkbox, show_type):
         fig.add_trace(
             go.Scatter(x=dates_array[-15:], y=y_fixed,
                        line_color='rgb(230,171,2)',
-                       name="Ensemble"),
+                       name="Ensemble",
+                       mode='lines'),
 
             secondary_y=False,
         )
 
     # add upper and lower bounds
-    if ('sevir_last_beta' in checkbox and show_type == 'intervals'):
+    if ('sevir_last_beta' in checkbox and 'intervals'in show_interval):
         y_upper = dist_forecast_df['y_pred_seirv_last_beta_upper'].dropna().tolist()
         y_lower = dist_forecast_df['y_pred_seirv_last_beta_lower'].dropna().tolist()
         y_lower = y_lower[::-1]
@@ -209,7 +219,7 @@ def get_dist_forecast_plot(district, checkbox, show_type):
                                  line_color='rgba(255,255,255,0)',
                                  name="SEIURV last beta",
                                  showlegend=False))
-    if ('sevir_ml_beta' in checkbox and show_type == 'intervals'):
+    if ('sevir_ml_beta' in checkbox and 'intervals'in show_interval):
         y_upper = dist_forecast_df['y_pred_seirv_ml_beta_upper'].dropna().tolist()
         y_lower = dist_forecast_df['y_pred_seirv_ml_beta_lower'].dropna().tolist()
         y_lower = y_lower[::-1]
@@ -224,7 +234,7 @@ def get_dist_forecast_plot(district, checkbox, show_type):
                                  line_color='rgba(255,255,255,0)',
                                  name="SEIURV ML beta",
                                  showlegend=False))
-    if ('sarima' in checkbox and show_type == 'intervals'):
+    if ('sarima' in checkbox and 'intervals'in show_interval):
         y_upper = dist_forecast_df['y_pred_sarima_upper'].dropna().tolist()
         y_lower = dist_forecast_df['y_pred_sarima_lower'].dropna().tolist()
         y_lower = y_lower[::-1]
@@ -239,7 +249,7 @@ def get_dist_forecast_plot(district, checkbox, show_type):
                                  line_color='rgba(255,255,255,0)',
                                  name='ARIMA',
                                  showlegend=False))
-    if ('ensemble' in checkbox and show_type == 'intervals'):
+    if ('ensemble' in checkbox and 'intervals'in show_interval):
         y_upper = dist_forecast_df['y_pred_ensemble_upper'].dropna().tolist()
         y_lower = dist_forecast_df['y_pred_ensemble_lower'].dropna().tolist()
         y_lower = y_lower[::-1]
@@ -263,6 +273,16 @@ def get_dist_forecast_plot(district, checkbox, show_type):
 
     # Set x-axis title
     fig.update_xaxes(title_text="Dates")
+
+    #set y-axis title
+    non_numeric_cols = ['prediction_id', 'pipeline_id', 'district_name', 'date']
+    sel_columns = [c for c in list(dist_forecast_df.columns) if c not in non_numeric_cols]
+    temp_df = dist_forecast_df[sel_columns].fillna(value=0).apply(pd.to_numeric)
+    max_train_data_points = np.max(temp_df.max())
+
+    max_y_axis_value = round(max_train_data_points*1.2/100)*100
+
+    fig.update_yaxes (title_text='7 Day Incidence', range=[0, max_y_axis_value])
 
     return fig
 
@@ -295,7 +315,7 @@ def get_dist_forecast_plot(selected_model):
         hover_name='district_name',
         hover_data=['district_name'],
         title="Next 14-Day Incident Number",
-        mapbox_style="carto-positron",
+        mapbox_style="carto-darkmatter",
         # hot blackbody thermal
         color_continuous_scale="thermal",
         # color_discrete_map={
