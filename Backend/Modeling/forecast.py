@@ -20,6 +20,9 @@ def forecast_all_models(y_train_diffeq, y_train_sarima, forecasting_horizon, ml_
                                                       forecast_horizon=forecasting_horizon,
                                                       allow_randomness_fixed_beta=False, district=district)
 
+        ## Compute Upper and Lower Bound:
+
+
     ## 3.2) SEIRV + Machine Learning Layer
     if run_diff_eq_ml_beta:
         seirv_ml_results = seirv_ml_layer(y_train_diffeq, start_vals_seirv, fixed_model_params_seirv,
@@ -104,7 +107,7 @@ def convert_all_forecasts_to_incidences(forecasts: dict, pop_size_district: int)
     return results_dict
 
 
-def convert_seven_day_averages(forecast_array: np.array, pop_size_district: int) -> np.array:
+def convert_seven_day_averages(array: np.array, pop_size_district: int) -> np.array:
     # Multiply with 7 to go from 7 day average to 7 day sum
     # Then divide by population size and multiply with 100k to get incidences
-    return np.array(forecast_array) * 7 / pop_size_district * 100_000
+    return np.array(array) * 7 / pop_size_district * 100_000

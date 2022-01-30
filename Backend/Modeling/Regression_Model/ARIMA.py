@@ -57,15 +57,25 @@ def sarima_pipeline(y_train, forecasting_horizon):
     pred_sarima = sarimamodel(y_train)
     predictions, conf_int = pred_sarima.predict(forecasting_horizon, return_conf_int=True, alpha=0.1)
     pred_int = pd.DataFrame(conf_int, columns=['lower', 'upper'])
+    lower = pred_int['lower']
+    upper = pred_int['upper']
 
     for i in range(len(predictions)):
         if predictions[i] < 0:
             predictions[i] = 0
 
+    for i in range(len(lower)):
+        if lower[i] < 0:
+            lower[i] = 0
+
+    for i in range(len(upper)):
+        if upper[i] < 0:
+            upper[i] = 0
+
     results_dict = {
         'predictions': predictions,
-        'lower': pred_int['lower'],
-        'upper': pred_int['upper']
+        'lower': lower,
+        'upper': upper
     }
     return results_dict
 
@@ -74,7 +84,7 @@ def sarima_pipeline(y_train, forecasting_horizon):
 def sarima_pipeline_val(y_train, forecasting_horizon):
     y_val_train, y_val_predict = create_val_data(y_train, forecasting_horizon)
     sarima_model = run_sarima(y_train=y_train, y_val=y_val_predict)
-    predictions, conf_int = sarima_model["model"].predict(forecasting_horizon, return_conf_int=True, alpha=0.1)
+    predictions, conf_int = sarima_model["model"].predict(forecasting_horizon, return_conf_int=True, alpha=0.95)
     pred_int = pd.DataFrame(conf_int, columns=['lower', 'upper'])
 
     results_dict = {
