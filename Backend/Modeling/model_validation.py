@@ -333,7 +333,7 @@ def model_validation_pipeline_v2_wrapper():
     forecasting_horizon = 14
 
     train_length_diffeqmodel = 14
-    train_length_sarima = 28
+    train_length_sarima = 42
     training_period_max = max(train_length_diffeqmodel, train_length_sarima)
 
     opendata = get_all_table_data(table_name='district_list')

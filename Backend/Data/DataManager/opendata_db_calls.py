@@ -411,9 +411,9 @@ if __name__ == '__main__':
     # update_population_map()
 
     ## Everything related to predictors:
-    update_ecdc_variant_table()
-    update_destatis_mobility_table()
-    update_oxcgrt_policy_table()
+    # update_ecdc_variant_table()
+    # update_destatis_mobility_table()
+    # update_oxcgrt_policy_table()
 
     update_all_district_data()
     # update_district_data("Münster")

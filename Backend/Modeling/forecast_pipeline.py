@@ -32,7 +32,7 @@ def forecasting_pipeline(full_run=False, debug=False):
     forecasting_horizon = 14
 
     train_length_diffeqmodel = 14
-    train_length_sarima = 28
+    train_length_sarima = 42
     training_period_max = max(train_length_diffeqmodel, train_length_sarima)
 
     # ML Layer:
@@ -120,11 +120,11 @@ def forecasting_pipeline(full_run=False, debug=False):
 
         ## 4) Convert 7-day average to 7-day-incident:
         all_combined_incidence = convert_all_forecasts_to_incidences(all_combined_seven_day_average, start_vals_seirv['N'])
-        y_train_incidence = convert_seven_day_averages(y_train_sarima, start_vals_seirv['N'])
+        y_train_sarima_incidence = convert_seven_day_averages(y_train_sarima, start_vals_seirv['N'])
 
         ## 5) Debugging Visualization
         if debug:
-            plot_all_forecasts(forecast_dictionary=all_combined_incidence, y_train=y_train_incidence,
+            plot_all_forecasts(forecast_dictionary=all_combined_incidence, y_train=y_train_sarima_incidence,
                                start_date_str=training_start_date.strftime('%Y-%m-%d'), forecasting_horizon=forecasting_horizon,
                                district=district,
                                plot_diff_eq_last_beta=True,
@@ -144,7 +144,7 @@ def forecasting_pipeline(full_run=False, debug=False):
         final_forecast_df['date'] = dates_array
 
         # Add cases:
-        final_forecast_df['cases'] = y_train_sarima
+        final_forecast_df['cases'] = pd.Series(y_train_sarima_incidence)
 
         # Add district name:
         final_forecast_df['district_name'] = district
@@ -153,7 +153,7 @@ def forecasting_pipeline(full_run=False, debug=False):
         final_forecast_df['pipeline_id'] = pipeline_id
 
         # Add forecasts:
-        for k, v in all_combined_seven_day_average.items():
+        for k, v in all_combined_incidence.items():
             final_forecast_df[k].iloc[-forecasting_horizon:] = v
 
         update_db(table_name='district_forecast', dataframe=final_forecast_df, replace=False)
