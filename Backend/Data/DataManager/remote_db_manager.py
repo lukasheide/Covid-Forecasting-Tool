@@ -101,7 +101,7 @@ def upload_pred_intervals_file():
 
 if __name__ == '__main__':
 
-    task = 'download'
+    task = 'upload'
 
     if task == 'upload':
         upload_db_file()

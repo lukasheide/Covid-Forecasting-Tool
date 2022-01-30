@@ -42,9 +42,9 @@ def forecasting_pipeline(full_run=False, debug=False):
 
     # Ensemble Weights:
     ensemble_model_share = {
-        'seirv_last_beta': 0.5,
-        'seirv_ml_beta': 0,
-        'sarima': 0.5
+        'seirv_last_beta': 0.33,
+        'seirv_ml_beta': 0.33,
+        'sarima': 0.33
     }
 
     ##### write starting values of the pipeline to DB ########
