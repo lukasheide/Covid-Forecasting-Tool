@@ -107,7 +107,7 @@ app.layout = html.Div([
                                 figure={
                                     'layout': {
                                         'height': 500,
-                                        'width': 1000,
+                                        #'width': 1000,
                                         'margin': {'l': 10, 'b': 10, 't': 10, 'r': 10},
                                         'paper_bgcolor': '#7FDBFF',
                                         'plot_bgcolor': '#7FDBFF',
