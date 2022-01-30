@@ -99,7 +99,7 @@ app.layout = html.Div([
                                 id='dist-forecast-graph',
                                 figure={
                                     'layout': {
-                                        'height': 400,
+                                        'height': 500,
                                         'margin': {'l': 10, 'b': 10, 't': 10, 'r': 10},
                                         'paper_bgcolor': '#7FDBFF',
                                         'plot_bgcolor': '#7FDBFF',
@@ -142,15 +142,16 @@ app.layout = html.Div([
 )
 def get_dist_forecast_plot(district, checkbox, show_type):
     dist_forecast_df = get_district_forecast_data(district)
-
+    training_len = len(dist_forecast_df['cases'].dropna())
+    shown = 21
     fig = make_subplots(specs=[[{"secondary_y": True}]])
     dates_array = create_dates_array(start_date_str=dist_forecast_df['date'][0],
                                      num_days=len(dist_forecast_df['cases'].dropna()) + 14)
 
     # Add traces
-    y_common_train = dist_forecast_df['cases'].dropna()
+    y_common_train = dist_forecast_df['cases'][training_len-shown:training_len].dropna()
     fig.add_trace(
-        go.Scatter(x=dates_array[:28], y=y_common_train, name="train data"),
+        go.Scatter(x=dates_array[training_len-shown:training_len], y=y_common_train, name="train data"),
         secondary_y=False,
     )
 
@@ -274,45 +275,50 @@ def get_dist_forecast_plot(selected_model):
     # data_for_map_df = all_district_forecasts.loc[all_district_forecasts['date'] == dates_list[selected_date]]
     data_for_map_df = all_district_forecasts[all_district_forecasts['cases'].isna()]
     data_for_map_df["id"] = data_for_map_df["district_name"].apply(lambda x: state_id_map[x])
-    data_for_map_df["y_pred_seirv_last_beta_mean"] = data_for_map_df[selected_model] \
-        .apply(pd.to_numeric).round(decimals=2)
-    data_for_map_df["y_pred_seirv_ml_beta_mean"] = data_for_map_df["y_pred_seirv_ml_beta_mean"] \
-        .apply(pd.to_numeric).round(decimals=2)
-    data_for_map_df["y_pred_sarima_mean"] = data_for_map_df["y_pred_sarima_mean"] \
-        .apply(pd.to_numeric).round(decimals=2)
-    data_for_map_df["y_pred_sarima_upper"] = data_for_map_df["y_pred_sarima_upper"] \
-        .apply(pd.to_numeric).round(decimals=2)
-    data_for_map_df["y_pred_sarima_lower"] = data_for_map_df["y_pred_sarima_lower"] \
-        .apply(pd.to_numeric).round(decimals=2)
-    data_for_map_df["y_pred_ensemble_mean"] = data_for_map_df["y_pred_ensemble_mean"] \
+    data_for_map_df[selected_model] = data_for_map_df[selected_model] \
         .apply(pd.to_numeric).round(decimals=2)
 
     forecast_map = px.choropleth_mapbox(
         data_for_map_df,
         locations="id",
         geojson=german_districts,
-        color='y_pred_seirv_last_beta_mean',
+        color=selected_model,
         hover_name='district_name',
         hover_data=['district_name'],
         title="Next 14-Day Incident Number",
-        mapbox_style="carto-positron",
+        mapbox_style="carto-darkmatter",
         # hot blackbody thermal
-        color_continuous_scale="thermal",
-        # color_discrete_map={
-        #     '0': '#fffcfc',
-        #     '1 - 1,000': '#ffdbdb',
-        #     '1,001 - 5,000': '#ffbaba',
-        #     '5,001 - 10,000': '#ff9e9e',
-        #     '10,001 - 30,000': '#ff7373',
-        #     '30,001 - 50,000': '#ff4d4d',
-        #     '50,001 and higher': '#ff0d0d'},
-        range_color=(0, 2000),
+        # color_continuous_scale=[(0,'#921315'),
+        #                         (0.2,'#661313'),
+        #                         (0.4,'#d90183'),
+        #                         (0.6,'#fe72C5'),
+        #                         (0.8,'#ffC5E8'),
+        #                         (1,'#780175')],
+        # color_continuous_scale= {("0 - 250", "red"), ("251 - 500", "red"),
+        #                          ("501 - 750", "green"), ("751 - 1,000", "green"),
+        #                          ("1,001 and higher", "blue")},
+        color_discrete_map={
+            '0 - 250': '#921315',
+            '251 - 500': '#661313',
+            '501 - 750': '#d90183',
+            '751 - 1,000': '#fe72C5',
+            '1,001 and higher': '#ffC5E8'},
+        # category_orders={
+        #     'y_pred_seirv_ml_beta_mean': [
+        #         '0 - 250',
+        #         '251 - 500',
+        #         '501 - 750',
+        #         '751 - 1,000',
+        #         '1,001 and higher'
+        #     ]
+        # },
+        # range_color=(0, 2000),
         animation_frame='date',
         center={"lat": 51.1657, "lon": 10.4515},
-        zoom=4.5,
-        opacity=0.9,
-        width=700,
-        height=700,
+        zoom=5,
+        opacity=0.85,
+        width=830,
+        height=830,
 
     )
 
