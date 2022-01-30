@@ -5,15 +5,16 @@ from Backend.Evaluation.metrics import compute_evaluation_metrics
 
 #creating SARIMA model
 def sarimamodel(timeseriesarray):
-        autoarima_model = pmd.auto_arima(timeseriesarray,
-                                         start_p=1,
-                                         start_q=1,
-                                         max_p=3, max_q=3,
+        d = pmd.arima.ndiffs(timeseriesarray)
+        autoarima_model = pmd.auto_arima(y=timeseriesarray,
+                                         start_p=3,
+                                         start_q=3,
+                                         max_p=4, max_q=4, d=d,
                                          trace=False,
                                          error_action='ignore',
                                          suppress_warnings=True,
-                                         stepwise=True, test = "adf",
-                                         with_intercept=False)
+                                         stepwise=False, test = "adf",
+                                         with_intercept=False, method='nm')
         return autoarima_model
 
 #model execution - DEPRECATED
