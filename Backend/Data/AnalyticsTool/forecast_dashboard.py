@@ -62,6 +62,7 @@ app.layout = html.Div([
             html.Div(
                 className="six columns",
                 children=[
+                    #html.H2('Dash - STOCK PRICES'),
                     html.Div([
                             html.Div(
                                 children=[
@@ -73,33 +74,6 @@ app.layout = html.Div([
                                                     style={'backgroundColor':'#111111', 'color':'#ffffff'},
                                                 ),
                                             html.Hr(),
-                                            html.Div([
-
-                                                html.Div([
-                                                    html.H6('Forecasting Models', style={'backgroundColor':'#111111', 'color':'white'}),
-                                                    dcc.Checklist(
-                                                        id='model-check',
-                                                        options=[
-                                                            {'label': 'SEIURV last beta', 'value': 'sevir_last_beta'},
-                                                            {'label': 'SEIURV ML beta', 'value': 'sevir_ml_beta'},
-                                                            {'label': 'ARIMA', 'value': 'sarima'},
-                                                            {'label': 'Ensemble', 'value': 'ensemble'},
-                                                        ],
-                                                        value='sevir_last_beta',
-                                                    )], className="six columns",
-                                                        style={'verticalAlign': 'top'}),
-
-                                                html.Div([
-                                                    html.H6('Prediction Intervals', style={'backgroundColor':'#111111', 'color':'white'}),
-                                                    dcc.Checklist(
-                                                        id='show-interval-check',
-                                                        options=[
-                                                            {'label': 'show intervals', 'value': 'intervals'},
-                                                        ],
-                                                        value='intervals',
-                                                    )], className='six columns',
-                                                        style={'verticalAlign': 'top'}),
-                                                ], className='row')
                                             dcc.Checklist(
                                                 id='model-check',
                                                 options=[
@@ -234,13 +208,13 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
         )
 
     # add upper and lower bounds
-    if ('sevir_last_beta' in checkbox and 'intervals' in show_interval):
+    if ('sevir_last_beta' in checkbox and 'intervals'in show_interval):
         y_upper = dist_forecast_df['y_pred_seirv_last_beta_upper'].dropna().tolist()
         y_lower = dist_forecast_df['y_pred_seirv_last_beta_lower'].dropna().tolist()
         y_lower = y_lower[::-1]
         x = list(dates_array[-15:])
         x_rev = x[::-1]
-        x = x + x_rev
+        x = x+x_rev
         y_interval = y_upper + y_lower
         fig.add_trace(go.Scatter(x=x,
                                  y=y_interval,
@@ -249,7 +223,7 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
                                  line_color='rgba(255,255,255,0)',
                                  name="SEIURV Last Beta",
                                  showlegend=False))
-    if ('sevir_ml_beta' in checkbox and 'intervals' in show_interval):
+    if ('sevir_ml_beta' in checkbox and 'intervals'in show_interval):
         y_upper = dist_forecast_df['y_pred_seirv_ml_beta_upper'].dropna().tolist()
         y_lower = dist_forecast_df['y_pred_seirv_ml_beta_lower'].dropna().tolist()
         y_lower = y_lower[::-1]
@@ -264,7 +238,7 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
                                  line_color='rgba(255,255,255,0)',
                                  name="SEIURV ML beta",
                                  showlegend=False))
-    if ('sarima' in checkbox and 'intervals' in show_interval):
+    if ('sarima' in checkbox and 'intervals'in show_interval):
         y_upper = dist_forecast_df['y_pred_sarima_upper'].dropna().tolist()
         y_lower = dist_forecast_df['y_pred_sarima_lower'].dropna().tolist()
         y_lower = y_lower[::-1]
@@ -279,7 +253,7 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
                                  line_color='rgba(255,255,255,0)',
                                  name='ARIMA',
                                  showlegend=False))
-    if ('ensemble' in checkbox and 'intervals' in show_interval):
+    if ('ensemble' in checkbox and 'intervals'in show_interval):
         y_upper = dist_forecast_df['y_pred_ensemble_upper'].dropna().tolist()
         y_lower = dist_forecast_df['y_pred_ensemble_lower'].dropna().tolist()
         y_lower = y_lower[::-1]
@@ -295,48 +269,6 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
                                  name='Ensemble',
                                  showlegend=False))
 
-    if ('sevir_last_beta' in checkbox):
-        y = dist_forecast_df['y_pred_seirv_last_beta_mean'].dropna()
-        y_fixed = pd.concat([pd.Series(y_common_train.iloc[-1]), y])
-        fig.add_trace(
-            go.Scatter(x=dates_array[-15:], y=y_fixed,
-                       name="SEIURV last beta",
-                       line_color='rgb(0,100,80)',
-                       mode='lines'),
-            secondary_y=False,
-        )
-    if ('sevir_ml_beta' in checkbox):
-        y = dist_forecast_df['y_pred_seirv_ml_beta_mean'].dropna()
-        y_fixed = pd.concat([pd.Series(y_common_train.iloc[-1]), y])
-        fig.add_trace(
-            go.Scatter(x=dates_array[-15:], y=y_fixed,
-                       name="SEIURV ML beta",
-                       line_color='rgb(0,176,246)',
-                       mode='lines'),
-            secondary_y=False,
-        )
-    if ('sarima' in checkbox):
-        y = dist_forecast_df['y_pred_sarima_mean'].dropna()
-        y_fixed = pd.concat([pd.Series(y_common_train.iloc[-1]), y])
-        fig.add_trace(
-            go.Scatter(x=dates_array[-15:], y=y_fixed,
-                       line_color='rgb(231,107,243)',
-                       name="ARIMA",
-                       mode='lines'),
-                       # line = dict(color='green')),
-            secondary_y=False,
-        )
-    if ('ensemble'in checkbox):
-        y = dist_forecast_df['y_pred_ensemble_mean'].dropna()
-        y_fixed = pd.concat([pd.Series(y_common_train.iloc[-1]), y])
-        fig.add_trace(
-            go.Scatter(x=dates_array[-15:], y=y_fixed,
-                       line_color='rgb(230,171,2)',
-                       name="Ensemble",
-                       mode='lines'),
-
-            secondary_y=False,
-        )
 
     # Add figure title
     fig.update_layout(
@@ -398,7 +330,7 @@ def get_dist_forecast_plot(selected_model):
         color=selected_model,
         hover_name='district_name',
         hover_data=['district_name', selected_model],
-        title="7 Day Incidence Forecast",
+        title="Next 14-Day Incident Number",
         mapbox_style="carto-darkmatter",
         # hot blackbody thermal
         color_continuous_scale="Redor",

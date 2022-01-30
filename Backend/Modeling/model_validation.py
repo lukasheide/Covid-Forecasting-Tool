@@ -20,7 +20,7 @@ from Backend.Evaluation.metrics import compute_evaluation_metrics
 from Backend.Modeling.Differential_Equation_Modeling.seirv_model_and_ml import seirv_ml_layer
 from Backend.Modeling.Util.pipeline_util import train_test_split, get_list_of_random_dates, \
     get_list_of_random_districts, date_difference_strings
-from Backend.Modeling.forecast import forecast_all_models, convert_all_forecasts_to_incidences, convert_seven_day_averages
+from Backend.Modeling.forecast import forecast_all_models
 from Backend.Visualization.plotting import plot_train_fitted_and_validation, plot_sarima_pred_plot, \
     plot_sarima_val_line_plot, plot_train_fitted_and_predictions, plot_all_forecasts
 from Backend.Modeling.Regression_Model.ARIMA import run_sarima, sarima_model_predictions, sarima_pipeline_val
@@ -327,11 +327,8 @@ def model_validation_pipeline_v2_wrapper():
     # ]
 
     pipeline_intervals = [
-        #('2021-09-25', '2021-12-25')
-        ('2021-03-04', '2021-04-29'),
-        ('2021-10-01', '2021-11-25'),
-        ('2021-07-30', '2021-09-24'),
-        ('2021-11-29', '2022-01-24')
+        ('2021-09-01', '2022-01-25'),
+        ('2020-10-01', '2021-02-01'),
     ]
 
     forecasting_horizon = 14
@@ -348,7 +345,7 @@ def model_validation_pipeline_v2_wrapper():
 
     districts.sort()
 
-    districts = ['Anhalt-Bitterfeld', 'Kiel, Landeshauptstadt', 'Rotenburg (Wümme)']
+    # districts = ['Münster', 'Bielefeld']
 
     ensemble_model_share = {
         'seirv_last_beta': 0.33,
@@ -569,14 +566,6 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
                                     pred_intervals_df,
                                     run_diff_eq_last_beta, run_diff_eq_ml_beta, run_sarima, run_ensemble,
                                     )
-            ## 3a) Try to catch bad ARIMA results
-            if sarima_results['predictions'][0] == sarima_results['predictions'][1]:
-                y_train_short = y_train_sarima.loc[14:idx_train_end]
-                sarima_results = sarima_pipeline(y_train=y_train_short, forecasting_horizon=forecasting_horizon)
-                all_combined['y_pred_sarima_mean'] = sarima_results['predictions']
-                all_combined['y_pred_sarima_upper'] = sarima_results['upper']
-                all_combined['y_pred_sarima_lower'] = sarima_results['lower']
-
 
             # Combine results:
             y_pred = {
@@ -593,28 +582,13 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
                 'Ensemble': y_pred['Ensemble'] - y_val,
             }
 
-            ## 4) Convert 7-day average to 7-day-incident:
-            all_combined_incidence = convert_all_forecasts_to_incidences(all_combined,
-                                                                         start_vals_seirv['N'])
-            y_train_sarima_incidence = convert_seven_day_averages(y_train_sarima, start_vals_seirv['N'])
-            y_train_diffeq_incidence = convert_seven_day_averages(y_train_diffeq, start_vals_seirv['N'])
-            y_val_incidence = convert_seven_day_averages(y_val, start_vals_seirv['N'])
-
-            y_pred_incidence = {
-                'Diff_Eq_Last_Beta': all_combined_incidence['y_pred_seirv_last_beta_mean'],
-                'Diff_Eq_ML_Beta': all_combined_incidence['y_pred_seirv_ml_beta_mean'],
-                'Sarima': all_combined_incidence['y_pred_sarima_mean'],
-                'Ensemble': all_combined_incidence['y_pred_ensemble_mean'],
-            }
-
-
             ## 4) Visualization:
             if debug:
-                plot_all_forecasts(forecast_dictionary=all_combined_incidence, y_train=y_train_diffeq_incidence,
+                plot_all_forecasts(forecast_dictionary=all_combined, y_train=y_train_diffeq,
                                    start_date_str=current_interval['start_day_train_str'],
                                    forecasting_horizon=forecasting_horizon,
                                    district=district,
-                                   y_val=y_val_incidence,
+                                   y_val=y_val,
                                    plot_diff_eq_last_beta=True,
                                    plot_diff_eq_ml_beta=True,
                                    plot_sarima=True,
@@ -650,12 +624,12 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
                 'end_day_train': current_interval['end_day_train_str'],
                 'start_day_val': current_interval['start_day_val_str'],
                 'end_day_val': current_interval['end_day_val_str'],
-                'y_train_sarima': y_train_sarima_incidence,
-                'y_train_diffeq': y_train_diffeq_incidence,
-                'y_val': y_val_incidence,
-                'y_pred': y_pred_incidence,
-                'mean_y_train': np.mean(y_train_diffeq_incidence),
-                'mean_y_val': np.mean(y_val_incidence),
+                'y_train_sarima': y_train_sarima,
+                'y_train_diffeq': y_train_diffeq,
+                'y_val': y_val,
+                'y_pred': y_pred,
+                'mean_y_train': np.mean(y_train_diffeq),
+                'mean_y_val': np.mean(y_val),
                 'residuals': residuals,
                 'metrics': metrics,
                 'dates_training_diffeq': create_dates_array(start_date_str=train_start_date_diff_eq_str, num_days=train_length_diffeqmodel),
