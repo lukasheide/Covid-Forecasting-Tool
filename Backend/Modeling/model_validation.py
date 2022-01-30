@@ -474,7 +474,7 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
                                  run_diff_eq_ml_beta=True,
                                  run_sarima=True,
                                  run_ensemble=True,
-                                 debug=False):
+                                 debug=True):
     # Create time_grid:
     intervals_grid = get_weekly_intervals_grid(pipeline_start_date, pipeline_end_date, training_period_max,
                                                forecasting_horizon)
@@ -576,16 +576,17 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
                                    start_date_str=current_interval['start_day_train_str'],
                                    forecasting_horizon=forecasting_horizon,
                                    district=district,
+                                   y_val=y_val,
                                    plot_diff_eq_last_beta=True,
                                    plot_diff_eq_ml_beta=True,
-                                   plot_sarima=False,
-                                   plot_ensemble=True
+                                   plot_sarima=True,
+                                   plot_ensemble=True,
                                    )
 
                 # Train + VAL - SEIRV
-                plot_train_fitted_and_validation(y_train=y_train_diffeq,
-                                                 y_pred=seirv_last_beta_only_results['y_pred_including_train_period'],
-                                                 y_val=y_val)
+                # plot_train_fitted_and_validation(y_train=y_train_diffeq,
+                #                                  y_pred=seirv_last_beta_only_results['y_pred_including_train_period'],
+                #                                  y_val=y_val)
 
 
             ## 5) Evaluation - Compute metrics:
