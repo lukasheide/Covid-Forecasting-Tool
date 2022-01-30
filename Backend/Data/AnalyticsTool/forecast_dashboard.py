@@ -1,7 +1,6 @@
 import json
 
 import dash
-import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
 from dash import dcc
 from dash import html
@@ -54,8 +53,8 @@ dates_list = all_district_forecasts['date'].unique()[-14:]
 ########### app layout is defined here ##############
 
 app.layout = html.Div([
-    html.Hr(style={'backgroundColor':'#111111'},),
-    html.H2('Regional COVID-19 Forecasting Tool', style={'backgroundColor':'#111111', 'color':'white'}),
+    # html.Hr(style={'backgroundColor':'#111111'},),
+    html.H2('Regional COVID-19 Forecasting Tool', style={'backgroundColor':'#111111', 'color':'white', 'text-align':'center'}),
     html.Div(
         className="row",
         style={'backgroundColor':'#111111', 'color':'white'},
@@ -145,12 +144,19 @@ app.layout = html.Div([
 
 @app.callback(
     Output(component_id='dist-forecast-graph', component_property='figure'),
+    Output(component_id='district-dropdown', component_property='value'),
+    Output(component_id='forecast-chloropath', component_property='clickData'),
     Input(component_id='district-dropdown', component_property='value'),
     # Input(component_id='model-radio', component_property='value'),
     Input(component_id='model-check', component_property='value'),
-    Input(component_id='show-interval-check', component_property='value')
+    Input(component_id='show-interval-check', component_property='value'),
+    Input(component_id='forecast-chloropath', component_property='clickData'),
 )
-def get_dist_forecast_plot(district, checkbox, show_interval):
+def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
+
+    if click_data is not None and district != click_data['points'][0]['hovertext']:
+        district = click_data['points'][0]['hovertext']
+
     dist_forecast_df = get_district_forecast_data(district)
     training_len = len(dist_forecast_df['cases'].dropna())
     shown = 21
@@ -289,7 +295,7 @@ def get_dist_forecast_plot(district, checkbox, show_interval):
 
     fig.update_yaxes (title_text='7 Day Incidence', range=[0, max_y_axis_value])
 
-    return fig
+    return fig, district, None
 
 @app.callback(
     Output(component_id='forecast-chloropath', component_property='figure'),
@@ -343,13 +349,14 @@ def get_dist_forecast_plot(selected_model):
         #         '1,001 and higher'
         #     ]
         # },
+        labels={selected_model: ''},
         range_color=(0, 4000),
         animation_frame='date',
         center={"lat": 51.1657, "lon": 10.4515},
         zoom=5,
         opacity=0.8,
-        width=830,
-        height=830,
+        width=800,
+        height=800,
 
     )
 
