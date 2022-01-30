@@ -12,26 +12,12 @@
     background-color: #111111;
 }
 
-.Select-input {
-    color: white;
-}
-
-.Select-multi-value-wrapper {
-    color: white;
-}
-
 #react-select-2--value-item {
-    color:white;
-    font-weight: bold;
-}
-
-#react-select-2--value {
     color:white;
 }
 
 #react-select-3--value-item {
     color:white;
-    font-weight: bold;
 }
 
 .Select-menu-outer {
@@ -40,25 +26,10 @@
 
 html {background-color: #111111}
 
-#model-check input{
-    padding-right: 50px;
-}
-
-
 ::-webkit-scrollbar {
   background-color: #595959;
 
 }
 ::-webkit-scrollbar-thumb {
-background-color: slategrey;
-    important;
+background-color: slategrey;important;
 }
-
-#checkbox-ensemble {
-    background-color: green;
-}
-
-#model-check label:nth-of-type(1) [type="checkbox"] {
-    background-color: green;
-}
-

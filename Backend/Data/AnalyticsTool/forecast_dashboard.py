@@ -127,7 +127,7 @@ app.layout = html.Div([
 
                                 options=[{'label': 'SEIURV Last Beta', 'value': 'y_pred_seirv_last_beta_mean'},
                                          {'label': 'SEIURV ML beta', 'value': 'y_pred_seirv_ml_beta_mean'},
-                                         {'label': 'ARIMA', 'valuef': 'y_pred_sarima_mean'},
+                                         {'label': 'ARIMA', 'value': 'y_pred_sarima_mean'},
                                          {'label': 'Ensemble', 'value': 'y_pred_ensemble_mean'}],
                                 multi=False,
                                 value='y_pred_ensemble_mean',
