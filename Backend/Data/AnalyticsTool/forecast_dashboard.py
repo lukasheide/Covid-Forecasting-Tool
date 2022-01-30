@@ -80,8 +80,8 @@ app.layout = html.Div([
                                                     dcc.Checklist(
                                                         id='model-check',
                                                         options=[
-                                                            {'label': 'SEIURV last beta', 'value': 'sevir_last_beta'},
-                                                            {'label': 'SEIURV ML beta', 'value': 'sevir_ml_beta'},
+                                                            {'label': 'SEIURV Last Beta', 'value': 'sevir_last_beta'},
+                                                            {'label': 'SEIURV ML Beta', 'value': 'sevir_ml_beta'},
                                                             {'label': 'ARIMA', 'value': 'sarima'},
                                                             {'label': 'Ensemble', 'value': 'ensemble'},
                                                         ],
@@ -94,29 +94,12 @@ app.layout = html.Div([
                                                     dcc.Checklist(
                                                         id='show-interval-check',
                                                         options=[
-                                                            {'label': 'show intervals', 'value': 'intervals'},
+                                                            {'label': 'Show Intervals', 'value': 'intervals'},
                                                         ],
                                                         value='intervals',
                                                     )], className='six columns',
                                                         style={'verticalAlign': 'top'}),
-                                                ], className='row')
-                                            dcc.Checklist(
-                                                id='model-check',
-                                                options=[
-                                                    {'label': 'SEIURV Last Beta', 'value': 'sevir_last_beta'},
-                                                    {'label': 'SEIURV ML Beta', 'value': 'sevir_ml_beta'},
-                                                    {'label': 'ARIMA', 'value': 'sarima'},
-                                                    {'label': 'Ensemble', 'value': 'ensemble'},
-                                                ],
-                                                value='sevir_ml_beta',
-                                            ),
-                                            dcc.Checklist(
-                                                id='show-interval-check',
-                                                options=[
-                                                    {'label': 'Show intervals', 'value': 'intervals'},
-                                                ],
-                                                value='intervals',
-                                            ),
+                                                ], className='row'),
                                         ]),
                             html.Hr(),
                             dcc.Graph(
@@ -185,53 +168,10 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
     # Add traces
     y_common_train = dist_forecast_df['cases'][training_len-shown:training_len].dropna()
     fig.add_trace(
-        go.Scatter(x=dates_array[training_len-shown:training_len], y=y_common_train, mode='lines+markers', name='training'),
+        go.Scatter(x=dates_array[training_len-shown:training_len], y=y_common_train, mode='lines+markers', name='Training'),
         secondary_y=False,
     )
 
-    if ('sevir_last_beta' in checkbox):
-        y = dist_forecast_df['y_pred_seirv_last_beta_mean'].dropna()
-        y_fixed = pd.concat([pd.Series(y_common_train.iloc[-1]), y])
-        fig.add_trace(
-            go.Scatter(x=dates_array[-15:], y=y_fixed,
-                       name="SEIURV Last Beta",
-                       line_color='rgb(0,100,80)',
-                       mode='lines'),
-            secondary_y=False,
-        )
-    if ('sevir_ml_beta' in checkbox):
-        y = dist_forecast_df['y_pred_seirv_ml_beta_mean'].dropna()
-        y_fixed = pd.concat([pd.Series(y_common_train.iloc[-1]), y])
-        fig.add_trace(
-            go.Scatter(x=dates_array[-15:], y=y_fixed,
-                       name="SEIURV ML beta",
-                       line_color='rgb(0,176,246)',
-                       mode='lines'),
-            secondary_y=False,
-        )
-    if ('sarima' in checkbox):
-        y = dist_forecast_df['y_pred_sarima_mean'].dropna()
-        y_fixed = pd.concat([pd.Series(y_common_train.iloc[-1]), y])
-        fig.add_trace(
-            go.Scatter(x=dates_array[-15:], y=y_fixed,
-                       line_color='rgb(231,107,243)',
-                       name="ARIMA",
-                       mode='lines'),
-                       # line = dict(color='green')),
-            secondary_y=False,
-        )
-    if ('ensemble'in checkbox):
-        y = dist_forecast_df['y_pred_ensemble_mean'].dropna()
-        y_fixed = pd.concat([pd.Series(y_common_train.iloc[-1]), y])
-        fig.add_trace(
-            go.Scatter(x=dates_array[-15:], y=y_fixed,
-                       line_color='rgb(230,171,2)',
-                       name="Ensemble",
-                       mode='lines',
-                       ),
-
-            secondary_y=False,
-        )
 
     # add upper and lower bounds
     if ('sevir_last_beta' in checkbox and 'intervals' in show_interval):
@@ -300,7 +240,7 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
         y_fixed = pd.concat([pd.Series(y_common_train.iloc[-1]), y])
         fig.add_trace(
             go.Scatter(x=dates_array[-15:], y=y_fixed,
-                       name="SEIURV last beta",
+                       name="SEIURV Last Beta",
                        line_color='rgb(0,100,80)',
                        mode='lines'),
             secondary_y=False,
