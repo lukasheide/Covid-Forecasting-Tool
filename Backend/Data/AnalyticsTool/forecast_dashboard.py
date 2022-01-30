@@ -77,17 +77,17 @@ app.layout = html.Div([
                                             dcc.Checklist(
                                                 id='model-check',
                                                 options=[
-                                                    {'label': 'SEIURV Last Beta', 'value': 'sevir_last_beta'},
-                                                    {'label': 'SEIURV ML Beta', 'value': 'sevir_ml_beta'},
+                                                    {'label': 'SEIURV last beta', 'value': 'sevir_last_beta'},
+                                                    {'label': 'SEIURV ML beta', 'value': 'sevir_ml_beta'},
                                                     {'label': 'ARIMA', 'value': 'sarima'},
                                                     {'label': 'Ensemble', 'value': 'ensemble'},
                                                 ],
-                                                value='sevir_ml_beta',
+                                                value='sevir_last_beta',
                                             ),
                                             dcc.Checklist(
                                                 id='show-interval-check',
                                                 options=[
-                                                    {'label': 'Show intervals', 'value': 'intervals'},
+                                                    {'label': 'show intervals', 'value': 'intervals'},
                                                 ],
                                                 value='intervals',
                                             ),
@@ -98,7 +98,6 @@ app.layout = html.Div([
                                 figure={
                                     'layout': {
                                         'height': 500,
-                                        'width': 1000,
                                         'margin': {'l': 10, 'b': 10, 't': 10, 'r': 10},
                                         'paper_bgcolor': '#7FDBFF',
                                         'plot_bgcolor': '#7FDBFF',
@@ -116,12 +115,12 @@ app.layout = html.Div([
                             dcc.Dropdown(
                                 id='map-forecast-model',
 
-                                options=[{'label': 'SEIURV Last Beta', 'value': 'y_pred_seirv_last_beta_mean'},
+                                options=[{'label': 'SEIURV last beta', 'value': 'y_pred_seirv_last_beta_mean'},
                                          {'label': 'SEIURV ML beta', 'value': 'y_pred_seirv_ml_beta_mean'},
-                                         {'label': 'ARIMA', 'valuef': 'y_pred_sarima_mean'},
+                                         {'label': 'ARIMA', 'value': 'y_pred_sarima_mean'},
                                          {'label': 'Ensemble', 'value': 'y_pred_ensemble_mean'}],
                                 multi=False,
-                                value='y_pred_ensemble_mean',
+                                value='y_pred_seirv_last_beta_mean',
                                 style={'backgroundColor':'#111111','font-color':'white'},
                             ),
                             dcc.Graph(id='forecast-chloropath', figure={}),
@@ -168,7 +167,7 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
         y_fixed = pd.concat([pd.Series(y_common_train.iloc[-1]), y])
         fig.add_trace(
             go.Scatter(x=dates_array[-15:], y=y_fixed,
-                       name="SEIURV Last Beta",
+                       name="SEIURV last beta",
                        line_color='rgb(0,100,80)',
                        mode='lines'),
             secondary_y=False,
@@ -201,8 +200,7 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
             go.Scatter(x=dates_array[-15:], y=y_fixed,
                        line_color='rgb(230,171,2)',
                        name="Ensemble",
-                       mode='lines',
-                       ),
+                       mode='lines'),
 
             secondary_y=False,
         )
@@ -221,7 +219,7 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
                                  fill='toself',
                                  fillcolor='rgba(0,100,80,0.2)',
                                  line_color='rgba(255,255,255,0)',
-                                 name="SEIURV Last Beta",
+                                 name="SEIURV last beta",
                                  showlegend=False))
     if ('sevir_ml_beta' in checkbox and 'intervals'in show_interval):
         y_upper = dist_forecast_df['y_pred_seirv_ml_beta_upper'].dropna().tolist()
@@ -272,14 +270,7 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
 
     # Add figure title
     fig.update_layout(
-        title_text="Forecast for " + district,
-        legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            xanchor="right",
-            x=1
-        )
+        title_text="Forecast for " + district
     )
 
     # Set x-axis title
