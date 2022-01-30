@@ -14,7 +14,7 @@ app = dash.Dash(__name__)
 district_list = get_table_data('district_list', 0, 0, "district", False)
 
 # data for the chloropath maps
-german_districts = json.load(open("simplified_geo_data.geojson", 'r', encoding='utf-8'))
+german_districts = json.load(open("Data/AnalyticsTool/simplified_geo_data.geojson", 'r', encoding='utf-8'))
 # 'all' for bluff to correct later
 all_dis_correl_data = get_table_data('cor_matrix_incidents_districts', 0, 0, 'all', True)
 dist_id = 1000
@@ -199,4 +199,4 @@ def get_correlation_chloropath(district):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server()
