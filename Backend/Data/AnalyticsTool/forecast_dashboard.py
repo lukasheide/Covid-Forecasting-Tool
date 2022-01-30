@@ -22,7 +22,8 @@ from Backend.Data.DataManager.db_functions import get_table_data
 
 pio.templates.default = 'plotly_dark'
 
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css', '../Assets/style.css']
+#external_stylesheets = ["../Assets/style_dark.css"]
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 # app = dash.Dash(external_stylesheets=[dbc.themes.VAPOR])
 # data for the chloropath maps and set ids
@@ -53,14 +54,17 @@ dates_list = all_district_forecasts['date'].unique()[-14:]
 ########### app layout is defined here ##############
 
 app.layout = html.Div([
-    html.Hr(style={'backgroundColor':'black'},),
+    html.Hr(style={'backgroundColor':'#111111'},),
+    html.H2('Regional COVID-19 Forecasting Tool', style={'backgroundColor':'#111111', 'color':'white'}),
     html.Div(
         className="row",
         style={'backgroundColor':'#111111', 'color':'white'},
         children=[
             html.Div(
                 className="six columns",
-                children=[html.Div([
+                children=[
+                    #html.H2('Dash - STOCK PRICES'),
+                    html.Div([
                             html.Div(
                                 children=[
                                             dcc.Dropdown(
@@ -68,7 +72,7 @@ app.layout = html.Div([
                                                     options=[{'label': k, 'value': k} for k in district_list],
                                                     multi=False,
                                                     value='Münster',
-                                                    style={'backgroundColor':'#111111','font-color':'white'},
+                                                    style={'backgroundColor':'#111111', 'color':'#ffffff'},
                                                     #style=dict(color='green'),,
                                                 ),
                                             html.Hr(),
@@ -122,12 +126,14 @@ app.layout = html.Div([
                         children=[
                             dcc.Dropdown(
                                 id='map-forecast-model',
+
                                 options=[{'label': 'SEIRV(Last beta)', 'value': 'y_pred_seirv_last_beta_mean'},
                                          {'label': 'SEIRV(ML beta)', 'value': 'y_pred_seirv_ml_beta_mean'},
                                          {'label': 'SARIMA', 'value': 'y_pred_sarima_mean'},
                                          {'label': 'Ensemble', 'value': 'y_pred_ensemble_mean'}],
                                 multi=False,
-                                value='y_pred_seirv_last_beta_mean'
+                                value='y_pred_seirv_last_beta_mean',
+                                style={'backgroundColor':'#111111','font-color':'white'},
                             ),
                             dcc.Graph(id='forecast-chloropath', figure={}),
                         ]
@@ -136,7 +142,7 @@ app.layout = html.Div([
             ),
         ]
     )
-])
+], style={'backgroundColor': '#111111'})
 
 
 @app.callback(
@@ -157,7 +163,7 @@ def get_dist_forecast_plot(district, checkbox, show_interval):
     # Add traces
     y_common_train = dist_forecast_df['cases'][training_len-shown:training_len].dropna()
     fig.add_trace(
-        go.Scatter(x=dates_array[training_len-shown:training_len], y=y_common_train, mode='lines+markers'),
+        go.Scatter(x=dates_array[training_len-shown:training_len], y=y_common_train, mode='lines+markers', name='training'),
         secondary_y=False,
     )
 
@@ -306,7 +312,7 @@ def get_dist_forecast_plot(selected_model):
         hover_name='district_name',
         hover_data=['district_name'],
         title="Next 14-Day Incident Number",
-        mapbox_style="carto-positron",
+        mapbox_style="carto-darkmatter",
         # hot blackbody thermal
         # color_continuous_scale=[(0,'#921315'),
         #                         (0.2,'#661313'),

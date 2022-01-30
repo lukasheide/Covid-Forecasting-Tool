@@ -1,0 +1,15 @@
+#district-dropdown .VirtualizedSelectFocusedOption {
+  color: white;
+}
+
+.Select-value {
+    background-color: #111111;
+}
+
+#react-select-2--value-item {
+    color:white;
+}
+
+.Select-menu-outer {
+    background-color: #111111;
+}
