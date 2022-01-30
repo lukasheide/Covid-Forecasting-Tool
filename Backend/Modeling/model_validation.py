@@ -595,6 +595,11 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
                 #                                  y_pred=seirv_last_beta_only_results['y_pred_including_train_period'],
                 #                                  y_val=y_val)
 
+                #Train + VAL - SARima
+               # plot_sarima_val_line_plot(train_array=y_train_sarima, test_array=y_val,
+                #                          predictions=sarima_results["predictions"],
+                 #                         pred_start_date=current_interval['start_day_val_str'], district=district)
+
 
             ## 5) Evaluation - Compute metrics:
             metrics = {
