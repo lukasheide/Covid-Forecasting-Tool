@@ -14,7 +14,8 @@ def sarimamodel(timeseriesarray):
                                          error_action='ignore',
                                          suppress_warnings=True,
                                          stepwise=False, test = "adf",
-                                         with_intercept=False, method='nm')
+                                         with_intercept=False)
+
         return autoarima_model
 
 #model execution - DEPRECATED
