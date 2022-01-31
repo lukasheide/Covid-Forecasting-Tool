@@ -327,8 +327,8 @@ def model_validation_pipeline_v2_wrapper():
     # ]
 
     pipeline_intervals = [
-        ('2021-09-01', '2022-01-25'),
-        ('2020-10-01', '2021-02-01'),
+        ('2021-08-01', '2022-01-28'),
+        ('2020-08-01', '2021-04-01'),
     ]
 
     forecasting_horizon = 14
@@ -341,16 +341,16 @@ def model_validation_pipeline_v2_wrapper():
     districts = opendata['district'].tolist()
 
     # Only sample:
-    districts = random.sample(districts, 120)
+    # districts = random.sample(districts, 400)
 
     districts.sort()
 
     # districts = ['Münster', 'Bielefeld']
 
     ensemble_model_share = {
-        'seirv_last_beta': 0.5,
-        'seirv_ml_beta': 0,
-        'sarima': 0.5
+        'seirv_last_beta': 0.3,
+        'seirv_ml_beta': 0.3,
+        'sarima': 0.4
     }
 
     # ML Layer:
@@ -482,7 +482,7 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
                                  run_diff_eq_ml_beta=True,
                                  run_sarima=True,
                                  run_ensemble=True,
-                                 debug=False):
+                                 debug=True):
     # Create time_grid:
     intervals_grid = get_weekly_intervals_grid(pipeline_start_date, pipeline_end_date, training_period_max,
                                                forecasting_horizon)
@@ -593,6 +593,7 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
                                    plot_diff_eq_ml_beta=True,
                                    plot_sarima=True,
                                    plot_ensemble=True,
+                                   plot_predictions_intervals=False
                                    )
 
                 # Train + VAL - SEIRV

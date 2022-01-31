@@ -29,7 +29,7 @@ from sklearn.preprocessing import StandardScaler
 
 def forecasting_pipeline(full_run=False, debug=False):
     #################### Pipeline Configuration: ####################
-    training_end_date = '2022-01-27'
+    training_end_date = '2022-01-29'
     forecasting_horizon = 14
 
     train_length_diffeqmodel = 14
@@ -42,9 +42,9 @@ def forecasting_pipeline(full_run=False, debug=False):
 
     # Ensemble Weights:
     ensemble_model_share = {
-        'seirv_last_beta': 0.5,
-        'seirv_ml_beta': 0,
-        'sarima': 0.5
+        'seirv_last_beta': 0.3,
+        'seirv_ml_beta': 0.3,
+        'sarima': 0.4
     }
 
     ##### write starting values of the pipeline to DB ########

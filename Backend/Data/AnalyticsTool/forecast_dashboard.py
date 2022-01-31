@@ -358,7 +358,7 @@ def get_dist_forecast_plot(selected_model):
         #     ]
         # },
         labels={selected_model: ''},
-        range_color=(0, 3000),
+        range_color=(0, 2500),
         animation_frame='date',
         center={"lat": 51.1657, "lon": 10.4515},
         zoom=5,
