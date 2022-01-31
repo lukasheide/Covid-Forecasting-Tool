@@ -44,7 +44,7 @@ def seirv_ml_layer(y_train_diffeq, start_vals_seirv, fixed_model_params_seirv, f
     beta_pred_ml = ml_model.predict(ml_matrix_predictors_all)[0]
     beta_pred_last_beta = model_params_tuple[0]
 
-    opt_beta = 0.75*beta_pred_last_beta + 0.25*beta_pred_ml
+    opt_beta = 0.70*beta_pred_last_beta + 0.30*beta_pred_ml
 
     # Overwrite fitted beta with ML beta:
     model_params_temp = list(model_params_tuple)

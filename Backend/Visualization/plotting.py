@@ -263,24 +263,27 @@ def plot_beta_matrix_estimation(y_train_true, y_val_true, y_train_pred_full, y_v
 
 def plot_all_forecasts(forecast_dictionary, y_train, start_date_str, forecasting_horizon, district,
                        y_val=None,
+                       plot_val=True,
                        plot_diff_eq_last_beta=True,
                        plot_diff_eq_ml_beta=True,
                        plot_sarima=True,
                        plot_ensemble=True,
-                       plot_predictions_intervals=True
+                       plot_predictions_intervals=False
                        ):
+    plt.rcParams['figure.figsize'] = 10, 5
+    plt.tight_layout()
     plt.clf()
 
     # Get dates array:
     dates_array = create_dates_array(start_date_str=start_date_str, num_days=len(y_train) + forecasting_horizon)
 
     # Colorcodes for each model:
-    y_train_color = '#0f0f0f'
-    y_val_color = '#0F4152' # dark green
-    diff_eq_last_beta_color = '#ff7f0f'  # orange
-    diff_eq_ml_beta_color = '#ff5f0f'  # darker orange
-    sarima_color = '#7d134b'  # purple
-    ensemble_color = '#26570d'  # darkgreen
+    y_train_color = '#122499' # blue
+    y_val_color = '#111111' # black
+    diff_eq_last_beta_color = '#043b05'  # dark green
+    diff_eq_ml_beta_color = '#1a4b75'  # light blue
+    sarima_color = '#a62189'  # pink
+    ensemble_color = '#d1930d'  # yellow
 
     # ...
 
@@ -291,81 +294,104 @@ def plot_all_forecasts(forecast_dictionary, y_train, start_date_str, forecasting
 
     t_grid_train = dates_array[:len_train]
     t_grid_forecasting = dates_array[-forecasting_horizon:]
+    t_grid_forecasting_plus_one = dates_array[-(forecasting_horizon+1):]
     t_grid_all = dates_array
 
     ## Create plots:
     # Training Data:
-    plt.scatter(x=t_grid_train, y=y_train, s=40, color=y_train_color, zorder=15, label='Training Data')
+    plt.scatter(x=t_grid_train, y=y_train, s=20, color=y_train_color, zorder=15, label='Training Data')
+    plt.plot(t_grid_train, y_train, color=y_train_color, linewidth=1.5, zorder=12)
 
     # Validation Data:
-    if y_val is not None:
-        plt.scatter(x=t_grid_forecasting, y=y_val, s=40, color=y_val_color, zorder=15, label='Validation Data')
+    if plot_val:
+        # Add last train point to y_val:
+        y_val = np.append(np.array(y_train[-1]), y_val)
+        plt.scatter(x=t_grid_forecasting_plus_one, y=y_val, s=20, color=y_val_color, zorder=15, label='Validation Data')
+        plt.plot(t_grid_forecasting_plus_one, y_val, color=y_val_color, linewidth=1.5, zorder=12)
 
     ## Forecasts:
 
     # Diff Eq Last Beta:
     if plot_diff_eq_last_beta:
-        y_pred_mean_diff_eq_last_beta = forecast_dictionary['y_pred_seirv_last_beta_mean']
-        y_pred_upper_diff_eq_last_beta = forecast_dictionary['y_pred_seirv_last_beta_upper']
-        y_pred_lower_diff_eq_last_beta = forecast_dictionary['y_pred_seirv_last_beta_lower']
+        y_pred_mean_diff_eq_last_beta = np.append(y_train[-1], forecast_dictionary['y_pred_seirv_last_beta_mean'])
+        y_pred_upper_diff_eq_last_beta = np.append(y_train[-1], forecast_dictionary['y_pred_seirv_last_beta_upper'])
+        y_pred_lower_diff_eq_last_beta = np.append(y_train[-1], forecast_dictionary['y_pred_seirv_last_beta_lower'])
 
-        plt.plot(t_grid_forecasting, y_pred_mean_diff_eq_last_beta, color=diff_eq_last_beta_color, zorder=5, linewidth=2.5,
-                 label='DiffEq_LastBeta')
+        plt.plot(t_grid_forecasting_plus_one, y_pred_mean_diff_eq_last_beta, color=diff_eq_last_beta_color, zorder=5, linewidth=2.5,
+                 label='SEIURV_LastBeta')
 
         if plot_predictions_intervals:
-            plt.plot(t_grid_forecasting, y_pred_upper_diff_eq_last_beta, '.', color=diff_eq_ml_beta_color, zorder=5, linewidth=2.5)
-            plt.plot(t_grid_forecasting, y_pred_lower_diff_eq_last_beta, '.', color=diff_eq_ml_beta_color, zorder=5, linewidth=2.5)
+            plt.plot(t_grid_forecasting_plus_one, y_pred_upper_diff_eq_last_beta, linestyle='dashed', color=diff_eq_ml_beta_color, zorder=5, linewidth=1)
+            plt.plot(t_grid_forecasting_plus_one, y_pred_lower_diff_eq_last_beta, linestyle='dashed', color=diff_eq_ml_beta_color, zorder=5, linewidth=1)
 
 
     # Diff Eq ML Beta:
     if plot_diff_eq_ml_beta:
-        y_pred_mean_diff_eq_ml_beta = forecast_dictionary['y_pred_seirv_ml_beta_mean']
-        y_pred_upper_diff_eq_ml_beta = forecast_dictionary['y_pred_seirv_ml_beta_upper']
-        y_pred_lower_diff_eq_ml_beta = forecast_dictionary['y_pred_seirv_ml_beta_lower']
+        y_pred_mean_diff_eq_ml_beta = np.append(y_train[-1], forecast_dictionary['y_pred_seirv_ml_beta_mean'])
+        y_pred_upper_diff_eq_ml_beta = np.append(y_train[-1], forecast_dictionary['y_pred_seirv_ml_beta_upper'])
+        y_pred_lower_diff_eq_ml_beta = np.append(y_train[-1], forecast_dictionary['y_pred_seirv_ml_beta_lower'])
 
-        plt.plot(t_grid_forecasting, y_pred_mean_diff_eq_ml_beta, color=diff_eq_ml_beta_color, zorder=5, linewidth=2.5,
-                 label='DiffEq_MLBeta')
+        plt.plot(t_grid_forecasting_plus_one, y_pred_mean_diff_eq_ml_beta, color=diff_eq_ml_beta_color, zorder=5, linewidth=2.5,
+                 label='SEIURV_MLBeta')
 
         if plot_predictions_intervals:
-            plt.plot(t_grid_forecasting, y_pred_upper_diff_eq_ml_beta, '.', color=diff_eq_ml_beta_color, zorder=5, linewidth=2.5)
-            plt.plot(t_grid_forecasting, y_pred_lower_diff_eq_ml_beta, '.', color=diff_eq_ml_beta_color, zorder=5, linewidth=2.5)
+            plt.plot(t_grid_forecasting_plus_one, y_pred_upper_diff_eq_ml_beta, linestyle='dashed', color=diff_eq_ml_beta_color, zorder=5, linewidth=1)
+            plt.plot(t_grid_forecasting_plus_one, y_pred_lower_diff_eq_ml_beta, linestyle='dashed', color=diff_eq_ml_beta_color, zorder=5, linewidth=1)
 
 
     # SArima:
     if plot_sarima:
-        y_pred_sarima_mean = forecast_dictionary['y_pred_sarima_mean']
-        y_pred_sarima_upper = forecast_dictionary['y_pred_sarima_upper']
-        y_pred_sarima_lower = forecast_dictionary['y_pred_sarima_lower']
-        plt.plot(t_grid_forecasting, y_pred_sarima_mean, color=sarima_color, zorder=5, linewidth=2.5,
+        y_pred_sarima_mean = np.append(y_train[-1], forecast_dictionary['y_pred_sarima_mean'])
+        y_pred_sarima_upper = np.append(y_train[-1], forecast_dictionary['y_pred_sarima_upper'])
+        y_pred_sarima_lower = np.append(y_train[-1], forecast_dictionary['y_pred_sarima_lower'])
+        plt.plot(t_grid_forecasting_plus_one, y_pred_sarima_mean, color=sarima_color, zorder=5, linewidth=2.5,
                  label='Arima')
 
         if plot_predictions_intervals:
-            plt.plot(t_grid_forecasting, y_pred_sarima_upper, '.', color=sarima_color, zorder=5, linewidth=2.5)
-            plt.plot(t_grid_forecasting, y_pred_sarima_lower, '.', color=sarima_color, zorder=5, linewidth=2.5)
+            plt.plot(t_grid_forecasting_plus_one, y_pred_sarima_upper, linestyle='dashed', color=sarima_color, zorder=5, linewidth=1)
+            plt.plot(t_grid_forecasting_plus_one, y_pred_sarima_lower, linestyle='dashed', color=sarima_color, zorder=5, linewidth=1)
 
     # Ensemble:
     if plot_ensemble:
-        y_pred_ensemble_mean = forecast_dictionary['y_pred_ensemble_mean']
-        y_pred_ensemble_upper = forecast_dictionary['y_pred_ensemble_upper']
-        y_pred_ensemble_lower = forecast_dictionary['y_pred_ensemble_lower']
+        y_pred_ensemble_mean = np.append(y_train[-1], forecast_dictionary['y_pred_ensemble_mean'])
+        y_pred_ensemble_upper = np.append(y_train[-1], forecast_dictionary['y_pred_ensemble_upper'])
+        y_pred_ensemble_lower = np.append(y_train[-1], forecast_dictionary['y_pred_ensemble_lower'])
 
-        plt.plot(t_grid_forecasting, y_pred_ensemble_mean, color=ensemble_color, zorder=5, linewidth=2.5,
+        plt.plot(t_grid_forecasting_plus_one, y_pred_ensemble_mean, color=ensemble_color, zorder=5, linewidth=2.5,
                  label='Ensemble')
 
         if plot_predictions_intervals:
-            plt.plot(t_grid_forecasting, y_pred_ensemble_upper, '.', color=ensemble_color, zorder=5, linewidth=2.5)
-            plt.plot(t_grid_forecasting, y_pred_ensemble_lower, '.', color=ensemble_color, zorder=5, linewidth=2.5)
+            plt.plot(t_grid_forecasting_plus_one, y_pred_ensemble_upper, linestyle='dashed', color=ensemble_color, zorder=5, linewidth=1)
+            plt.plot(t_grid_forecasting_plus_one, y_pred_ensemble_lower, linestyle='dashed', color=ensemble_color, zorder=5, linewidth=1)
 
 
 
     ## Making stuff pretty:
     # Axis description:
-    plt.title(f'Forecast for {district}')
-    plt.ylabel('7-day incidences')
+    plt.title(f'Forecast for {district} starting on {t_grid_forecasting[0]}')
+    plt.ylabel('7-day Incidence')
     plt.xlabel('Days')
-    plt.legend(loc='upper left')
+
+    # plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
+    if y_train[0] < y_val[-1]:
+        trend ='increasing'
+    else:
+        trend = 'decreasing'
+
+    # if numbers are decreasing: legend to lower left:
+    if trend == 'decreasing':
+        plt.legend(bbox_to_anchor=(0.02, 0.02), loc='lower left', borderaxespad=0.)
+
+    # else if numbers are increasing: legend to upper right
+    else:
+        plt.legend(bbox_to_anchor=(0.02, 0.98), loc='upper left', borderaxespad=0.)
 
     # Display every 7th day and the last day:
     plt.xticks(np.append(t_grid_all[::7], t_grid_all[-1]), rotation=20)
+
+    # Change y-axis lower bound to 0 and extend upper bound of y-axis by a factor of 1.35:
+    x1, x2, y1, y2 = plt.axis()
+    plt.axis((x1, x2, 0, y2*1.35))
 
     plt.show()

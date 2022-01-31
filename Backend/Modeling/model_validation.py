@@ -321,14 +321,9 @@ def model_validation_pipeline_v2_wrapper():
     #################### Pipeline Configuration: ####################
     # # For each interval
 
-    # pipeline_intervals = [
-    #     ('2021-11-01', '2022-01-25'),  # pipeline_start_dates
-    #     ('2021-08-01', '2021-10-01'),  # pipeline_end_dates:
-    # ]
-
     pipeline_intervals = [
-        ('2021-08-01', '2022-01-28'),
-        ('2020-08-01', '2021-04-01'),
+        ('2020-08-01', '2021-02-01'),
+        ('2021-10-01', '2022-01-28'),
     ]
 
     forecasting_horizon = 14
@@ -341,11 +336,11 @@ def model_validation_pipeline_v2_wrapper():
     districts = opendata['district'].tolist()
 
     # Only sample:
-    # districts = random.sample(districts, 400)
+    districts = random.sample(districts, 50)
 
     districts.sort()
 
-    # districts = ['Münster', 'Bielefeld']
+    # districts = ['Aachen', 'Hannover', 'Münster', 'Bielefeld']
 
     ensemble_model_share = {
         'seirv_last_beta': 0.2,
@@ -465,11 +460,11 @@ def model_validation_pipeline_v2_wrapper():
 
     # Run-Information (including metrics)
     df_lvl1.to_csv(
-        path_or_buf=f'../Assets/Data/Evaluation/model_validation_data_metrics_{datetime.today().strftime("%d_%m")}.csv')
+        path_or_buf=f'../Assets/Data/Evaluation/model_validation_data_metrics_{datetime.now().strftime("%d_%m_%H:%M")}.csv')
 
     # Estimates
     df_lvl2.to_csv(
-        path_or_buf=f'../Assets/Data/Evaluation/model_validation_data_forecasts_{datetime.today().strftime("%d_%m")}.csv')
+        path_or_buf=f'../Assets/Data/Evaluation/model_validation_data_forecasts_{datetime.now().strftime("%d_%m_%H:%M")}.csv')
 
 
 
@@ -612,10 +607,11 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
                                    forecasting_horizon=forecasting_horizon,
                                    district=district,
                                    y_val=y_val_incidence,
+                                   plot_val=False,
                                    plot_diff_eq_last_beta=True,
-                                   plot_diff_eq_ml_beta=True,
-                                   plot_sarima=True,
-                                   plot_ensemble=True,
+                                   plot_diff_eq_ml_beta=False,
+                                   plot_sarima=False,
+                                   plot_ensemble=False,
                                    plot_predictions_intervals=False
                                    )
 
