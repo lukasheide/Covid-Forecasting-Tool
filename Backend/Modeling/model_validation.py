@@ -348,8 +348,8 @@ def model_validation_pipeline_v2_wrapper():
     # districts = ['Münster', 'Bielefeld']
 
     ensemble_model_share = {
-        'seirv_last_beta': 0.3,
-        'seirv_ml_beta': 0.3,
+        'seirv_last_beta': 0.2,
+        'seirv_ml_beta': 0.4,
         'sarima': 0.4
     }
 

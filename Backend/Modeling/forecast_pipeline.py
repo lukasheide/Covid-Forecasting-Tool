@@ -42,8 +42,8 @@ def forecasting_pipeline(full_run=False, debug=False):
 
     # Ensemble Weights:
     ensemble_model_share = {
-        'seirv_last_beta': 0.3,
-        'seirv_ml_beta': 0.3,
+        'seirv_last_beta': 0.2,
+        'seirv_ml_beta': 0.4,
         'sarima': 0.4
     }
 
@@ -131,11 +131,11 @@ def forecasting_pipeline(full_run=False, debug=False):
             plot_all_forecasts(forecast_dictionary=all_combined_incidence, y_train=y_train_sarima_incidence,
                                start_date_str=training_start_date.strftime('%Y-%m-%d'), forecasting_horizon=forecasting_horizon,
                                district=district,
-                               plot_diff_eq_last_beta=False,
+                               plot_diff_eq_last_beta=True,
                                plot_diff_eq_ml_beta=True,
                                plot_sarima=True,
                                plot_ensemble=False,
-                               plot_predictions_intervals=True
+                               plot_predictions_intervals=False
                                )
 
         ## 6) Upload to DB
