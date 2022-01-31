@@ -167,18 +167,24 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
 
     # Add traces
     y_common_train = dist_forecast_df['cases'][training_len-shown:training_len].dropna()
+    max_key = max(y_common_train.keys())
+    max_train = y_common_train[max_key]
     fig.add_trace(
         go.Scatter(x=dates_array[training_len-shown:training_len], y=y_common_train, mode='lines+markers', name='Training'),
         secondary_y=False,
     )
-
+    #last_train_list = y_common_train[-1]
 
     # add upper and lower bounds
     if ('sevir_last_beta' in checkbox and 'intervals' in show_interval):
         y_upper = dist_forecast_df['y_pred_seirv_last_beta_upper'].dropna().tolist()
         y_lower = dist_forecast_df['y_pred_seirv_last_beta_lower'].dropna().tolist()
-        y_lower = y_lower[::-1]
         x = list(dates_array[-15:])
+        y_lower = y_lower[::-1]
+        y_lower = np.append(y_lower, max_train)
+        y_upper = np.append(max_train, y_upper)
+        y_upper = list(y_upper)
+        y_lower = list(y_lower)
         x_rev = x[::-1]
         x = x + x_rev
         y_interval = y_upper + y_lower
@@ -192,8 +198,12 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
     if ('sevir_ml_beta' in checkbox and 'intervals' in show_interval):
         y_upper = dist_forecast_df['y_pred_seirv_ml_beta_upper'].dropna().tolist()
         y_lower = dist_forecast_df['y_pred_seirv_ml_beta_lower'].dropna().tolist()
-        y_lower = y_lower[::-1]
         x = list(dates_array[-15:])
+        y_lower = y_lower[::-1]
+        y_lower = np.append(y_lower, max_train)
+        y_upper = np.append(max_train, y_upper)
+        y_upper = list(y_upper)
+        y_lower = list(y_lower)
         x_rev = x[::-1]
         x = x + x_rev
         y_interval = y_upper + y_lower
@@ -207,8 +217,12 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
     if ('sarima' in checkbox and 'intervals' in show_interval):
         y_upper = dist_forecast_df['y_pred_sarima_upper'].dropna().tolist()
         y_lower = dist_forecast_df['y_pred_sarima_lower'].dropna().tolist()
-        y_lower = y_lower[::-1]
         x = list(dates_array[-15:])
+        y_lower = y_lower[::-1]
+        y_lower = np.append(y_lower, max_train)
+        y_upper = np.append(max_train, y_upper)
+        y_upper = list(y_upper)
+        y_lower = list(y_lower)
         x_rev = x[::-1]
         x = x + x_rev
         y_interval = y_upper + y_lower
@@ -222,8 +236,12 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
     if ('ensemble' in checkbox and 'intervals' in show_interval):
         y_upper = dist_forecast_df['y_pred_ensemble_upper'].dropna().tolist()
         y_lower = dist_forecast_df['y_pred_ensemble_lower'].dropna().tolist()
-        y_lower = y_lower[::-1]
         x = list(dates_array[-15:])
+        y_lower = y_lower[::-1]
+        y_lower = np.append(y_lower, max_train)
+        y_upper = np.append(max_train, y_upper)
+        y_upper = list(y_upper)
+        y_lower = list(y_lower)
         x_rev = x[::-1]
         x = x + x_rev
         y_interval = y_upper + y_lower
