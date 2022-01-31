@@ -1,3 +1,4 @@
+import math
 import sqlite3
 from datetime import datetime, timedelta
 
@@ -251,6 +252,8 @@ def get_mobility_data(district, date=None):
 
 
 def get_weather_data(district, date=None):
+    temp_filler = 15.0
+    wind_filler = 10.0
     if district == 'Garmisch-Partenkirchen':
         district = 'Weilheim-Schongau'
     location = get_district_data(district, [Column.LATITUDE, Column.LONGITUDE])
@@ -262,8 +265,17 @@ def get_weather_data(district, date=None):
     data = Daily(district_loc, date_obj, date_obj)
     data = data.fetch()
 
-    temperature = data['tavg'][0]
-    wind = data['wspd'][0]
+    if data.empty:
+        temperature = temp_filler
+        wind = wind_filler
+    else:
+        temperature = data['tavg'][0]
+        wind = data['wspd'][0]
+
+        if math.isnan(data['tavg'][0]):
+            temperature = temp_filler
+        if math.isnan(data['wspd'][0]):
+            wind = wind_filler
 
     return temperature, wind
 
@@ -519,3 +531,4 @@ if __name__ == '__main__':
     # get_district_forecast_data('Münster')
     # pass
     # get_mobility_data("Münster", date='2022-01-27')
+    # get_weather_data("Wesermarsch", '2022-01-27')
