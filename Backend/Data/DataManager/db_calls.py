@@ -168,6 +168,7 @@ def get_policy_data(date=None):
 
 def get_variant_data(date=None):
     engine = get_engine()
+    data_start_date_obj = datetime.strptime('2020-09-28', '%Y-%m-%d') # start date of the 2020-40th week
 
     if date is not None:
         date_obj = datetime.strptime(date, '%Y-%m-%d')
@@ -184,13 +185,23 @@ def get_variant_data(date=None):
         result = pd.read_sql(query_sql, engine)
 
         if result.empty:
-            query_sql = 'SELECT variant ' \
-                        'FROM ecdc_varient_data ' \
-                        'WHERE percent_variant > 0 ' \
-                        'ORDER BY year_week, percent_variant DESC ' \
-                        'LIMIT 1'
-            result = pd.read_sql(query_sql, engine)
-            print('no variant data for the given date, latest available week data is selected!')
+            if date_obj < data_start_date_obj:
+                query_sql = 'SELECT variant ' \
+                            'FROM ecdc_varient_data ' \
+                            'WHERE percent_variant > 0 ' \
+                            'ORDER BY year_week, percent_variant ASC ' \
+                            'LIMIT 1'
+                result = pd.read_sql(query_sql, engine)
+                print('data starting date is ahead for the given date, starting date data is selected!')
+
+            else:
+                query_sql = 'SELECT variant ' \
+                            'FROM ecdc_varient_data ' \
+                            'WHERE percent_variant > 0 ' \
+                            'ORDER BY year_week, percent_variant DESC ' \
+                            'LIMIT 1'
+                result = pd.read_sql(query_sql, engine)
+                print('no variant data for the given date, latest available week data is selected!')
 
         return result['variant'][0]
 
