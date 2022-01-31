@@ -3,6 +3,7 @@ from paramiko import Transport, SFTPClient
 from Backend.Data.DataManager.data_util import print_progress
 from Backend.Data.DataManager.properties import Server
 import shutil
+from pathlib import Path
 
 from datetime import datetime
 
@@ -58,13 +59,17 @@ def download_pred_intervals_file():
     transport.connect(username=Server.username, password=Server.password)
     sftp = SFTPClient.from_transport(transport)
 
+    # check file if exist in the path and create if not
+    pred_file = Path("../Assets/Forecasts/PredictionIntervals/prediction_intervals.csv")
+    pred_file.touch(exist_ok=True)
+
     # create a copy of the existing database file
-    original = '../Assets/Data/prediction_intervals.csv'
-    target = '../Assets/Data/prediction_intervals_backup.csv'
+    original = '../Assets/Forecasts/PredictionIntervals/prediction_intervals.csv'
+    target = '../Assets/Forecasts/PredictionIntervals/prediction_intervals_backup.csv'
     shutil.copy2(original, target)
 
     remote_path = "Assets/DataUtils/prediction_intervals.csv"
-    local_path = "../Assets/Data/prediction_intervals.csv"
+    local_path = "../Assets/Forecasts/PredictionIntervals/prediction_intervals.csv"
 
     print("downloading the prediction_intervals file from the server:")
     sftp.get(remotepath=remote_path, localpath=local_path, callback=print_progress)
@@ -78,13 +83,17 @@ def upload_pred_intervals_file():
     transport.connect(username=Server.username, password=Server.password)
     sftp = SFTPClient.from_transport(transport)
 
+    # check file if exist in the path and create if not
+    myfile = Path('..Assets/Forecasts/PredictionIntervals/prediction_intervals.csv')
+    myfile.touch(exist_ok=True)
+
     # create a local copy of the existing database file
-    original = '../Assets/Data/prediction_intervals.csv'
-    target = '../Assets/Data/prediction_intervals_backup.csv'
+    original = '..Assets/Forecasts/PredictionIntervals/prediction_intervals.csv'
+    target = '..Assets/Forecasts/PredictionIntervals/prediction_intervals_backup.csv'
     shutil.copy2(original, target)
 
     remote_path = "Assets/DataUtils/prediction_intervals.csv"
-    local_path = "../Assets/Data/prediction_intervals.csv"
+    local_path = "..Assets/Forecasts/PredictionIntervals/prediction_intervals.csv"
 
     print("uploading the prediction_intervals file to the server:")
     sftp.put(remotepath=remote_path, localpath=local_path, callback=print_progress)
@@ -101,7 +110,7 @@ def upload_pred_intervals_file():
 
 if __name__ == '__main__':
 
-    task = 'upload_pred_intervals'
+    task = 'download_pred_intervals'
 
     if task == 'upload':
         upload_db_file()
