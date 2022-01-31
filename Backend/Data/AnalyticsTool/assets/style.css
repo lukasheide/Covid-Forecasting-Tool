@@ -14,10 +14,12 @@
 
 #react-select-2--value-item {
     color:white;
+    font-weight: bold;
 }
 
 #react-select-3--value-item {
     color:white;
+    font-weight: bold;
 }
 
 .Select-menu-outer {

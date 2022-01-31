@@ -29,7 +29,7 @@ from sklearn.preprocessing import StandardScaler
 
 def forecasting_pipeline(full_run=False, debug=False):
     #################### Pipeline Configuration: ####################
-    training_end_date = '2022-01-27'
+    training_end_date = '2022-01-29'
     forecasting_horizon = 14
 
     train_length_diffeqmodel = 14
@@ -42,9 +42,9 @@ def forecasting_pipeline(full_run=False, debug=False):
 
     # Ensemble Weights:
     ensemble_model_share = {
-        'seirv_last_beta': 0.5,
-        'seirv_ml_beta': 0,
-        'sarima': 0.5
+        'seirv_last_beta': 0.2,
+        'seirv_ml_beta': 0.4,
+        'sarima': 0.4
     }
 
     ##### write starting values of the pipeline to DB ########
@@ -131,11 +131,11 @@ def forecasting_pipeline(full_run=False, debug=False):
             plot_all_forecasts(forecast_dictionary=all_combined_incidence, y_train=y_train_sarima_incidence,
                                start_date_str=training_start_date.strftime('%Y-%m-%d'), forecasting_horizon=forecasting_horizon,
                                district=district,
-                               plot_diff_eq_last_beta=False,
+                               plot_diff_eq_last_beta=True,
                                plot_diff_eq_ml_beta=True,
                                plot_sarima=True,
                                plot_ensemble=False,
-                               plot_predictions_intervals=True
+                               plot_predictions_intervals=False
                                )
 
         ## 6) Upload to DB

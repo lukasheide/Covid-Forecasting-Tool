@@ -365,4 +365,7 @@ def plot_all_forecasts(forecast_dictionary, y_train, start_date_str, forecasting
     plt.xlabel('Days')
     plt.legend(loc='upper left')
 
+    # Display every 7th day and the last day:
+    plt.xticks(np.append(t_grid_all[::7], t_grid_all[-1]), rotation=20)
+
     plt.show()
