@@ -4,21 +4,29 @@ library(GGally)
 library(ggfortify)
 library(scales)
 library(RColorBrewer)
+library(lubridate)
 
 setwd("/Users/heidemann/documents/private/Project_Seminar/Backend")
 
 
 #### 1) Import Predictions ####
-df_forecasts <- read_csv(file="../Assets/Data/Evaluation/model_validation_data_forecasts_31_01_lukas.csv")
-df_metrics <- read_csv(file="../Assets/Data/Evaluation/model_validation_data_metrics_31_01_lukas.csv")
+df_forecasts <- read_csv(file="../Assets/Data/Evaluation/model_validation_data_forecasts_31_01.csv")
+df_metrics <- read_csv(file="../Assets/Data/Evaluation/model_validation_data_metrics_31_01.csv")
 
 # Rename First Column:
-df_forecasts <- df_forecasts %>% 
+df_forecasts <- df_forecasts %>%
+  # Add day column:
   rename(
     day_num = names(df_forecasts)[1]
   ) %>% 
   mutate(
     day_num = day_num + 1
+  )
+
+# Add month column:
+df_metrics <- df_metrics %>% 
+  mutate(
+    month = format(as.POSIXlt(start_day_val, format="%d/%m/%Y"), "%Y-%m")
   )
 
 #### 2) Residuals Analysis ####
@@ -290,7 +298,30 @@ df_metrics %>%
   theme_bw()
 
 
-#### Inspect only:
+
+#### Monthly performance:
+df_metrics %>% group_by(month) %>% 
+  summarize(
+    diff_eq_last_beta = quantile(`Diff_Eq_Last_Beta-rmse`, 0.5),
+    diff_eq_ml_beta = quantile(`Diff_Eq_ML_Beta-rmse`, 0.5),
+    sarima = quantile(`Sarima-rmse`, 0.5),
+    ensemble = quantile(`Ensemble-rmse`, 0.5),
+  ) %>%
+  pivot_longer(c('diff_eq_last_beta', 'diff_eq_ml_beta', 'sarima', 'ensemble'), 
+               names_to='model', values_to = 'rmse') %>%  
+  filter(
+    model %in% c('diff_eq_last_beta', 'diff_eq_ml_beta', 'sarima')
+  ) %>%
+  ggplot(aes(x=month, y=rmse, fill=model)) +
+  geom_bar(position='dodge', stat='identity', color='black') +
+  scale_fill_manual(values=c("#043B05", "#1A4B75", "#A62189")) +
+  ggtitle("Forecasting Model Evaluation") +
+  labs(x = '') +
+  labs(y = "Average RMSE", fill='Model') +
+  theme(text = element_text(size = 12), legend.position = "right") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
 
 
 

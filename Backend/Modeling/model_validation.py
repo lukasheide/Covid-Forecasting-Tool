@@ -322,8 +322,7 @@ def model_validation_pipeline_v2_wrapper():
     # # For each interval
 
     pipeline_intervals = [
-        ('2020-08-01', '2021-02-01'),
-        ('2021-10-01', '2022-01-28'),
+        ('2020-03-01', '2022-01-28'),
     ]
 
     forecasting_horizon = 14
@@ -336,7 +335,7 @@ def model_validation_pipeline_v2_wrapper():
     districts = opendata['district'].tolist()
 
     # Only sample:
-    districts = random.sample(districts, 50)
+    districts = random.sample(districts, 100)
 
     districts.sort()
 
