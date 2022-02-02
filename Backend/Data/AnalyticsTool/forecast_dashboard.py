@@ -265,6 +265,7 @@ app.layout = html.Div([
     Input(component_id='forecast-chloropath', component_property='clickData'),
 )
 def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
+    line_width = 4
 
     if click_data is not None and district != click_data['points'][0]['hovertext']:
         district = click_data['points'][0]['hovertext']
@@ -281,9 +282,14 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
     max_key = max(y_common_train.keys())
     max_train = y_common_train[max_key]
     fig.add_trace(
-        go.Scatter(x=dates_array[training_len-shown:training_len], y=y_common_train, mode='lines+markers', name='Training'),
+        go.Scatter(x=dates_array[training_len-shown:training_len],
+                   y=y_common_train,
+                   mode='lines+markers',
+                   name='Training',
+                   line=dict(width=line_width)),
         secondary_y=False,
     )
+    fig.update_traces(marker={'size': 12})
     #last_train_list = y_common_train[-1]
 
     # add upper and lower bounds
@@ -303,7 +309,8 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
                                  y=y_interval,
                                  fill='toself',
                                  fillcolor='rgba(0,100,80,0.2)',
-                                 line_color='rgba(255,255,255,0)',
+                                 # line_color='rgba(255,255,255,0)',
+                                 line=dict(color='rgba(255,255,255,0)'),
                                  name="SEIURV Last Beta",
                                  showlegend=False))
     if ('sevir_ml_beta' in checkbox and 'intervals' in show_interval):
@@ -322,7 +329,8 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
                                  y=y_interval,
                                  fill='toself',
                                  fillcolor='rgba(0,176,246,0.2)',
-                                 line_color='rgba(255,255,255,0)',
+                                 # line_color='rgba(255,255,255,0)',
+                                 line=dict(color='rgba(255,255,255,0)'),
                                  name="SEIURV ML beta",
                                  showlegend=False))
     if ('sarima' in checkbox and 'intervals' in show_interval):
@@ -341,7 +349,8 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
                                  y=y_interval,
                                  fill='toself',
                                  fillcolor='rgba(231,107,243,0.2)',
-                                 line_color='rgba(255,255,255,0)',
+                                 # line_color='rgba(255,255,255,0)',
+                                 line=dict(color='rgba(255,255,255,0)'),
                                  name='ARIMA',
                                  showlegend=False))
     if ('ensemble' in checkbox and 'intervals' in show_interval):
@@ -360,7 +369,8 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
                                  y=y_interval,
                                  fill='toself',
                                  fillcolor='rgba(230,171,2,0.2)',
-                                 line_color='rgba(255,255,255,0)',
+                                 # line_color='rgba(255,255,255,0)',
+                                 line=dict(color='rgba(255,255,255,0)'),
                                  name='Ensemble',
                                  showlegend=False))
 
@@ -370,7 +380,8 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
         fig.add_trace(
             go.Scatter(x=dates_array[-15:], y=y_fixed,
                        name="SEIURV Last Beta",
-                       line_color='rgb(0,100,80)',
+                       # line_color='rgb(0,100,80)',
+                       line=dict(color='rgb(0,100,80)', width=line_width),
                        mode='lines'),
             secondary_y=False,
         )
@@ -380,7 +391,8 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
         fig.add_trace(
             go.Scatter(x=dates_array[-15:], y=y_fixed,
                        name="SEIURV ML beta",
-                       line_color='rgb(0,176,246)',
+                       # line_color='rgb(0,176,246)',
+                       line=dict(color='rgb(0,176,246)', width=line_width),
                        mode='lines'),
             secondary_y=False,
         )
@@ -389,7 +401,8 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
         y_fixed = pd.concat([pd.Series(y_common_train.iloc[-1]), y])
         fig.add_trace(
             go.Scatter(x=dates_array[-15:], y=y_fixed,
-                       line_color='rgb(231,107,243)',
+                       # line_color='rgb(231,107,243)',
+                       line=dict(color='rgb(231,107,243)', width=line_width),
                        name="ARIMA",
                        mode='lines'),
                        # line = dict(color='green')),
@@ -400,7 +413,8 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
         y_fixed = pd.concat([pd.Series(y_common_train.iloc[-1]), y])
         fig.add_trace(
             go.Scatter(x=dates_array[-15:], y=y_fixed,
-                       line_color='rgb(230,171,2)',
+                       # line_color='rgb(230,171,2)',
+                       line=dict(color='rgb(230,171,2)', width=line_width),
                        name="Ensemble",
                        mode='lines'),
 
