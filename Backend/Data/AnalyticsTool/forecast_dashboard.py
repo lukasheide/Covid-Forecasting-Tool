@@ -169,11 +169,12 @@ app.layout = html.Div([
         style={'backgroundColor': '#111111', 'color': 'white',},
         children=[
             html.Div(
-                className="six columns",
+                # className="six columns",
                 children=[
                     html.Div([
                             html.Div(
                                 children=[
+                                            html.H6('may be add a title here', style={'backgroundColor':'#111111', 'color':'white'}),
                                             dcc.Dropdown(
                                                     id='district-dropdown',
                                                     options=[{'label': k, 'value': k} for k in district_list],
@@ -213,8 +214,8 @@ app.layout = html.Div([
                                 id='dist-forecast-graph',
                                 figure={
                                     'layout': {
-                                        'height': 700,
-                                        'width': 900,
+                                        'height': 800,
+                                        # 'width': 900,
                                         'margin': {'l': 10, 'b': 10, 't': 10, 'r': 10},
                                         'paper_bgcolor': '#7FDBFF',
                                         'plot_bgcolor': '#7FDBFF',
@@ -223,13 +224,14 @@ app.layout = html.Div([
                             ),
 
                         ])],
-                style={'padding-left': '30px'}
+                style={'padding-right': '30px', 'padding-left': '30px', 'padding-top': '10px', 'padding-bottom': '10px'}
             ),
             html.Div(
-                className="six columns",
+                # className="six columns",
                 children=[
                     html.Div(
                         children=[
+                            html.H6('may be add a title here', style={'backgroundColor':'#111111', 'color':'white'}),
                             dcc.Dropdown(
                                 id='map-forecast-model',
 
@@ -245,7 +247,7 @@ app.layout = html.Div([
                         ]
                     )
                 ],
-                style={'padding-right': '30px'}
+                style={'padding-right': '30px', 'padding-left': '30px', 'padding-top': '30px', 'padding-bottom': '30px', 'justify-content': 'center'}
             ),
         ]
     )
