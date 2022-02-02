@@ -174,7 +174,7 @@ app.layout = html.Div([
                     html.Div([
                             html.Div(
                                 children=[
-                                            html.H6('may be add a title here', style={'backgroundColor':'#111111', 'color':'white'}),
+                                            # html.H6('District Forecast ', style={'backgroundColor':'#111111', 'color':'white'}),
                                             dcc.Dropdown(
                                                     id='district-dropdown',
                                                     options=[{'label': k, 'value': k} for k in district_list],
@@ -231,7 +231,7 @@ app.layout = html.Div([
                 children=[
                     html.Div(
                         children=[
-                            html.H6('may be add a title here', style={'backgroundColor':'#111111', 'color':'white'}),
+                            # html.H6('may be add a title here', style={'backgroundColor':'#111111', 'color':'white'}),
                             dcc.Dropdown(
                                 id='map-forecast-model',
 
