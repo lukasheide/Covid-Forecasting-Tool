@@ -16,13 +16,13 @@ def arimamodel(timeseriesarray):
 
         # Fit ARIMA model with given training data
         autoarima_model = pmd.auto_arima(y=timeseriesarray,
-                                         start_p=3,
-                                         start_q=3,
+                                         start_p=0,
+                                         start_q=0,
                                          max_p=4, max_q=4, d=d,
                                          trace=False,
                                          error_action='ignore',
                                          suppress_warnings=True,
-                                         stepwise=False, test = "adf",
+                                         stepwise=False,
                                          with_intercept=False, method='nm')
         return autoarima_model
 
@@ -32,6 +32,15 @@ def sarima_pipeline(y_train, forecasting_horizon):
 
     # 1) Fit the ARIMA model with training data
     pred_arima = arimamodel(y_train)
+    params = pred_arima.get_params()
+    print(pred_arima.get_params())
+
+    # 1a) Try to catch random walks
+    if params['order'] == (0,1,0):
+        predictions_1, conf_int = pred_arima.predict(forecasting_horizon, return_conf_int=True, alpha=0.1)
+        y_train_short = y_train.loc[14:len(y_train)]
+        pred_arima = arimamodel(y_train_short)
+        print('secons try: ', pred_arima.get_params())
 
     # 2) Create the forecasts, including prediction intervals
     predictions, conf_int = pred_arima.predict(forecasting_horizon, return_conf_int=True, alpha=0.1)
