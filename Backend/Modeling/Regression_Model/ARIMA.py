@@ -1,6 +1,14 @@
 import pandas as pd
 import pmdarima as pmd
 
+#@MISC {pmdarima,
+#  author = {Taylor G. Smith and others},
+#  title  = {{pmdarima}: ARIMA estimators for {Python}},
+#  year   = {2017--},
+#  url    = "http://www.alkaline-ml.com/pmdarima",
+#  note   = {[Online; accessed <today>]}
+#}
+
 # Fitting ARIMA model
 def arimamodel(timeseriesarray):
         # Find number of differencing required to make the time series stationary using ndiffs() function
