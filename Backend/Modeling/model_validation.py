@@ -325,7 +325,7 @@ def model_validation_pipeline_v2_wrapper():
         ('2020-11-12', '2022-01-29'),
     ]
 
-    forecasting_horizon = 14
+    forecasting_horizon = 140
 
     train_length_diffeqmodel = 14
     train_length_sarima = 42
@@ -340,7 +340,7 @@ def model_validation_pipeline_v2_wrapper():
 
     districts.sort()
 
-    # districts = ['Aachen', 'Hannover', 'Münster', 'Bielefeld']
+    districts = ['Bielefeld']
 
     ensemble_model_share = {
         'seirv_last_beta': 0,
@@ -477,7 +477,7 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
                                  run_diff_eq_ml_beta=True,
                                  run_sarima=True,
                                  run_ensemble=True,
-                                 debug=False):
+                                 debug=True):
     # Create time_grid:
     intervals_grid = get_weekly_intervals_grid(pipeline_start_date, pipeline_end_date, training_period_max,
                                                forecasting_horizon)
