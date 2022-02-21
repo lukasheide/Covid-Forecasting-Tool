@@ -7,6 +7,21 @@ library(RColorBrewer)
 library(lubridate)
 
 
+##############################################################################
+#
+# The goal of this script is mainyl to analyse the performance of the different models and 
+# provide plots used in the presentation. It is also used for preparing the computation of 
+# the prediction intervals by computing the historical residuals which are used for 
+# providing prediction intervals for our differential equation model forecasting using
+# a so-called bootstrapping approach.
+# Used sources:
+# - Pan, Politis (2015) - "Bootstrap prediction intervals for linear, nonlinear and nonparametric autoregressions" -> https://mathweb.ucsd.edu/~politis/PAPER/BPIforARjspiFINAL.pdf
+# - https://saattrupdan.github.io/2020-03-01-bootstrap-prediction/
+# - https://stats.stackexchange.com/questions/226565/bootstrap-prediction-interval
+#
+##############################################################################
+
+
 setwd("/Users/heidemann/documents/private/Project_Seminar/Backend")
 
 
