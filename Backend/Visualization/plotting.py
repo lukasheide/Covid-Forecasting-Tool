@@ -263,7 +263,10 @@ def plot_beta_matrix_estimation(y_train_true, y_val_true, y_train_pred_full, y_v
 
 def plot_all_forecasts(forecast_dictionary, y_train, start_date_str, forecasting_horizon, district,
                        y_val=None,
+                       y_train_fitted=None,
                        plot_val=True,
+                       plot_y_train_fitted=False,
+                       plot_y_train_fitted_all=False,
                        plot_diff_eq_last_beta=True,
                        plot_diff_eq_ml_beta=True,
                        plot_sarima=True,
@@ -310,6 +313,18 @@ def plot_all_forecasts(forecast_dictionary, y_train, start_date_str, forecasting
         plt.plot(t_grid_forecasting_plus_one, y_val, color=y_val_color, linewidth=1.5, zorder=12)
 
     ## Forecasts:
+
+    # Fitted line:
+    if y_train_fitted is not None and plot_y_train_fitted is True:
+        if not plot_y_train_fitted_all:
+            y_train_fitted_only_train = y_train_fitted[:len_train]
+            plt.plot(t_grid_train, y_train_fitted_only_train, color=diff_eq_last_beta_color, zorder=5, linewidth=2.5,
+                     label='SEIURV_LastBeta')
+        else:
+            plt.plot(t_grid_all, y_train_fitted, color=diff_eq_last_beta_color, zorder=5, linewidth=2.5,
+                     label='SEIURV_LastBeta')
+
+
 
     # Diff Eq Last Beta:
     if plot_diff_eq_last_beta:
@@ -393,5 +408,6 @@ def plot_all_forecasts(forecast_dictionary, y_train, start_date_str, forecasting
     # Change y-axis lower bound to 0 and extend upper bound of y-axis by a factor of 1.35:
     x1, x2, y1, y2 = plt.axis()
     plt.axis((x1, x2, 0, y2*1.35))
+    plt.axis((x1, x2, 0, 650))
 
     plt.show()
