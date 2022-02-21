@@ -3,7 +3,7 @@ import pandas as pd
 
 from Backend.Modeling.Differential_Equation_Modeling.prediction_intervals import compute_prediction_intervals, \
     compute_ensemble_forecast
-from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_pipeline
+from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seiurv_pipeline
 from Backend.Modeling.Differential_Equation_Modeling.seirv_model_and_ml import seirv_ml_layer
 from Backend.Modeling.Regression_Model.ARIMA import sarima_pipeline
 
@@ -17,11 +17,11 @@ def forecast_all_models(y_train_diffeq, y_train_sarima, forecasting_horizon, ml_
     ## 3.1) SEIRV + Last Beta
     if run_diff_eq_last_beta:
         # Get point estimates from SEIRV Pipeline:
-        seirv_last_beta_only_results = seirv_pipeline(y_train=y_train_diffeq,
-                                                      start_vals_fixed=start_vals_seirv,
-                                                      fixed_model_params=fixed_model_params_seirv,
-                                                      forecast_horizon=forecasting_horizon,
-                                                      allow_randomness_fixed_beta=False, district=district)
+        seirv_last_beta_only_results = seiurv_pipeline(y_train=y_train_diffeq,
+                                                       start_vals_fixed=start_vals_seirv,
+                                                       fixed_model_params=fixed_model_params_seirv,
+                                                       forecast_horizon=forecasting_horizon,
+                                                       allow_randomness_fixed_beta=False, district=district)
         ## Compute Upper and Lower Bound:
         if pred_intervals_df is not None:
             upper_bound, lower_bound = compute_prediction_intervals(

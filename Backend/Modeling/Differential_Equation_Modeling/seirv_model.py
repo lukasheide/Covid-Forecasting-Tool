@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.integrate import odeint
-from Backend.Modeling.Differential_Equation_Modeling.model_params import params_SEIRV_fixed, params_SEIRV_fit, \
+from Backend.Modeling.Differential_Equation_Modeling.model_params import params_SEIURV_fixed, params_SEIRV_fit_DEPRECATED, \
     draw_value_from_param_distribution, draw_random_beta
 from Backend.Modeling.Differential_Equation_Modeling.optimization_functions import weigh_residuals, \
     weigh_residuals_reversed
@@ -13,12 +13,17 @@ from Backend.Visualization.plotting import plot_train_and_val_infections, plot_t
 from Backend.Modeling.Util.pipeline_util import models_params_to_dictionary, models_compartment_values_to_dictionary
 
 
-def seirv_pipeline(y_train: np.array,
-                   start_vals_fixed: tuple, fixed_model_params:tuple,
-                   beta_for_predictions=None,
-                   forecast_horizon=14,
-                   allow_randomness_fixed_params=False, allow_randomness_fixed_beta=False, random_runs=100, pred_quantile=0.9, district=None):
+def seiurv_pipeline(y_train: np.array,
+                    start_vals_fixed: tuple, fixed_model_params:tuple,
+                    beta_for_predictions=None,
+                    forecast_horizon=14,
+                    allow_randomness_fixed_params=False, allow_randomness_fixed_beta=False, random_runs=100, pred_quantile=0.9, district=None):
+
     """
+    The goal of this pipeline is to produce a forecast using our differential equation model given an array with
+    training data, as well as starting values for the compartments and values for the fixed model parameters
+    (those that are not fitted to the data).
+
     Takes as input a numpy array containing daily infection counts for the training period and a tuple containing
     the population size N and fixed starting values for each compartment: I0, R0 and V0. E0 and S0 are fitted.
 
@@ -392,11 +397,11 @@ def setup_model_params_for_forecasting_after_fitting(fixed_model_params, fitted_
 
     ## Fixed Params:
     if not random_draw_fixed_params:
-        gamma_I = params_SEIRV_fixed['gamma_I']['mean']
-        gamma_U = params_SEIRV_fixed['gamma_U']['mean']
-        delta = params_SEIRV_fixed['delta']['mean']
-        theta = params_SEIRV_fixed['theta']['mean']
-        rho = params_SEIRV_fixed['rho']['mean']
+        gamma_I = params_SEIURV_fixed['gamma_I']['mean']
+        gamma_U = params_SEIURV_fixed['gamma_U']['mean']
+        delta = params_SEIURV_fixed['delta']['mean']
+        theta = params_SEIURV_fixed['theta']['mean']
+        rho = params_SEIURV_fixed['rho']['mean']
 
     else:
         gamma_I = draw_value_from_param_distribution('gamma_I')
@@ -540,9 +545,9 @@ def solve_ode_for_fitting_beta_only(fixed_start_vals, fixed_params, fit_params):
 
 def solve_ode_for_fitting_fixed_y0(y0, t_grid, fit_params):
     beta = fit_params[0]
-    gamma = params_SEIRV_fixed['gamma']['mean']
-    delta = params_SEIRV_fixed['delta']['mean']
-    theta = params_SEIRV_fixed['theta']['mean']
+    gamma = params_SEIURV_fixed['gamma']['mean']
+    delta = params_SEIURV_fixed['delta']['mean']
+    theta = params_SEIURV_fixed['theta']['mean']
 
     # lambda function as shown here: https://www.kaggle.com/baiyanren/modified-seir-model-for-covid-19-prediction-in-us
     # this circumvents issues with the scipy odeint function, which can only handle a predefined number of params
@@ -587,7 +592,7 @@ def seirv_model_pipeline_DEPRECATED(y_train: np.array, start_vals_fitting: tuple
     y0_train = start_vals_fitting + (0,)
 
     # Get start guess for parameters that are fitted as a tuple:
-    fit_params_start_guess = (params_SEIRV_fit['beta']['mean'],)
+    fit_params_start_guess = (params_SEIRV_fit_DEPRECATED['beta']['mean'],)
 
     # Fit parameters:
     opt_params, success = leastsq(
@@ -597,7 +602,7 @@ def seirv_model_pipeline_DEPRECATED(y_train: np.array, start_vals_fitting: tuple
     )
 
     # Apply optimal parameters to get the end values for all compartments:
-    fixed_params = [param for param in params_SEIRV_fixed.values()]
+    fixed_params = [param for param in params_SEIURV_fixed.values()]
     fitted_and_fixed_params = tuple(opt_params) + tuple(fixed_params)
 
     # Retrieve values for each compartment over time:
@@ -612,7 +617,7 @@ def seirv_model_pipeline_DEPRECATED(y_train: np.array, start_vals_fitting: tuple
     y0_predict = start_vals_predict + (0,)
 
     # Set up parameters for prediction run:
-    fixed_params_predict = [param for param in params_SEIRV_fixed.values()]
+    fixed_params_predict = [param for param in params_SEIURV_fixed.values()]
     fitted_and_fixed_params_predict = tuple(opt_params) + tuple(fixed_params)
 
     ### For debugging:

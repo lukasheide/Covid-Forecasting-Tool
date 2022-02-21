@@ -9,7 +9,7 @@ import numpy as np
 # and then the same model is rerun n times and the average values are used as point estimates.
 #######################################################################################################################
 
-params_SEIRV_fixed = {
+params_SEIURV_fixed = {
     'gamma_I': { # mean infectious period detected cases
        'mean': 1 / 3.6,
         'sd': 1 / 1.85,
@@ -51,7 +51,7 @@ params_SEIRV_fixed = {
     }
 }
 
-params_SEIRV_fit = {
+params_SEIRV_fit_DEPRECATED = {
     'beta': {
         'mean': 0.4,
         'sd': 0.1,
@@ -82,7 +82,7 @@ def draw_value_from_param_distribution(paramname):
     """
 
     # get information for parameter:
-    param = params_SEIRV_fixed[paramname]
+    param = params_SEIURV_fixed[paramname]
 
     ## Different distributions:
     # Normal:
@@ -123,24 +123,24 @@ def draw_random_beta(beta_estimate, sd=-1, sd_passed=False):
     mean = beta_estimate
     # Compute standard deviation relative to how large the beta estimate is:
     if not sd_passed:
-        sd = mean * params_SEIRV_fit['beta']['relative_sd']
+        sd = mean * params_SEIRV_fit_DEPRECATED['beta']['relative_sd']
 
     # Normal:
-    if params_SEIRV_fit['beta']['distribution'] == 'normal':
+    if params_SEIRV_fit_DEPRECATED['beta']['distribution'] == 'normal':
         random_val = np.random.normal(
             loc=mean,
             scale=sd
         )
 
     # Lognormal
-    elif params_SEIRV_fit['beta']['distribution'] == 'uniform':
+    elif params_SEIRV_fit_DEPRECATED['beta']['distribution'] == 'uniform':
         random_val = np.random.lognormal(
             loc=mean,
             scale=sd
         )
 
     # Uniform
-    elif params_SEIRV_fit['beta']['distribution'] == 'uniform':
+    elif params_SEIRV_fit_DEPRECATED['beta']['distribution'] == 'uniform':
         random_val = np.random.uniform(
             loc=mean,
             scale=sd
@@ -148,12 +148,12 @@ def draw_random_beta(beta_estimate, sd=-1, sd_passed=False):
 
     # If Distribution does not exist throw an error:
     else:
-        raise Exception('Distribution {} does not exist.'.format(params_SEIRV_fit['beta']['distribution']))
+        raise Exception('Distribution {} does not exist.'.format(params_SEIRV_fit_DEPRECATED['beta']['distribution']))
 
     # Ensure boundaries:
-    if random_val > params_SEIRV_fit['beta']['upper_lim']:
-        random_val = params_SEIRV_fit['beta']['upper_lim']
-    elif random_val < params_SEIRV_fit['beta']['lower_lim']:
-        random_val = params_SEIRV_fit['beta']['lower_lim']
+    if random_val > params_SEIRV_fit_DEPRECATED['beta']['upper_lim']:
+        random_val = params_SEIRV_fit_DEPRECATED['beta']['upper_lim']
+    elif random_val < params_SEIRV_fit_DEPRECATED['beta']['lower_lim']:
+        random_val = params_SEIRV_fit_DEPRECATED['beta']['lower_lim']
 
     return random_val

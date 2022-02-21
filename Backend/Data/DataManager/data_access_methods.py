@@ -1,6 +1,6 @@
 from Backend.Data.DataManager.data_util import Column
 from Backend.Data.DataManager.db_calls import get_table_data_by_duration, get_table_data_by_day, get_district_data
-from Backend.Modeling.Differential_Equation_Modeling.model_params import params_SEIRV_fixed
+from Backend.Modeling.Differential_Equation_Modeling.model_params import params_SEIURV_fixed
 
 
 def get_smoothen_cases(district, end_date, duration):
@@ -37,11 +37,11 @@ def get_model_params(district, train_start_date):
     theta = theta[Column.VACCINATION_EFFICIENCY].tolist()[0]
     model_params = {
         # Get fixed model params:
-        'gamma_I': params_SEIRV_fixed['gamma_I']['mean'],
-        'gamma_U': params_SEIRV_fixed['gamma_U']['mean'],
-        'delta': params_SEIRV_fixed['delta']['mean'],
+        'gamma_I': params_SEIURV_fixed['gamma_I']['mean'],
+        'gamma_U': params_SEIURV_fixed['gamma_U']['mean'],
+        'delta': params_SEIURV_fixed['delta']['mean'],
         'theta': theta,
-        'rho': params_SEIRV_fixed['rho']['mean'],
+        'rho': params_SEIURV_fixed['rho']['mean'],
     }
 
     return model_params

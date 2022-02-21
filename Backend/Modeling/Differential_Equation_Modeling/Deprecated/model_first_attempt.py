@@ -1,26 +1,26 @@
 import numpy as np
 from scipy.integrate import odeint
 from scipy.optimize import curve_fit
-from Backend.Modeling.Differential_Equation_Modeling.model_params import params_SEIRV_fixed
+from Backend.Modeling.Differential_Equation_Modeling.model_params import params_SEIURV_fixed
 import matplotlib.pyplot as plt
 
 
-def run_SEIRV_model():
+def run_SEIRV_model_DEPRECATED():
     num_days = 20
 
-    y0 = get_starting_values()
+    y0 = get_starting_values_DEPRECATED()
 
     # Create a grid of time points (in days)
     t = np.linspace(0, num_days, num_days + 1)
 
     # Integrate the differential equations over the time grid, t.
-    ret = odeint(deriv_SEIRV_model, y0, t)
+    ret = odeint(deriv_SEIRV_model_DEPRECATED, y0, t)
     S, E, I, R, V, I_cum = ret.T
 
     return S, E, I, R, V, I_cum
 
 
-def fit_SEIRV_model(num_days_train, train_data, starting_values):
+def fit_SEIRV_model_DEPRECATED(num_days_train, train_data, starting_values):
     """
     Takes as input a training data set, a number of fixed parameters and fit the parameters left open to the training data.
     :param num_days_train: Time duration of training data set
@@ -37,10 +37,10 @@ def fit_SEIRV_model(num_days_train, train_data, starting_values):
     # Create a grid of time points (in days)
     t = np.linspace(0, num_days_train, num_days_train + 1)
 
-    fixed_params = get_params(0)
+    fixed_params = get_params_DEPRECATED(0)
     fit_params = {'beta': 0.5}
 
-    ret = odeint(deriv_SEIRV_model_v2, y0, t, args=(
+    ret = odeint(deriv_SEIRV_model_v2_DEPRECATED, y0, t, args=(
         N,
         fit_params['beta'],
         fixed_params['gamma'],
@@ -53,7 +53,7 @@ def fit_SEIRV_model(num_days_train, train_data, starting_values):
     return S, E, I, R, V, I_cum
 
 
-def deriv_SEIRV_model_v2(y, t, N, beta, gamma, delta, theta):
+def deriv_SEIRV_model_v2_DEPRECATED(y, t, N, beta, gamma, delta, theta):
     # Unpack values contained in y
     S, E, I, R, V, I_cum = y
 
@@ -79,14 +79,14 @@ def deriv_SEIRV_model_v2(y, t, N, beta, gamma, delta, theta):
     return dSdt, dEdt, dIdt, dRdt, dI_cumdt, dVdt
 
 
-def deriv_SEIRV_model(y, t):
+def deriv_SEIRV_model_DEPRECATED(y, t):
     # Unpack values contained in y
     S, E, I, R, V, I_cum = y
 
     N = S + E + I + R + V
 
     # Get model parameters depending on t
-    params = get_params(t)
+    params = get_params_DEPRECATED(t)
 
     ## Differential equations:
     # Susceptibles:
@@ -110,7 +110,7 @@ def deriv_SEIRV_model(y, t):
     return dSdt, dEdt, dIdt, dRdt, dI_cumdt, dVdt
 
 
-def get_params(t):
+def get_params_DEPRECATED(t):
     """
     computes params at time step t
     :return: dictionary containing all params
@@ -125,7 +125,7 @@ def get_params(t):
     return params
 
 
-def get_starting_values():
+def get_starting_values_DEPRECATED():
     S0 = 120000
     E0 = 250
     I0 = 1000

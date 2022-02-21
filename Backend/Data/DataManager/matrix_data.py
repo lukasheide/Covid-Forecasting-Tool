@@ -8,7 +8,7 @@ from Backend.Data.DataManager.data_util import Column, date_int_str, print_progr
 from Backend.Data.DataManager.db_calls import get_all_table_data, get_district_data, get_table_data_by_duration, \
     update_db, get_policy_data, get_variant_data, get_mobility_data, get_weather_data
 
-from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_pipeline, fit_seirv_model, \
+from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seiurv_pipeline, fit_seirv_model, \
     fit_seirv_model_only_beta
 from Backend.Visualization.plotting import plot_train_and_fitted_infections_line_plot, \
     plot_beta_matrix_estimation
@@ -298,9 +298,9 @@ def get_weekly_beta(district, start_date, debug=False):
             y_train = y_train[Column.SEVEN_DAY_SMOOTHEN.value].reset_index(drop=True)
             start_vals = get_starting_values(district, train_start_date)
             fixed_model_params = get_model_params(district, train_start_date)
-            pipeline_result = seirv_pipeline(y_train=y_train, start_vals_fixed=start_vals,
-                                             fixed_model_params=fixed_model_params,
-                                             allow_randomness_fixed_beta=False, random_runs=100)
+            pipeline_result = seiurv_pipeline(y_train=y_train, start_vals_fixed=start_vals,
+                                              fixed_model_params=fixed_model_params,
+                                              allow_randomness_fixed_beta=False, random_runs=100)
 
             # Plots for debugging:
             if debug:
@@ -369,11 +369,11 @@ def get_weekly_beta_v2(district, start_date, end_date, debug=False):
         fixed_model_params_train = get_model_params(district, current_interval['start_day_train_str'])
 
         ## 1) Run Pipeline for training period(compute beta_t -1):
-        training_pipeline_results = seirv_pipeline(y_train=y_train,
-                                                   start_vals_fixed=start_vals_train,
-                                                   fixed_model_params=fixed_model_params_train,
-                                                   allow_randomness_fixed_beta=False,
-                                                   random_runs=100)
+        training_pipeline_results = seiurv_pipeline(y_train=y_train,
+                                                    start_vals_fixed=start_vals_train,
+                                                    fixed_model_params=fixed_model_params_train,
+                                                    allow_randomness_fixed_beta=False,
+                                                    random_runs=100)
 
         ## 2) Run fitting again for validation period: -> "What would've been the perfect beta?"
 

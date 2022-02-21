@@ -3,16 +3,16 @@ import pandas as pd
 
 from Backend.Data.DataManager.matrix_data import prepare_all_beta_predictors
 from Backend.Modeling.Differential_Equation_Modeling.prediction_intervals import compute_prediction_intervals
-from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_pipeline, forecast_seirv
+from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seiurv_pipeline, forecast_seirv
 
 
 def seirv_ml_layer(y_train_diffeq, start_vals_seirv, fixed_model_params_seirv, forecasting_horizon,
                    ml_matrix_predictors, standardizer_obj, ml_model, pred_intervals_df=None):
     ## 1) Run Pipeline for training period:
-    training_pipeline_results = seirv_pipeline(y_train=y_train_diffeq,
-                                               start_vals_fixed=start_vals_seirv,
-                                               fixed_model_params=fixed_model_params_seirv,
-                                               allow_randomness_fixed_beta=False)
+    training_pipeline_results = seiurv_pipeline(y_train=y_train_diffeq,
+                                                start_vals_fixed=start_vals_seirv,
+                                                fixed_model_params=fixed_model_params_seirv,
+                                                allow_randomness_fixed_beta=False)
 
     ## 2) Prepare results for running again:
     # Get start values for rerunning:

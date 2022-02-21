@@ -15,12 +15,12 @@ from Backend.Data.DataManager.matrix_data import get_weekly_intervals_grid, get_
     prepare_all_beta_predictors
 from Backend.Data.DataManager.remote_db_manager import download_db_file
 from Backend.Modeling.Differential_Equation_Modeling.prediction_intervals import get_prediction_intervals
-from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seirv_pipeline, forecast_seirv
+from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seiurv_pipeline, forecast_seirv
 from Backend.Evaluation.metrics import compute_evaluation_metrics
 from Backend.Modeling.Differential_Equation_Modeling.seirv_model_and_ml import seirv_ml_layer
 from Backend.Modeling.Util.pipeline_util import train_test_split, get_list_of_random_dates, \
     get_list_of_random_districts, date_difference_strings
-from Backend.Modeling.forecast import forecast_all_models, convert_all_forecasts_to_incidences, convert_seven_day_averages
+from Backend.Modeling.forecasting_wrapper_functions import forecast_all_models, convert_all_forecasts_to_incidences, convert_seven_day_averages
 from Backend.Visualization.plotting import plot_train_fitted_and_validation, plot_sarima_pred_plot, \
     plot_sarima_val_line_plot, plot_train_fitted_and_predictions, plot_all_forecasts
 import copy
@@ -72,9 +72,9 @@ def diff_eq_pipeline_DEPRECATED(train_end_date: date, duration: int, districts: 
         fixed_model_params = get_model_params(district, train_start_date)
 
         ## 2) Run model_pipeline
-        pipeline_result = seirv_pipeline(y_train=y_train, start_vals_fixed=start_vals,
-                                         fixed_model_params=fixed_model_params,
-                                         allow_randomness_fixed_beta=False, random_runs=100, district=district)
+        pipeline_result = seiurv_pipeline(y_train=y_train, start_vals_fixed=start_vals,
+                                          fixed_model_params=fixed_model_params,
+                                          allow_randomness_fixed_beta=False, random_runs=100, district=district)
         y_pred_without_train_period = pipeline_result['y_pred_without_train_period']
 
         ## 3) Evaluate the results
@@ -198,20 +198,28 @@ def diff_eq_pipeline_wrapper_DEPRECATED(**kwargs):
 
 
 def model_validation_pipeline_v2_wrapper():
+    """
+    This function is wrapped around the model_validation_pipeline and therefore has the same name + wrapper.
+    Here
+    """
 
-    ########## Optional: ##########
-    # Small helper function for determining date shifted by a given number of weeks
+    ########################## Optional:  ##########################
+    # Small helper function for determining date shifted by a given number of weeks which might be useful when
+    # setting up the dates in the pipeline configuration part below:
     target_date = '2021-11-03'
     num_days_shift = 14
     shifted_date_obj = datetime.strptime(target_date, '%Y-%m-%d') - timedelta(days=num_days_shift)
     shifted_date_str = shifted_date_obj.strftime('%Y-%m-%d')
-    # print(f'Date 8 weeks after target_date: {shifted_date_str}')
-    ##############################
+    print(f'Date 8 weeks after target_date: {shifted_date_str}')
+    #################################################################
 
 
     #################### Pipeline Configuration: ####################
 
     # Multiple intervals over which the pipeline is supposed to be run can be setup here.
+    # For each interval the model validation pipeline is called. This is usually only done once, unless one
+    # wants to run two unconnected time intervals. (Example: Run model for Apr 2020 - Oct 2020 + Jun 2021 - Jan 2022)
+
     pipeline_intervals = [
         ('2020-03-01', '2022-01-28'),
     ]
@@ -227,16 +235,22 @@ def model_validation_pipeline_v2_wrapper():
     # Get List of Districts:
     opendata = get_all_table_data(table_name='district_list')
     districts = opendata['district'].tolist()
-
-    ########## Optional: ##########
-    # Only sample:
-    # np.random.seed(420)
-    # districts = random.sample(districts, 80)
-    ################################
-
     districts.sort()
 
-    # Our ensemble model is computed as a weighted average of the other three models. The weights can be set here:
+    ################################ Optional: ################################
+    ### Option 1: District Sample:
+    ## Uncomment the lines below if only a sample of districts should be used.
+    # Only sample:
+    # np.random.seed(420)
+    # num_districts_sample = 80
+    # districts = random.sample(districts, num_districts_sample)
+    # districts.sort()
+    #
+    ### Option 2: Set districts manually:
+    # districts = ['Münster', 'Bielefeld']
+    ##############################################################################
+
+    # The ensemble model is computed as a weighted average of the other three models. The weights can be set here:
     ensemble_model_share = {
         'seirv_last_beta': 0,
         'seirv_ml_beta': 0.5,
@@ -276,12 +290,13 @@ def model_validation_pipeline_v2_wrapper():
         )
 
 
-    ### Prepare results for exporting them as a dataframe:
+    ######################## Prepare results for exporting them as a dataframe: ########################
     # Below the results are unpacked to produce two dataframes which can be used for further analyses.
     # However, as this requires a deeply nested dictionary to be unpacked to code below is somewhat complicated.
     # Unless you want to dive into the depths of nested python dictionaries we suggest skipping this part and
-    # continuing at the bottom :-DD
+    # continuing at the bottom ;-D
 
+    #### Unpacking :
     # Create Lvl1-DataFrame:
     ## Unbox dictionary:
 
@@ -439,7 +454,7 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
     for i, district in enumerate(districts):
         print_progress_with_computation_time_estimate(completed=i + 1, total=len(districts), start_time=start_time)
 
-        ## 2) Inmport Training Data
+        ## 2) Import Training Data
         # 2a) Import Historical Infections for the current district:
         infections_df = get_smoothen_cases(district=district, duration=duration_full + 1, end_date=pipeline_end_date)
 

@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.integrate import odeint
 from scipy.optimize import curve_fit
-from Backend.Modeling.Differential_Equation_Modeling.model_params import params_SEIRV_fixed
+from Backend.Modeling.Differential_Equation_Modeling.model_params import params_SEIURV_fixed
 import matplotlib.pyplot as plt
 
 
