@@ -1,4 +1,5 @@
 import json
+from datetime import time
 
 import dash
 from dash.dependencies import Input, Output
@@ -49,22 +50,131 @@ district_list = district_list['district']
 
 dates_list = all_district_forecasts['date'].unique()[-14:]
 
+########### creating all three forcast maps #############
+map_width = 900
+map_height = 900
+map_zoom = 5
+
+is_loading = False
+### create common data ###
+data_for_map_df = all_district_forecasts[all_district_forecasts['cases'].isna()]
+data_for_map_df["id"] = data_for_map_df["district_name"].apply(lambda x: state_id_map[x])
+
+### SEIRV lastweek-Beta Map ###
+data_for_map_df['y_pred_seirv_last_beta_mean'] = data_for_map_df['y_pred_seirv_last_beta_mean'] \
+    .apply(pd.to_numeric).round(decimals=2)
+seirv_lastweek_beta_forecast = px.choropleth_mapbox(
+    data_for_map_df,
+    locations="id",
+    geojson=german_districts,
+    # color='range',
+    color='y_pred_seirv_last_beta_mean',
+    hover_name='district_name',
+    hover_data=['district_name', 'y_pred_seirv_last_beta_mean'],
+    title="7 Day Incidence Forecast",
+    mapbox_style="carto-darkmatter",
+    color_continuous_scale="Redor",
+    labels={'y_pred_seirv_last_beta_mean': ''},
+    range_color=(0, 2500),
+    animation_frame='date',
+    center={"lat": 51.1657, "lon": 10.4515},
+    zoom=map_zoom,
+    opacity=0.8,
+    width=map_width,
+    height=map_height,
+)
+
+### SEIRV ML-Beta Map ###
+data_for_map_df['y_pred_seirv_ml_beta_mean'] = data_for_map_df['y_pred_seirv_ml_beta_mean'] \
+    .apply(pd.to_numeric).round(decimals=2)
+seirv_ml_forecast = px.choropleth_mapbox(
+    data_for_map_df,
+    locations="id",
+    geojson=german_districts,
+    # color='range',
+    color='y_pred_seirv_ml_beta_mean',
+    hover_name='district_name',
+    hover_data=['district_name', 'y_pred_seirv_ml_beta_mean'],
+    title="7 Day Incidence Forecast",
+    mapbox_style="carto-darkmatter",
+    color_continuous_scale="Redor",
+    labels={'y_pred_seirv_ml_beta_mean': ''},
+    range_color=(0, 2500),
+    animation_frame='date',
+    center={"lat": 51.1657, "lon": 10.4515},
+    zoom=map_zoom,
+    opacity=0.8,
+    width=map_width,
+    height=map_height,
+)
+
+### ARIMA Map ###
+data_for_map_df['y_pred_sarima_mean'] = data_for_map_df['y_pred_sarima_mean'] \
+    .apply(pd.to_numeric).round(decimals=2)
+arima_forecast = px.choropleth_mapbox(
+    data_for_map_df,
+    locations="id",
+    geojson=german_districts,
+    # color='range',
+    color='y_pred_sarima_mean',
+    hover_name='district_name',
+    hover_data=['district_name', 'y_pred_sarima_mean'],
+    title="7 Day Incidence Forecast",
+    mapbox_style="carto-darkmatter",
+    color_continuous_scale="Redor",
+    labels={'y_pred_sarima_mean': ''},
+    range_color=(0, 2500),
+    animation_frame='date',
+    center={"lat": 51.1657, "lon": 10.4515},
+    zoom=map_zoom,
+    opacity=0.8,
+    width=map_width,
+    height=map_height,
+)
+
+
+### Ensemble Map ###
+data_for_map_df['y_pred_ensemble_mean'] = data_for_map_df['y_pred_ensemble_mean'] \
+    .apply(pd.to_numeric).round(decimals=2)
+ensemble_forecast = px.choropleth_mapbox(
+    data_for_map_df,
+    locations="id",
+    geojson=german_districts,
+    # color='range',
+    color='y_pred_ensemble_mean',
+    hover_name='district_name',
+    hover_data=['district_name', 'y_pred_ensemble_mean'],
+    title="7 Day Incidence Forecast",
+    mapbox_style="carto-darkmatter",
+    color_continuous_scale="Redor",
+    labels={'y_pred_ensemble_mean': ''},
+    range_color=(0, 2500),
+    animation_frame='date',
+    center={"lat": 51.1657, "lon": 10.4515},
+    zoom=map_zoom,
+    opacity=0.8,
+    width=map_width,
+    height=map_height,
+)
+
 
 ########### app layout is defined here ##############
 
 app.layout = html.Div([
     # html.Hr(style={'backgroundColor':'#111111'},),
-    html.H2('Regional COVID-19 Forecasting Tool', style={'backgroundColor':'#111111', 'color':'white', 'text-align':'center'}),
+    html.H2('Regional COVID-19 Forecasting Tool',
+            style={'backgroundColor': '#111111', 'color': 'white', 'text-align': 'center', 'padding-top': '3px', 'padding-bottom': '20px', 'padding-top': '20px'}),
     html.Div(
         className="row",
-        style={'backgroundColor':'#111111', 'color':'white'},
+        style={'backgroundColor': '#111111', 'color': 'white',},
         children=[
             html.Div(
-                className="six columns",
+                # className="six columns",
                 children=[
                     html.Div([
                             html.Div(
                                 children=[
+                                            # html.H6('District Forecast ', style={'backgroundColor':'#111111', 'color':'white'}),
                                             dcc.Dropdown(
                                                     id='district-dropdown',
                                                     options=[{'label': k, 'value': k} for k in district_list],
@@ -72,7 +182,6 @@ app.layout = html.Div([
                                                     value='Münster',
                                                     style={'backgroundColor':'#111111', 'color':'#ffffff'},
                                                 ),
-                                            html.Hr(),
                                             html.Div([
 
                                                 html.Div([
@@ -99,15 +208,14 @@ app.layout = html.Div([
                                                         value='intervals',
                                                     )], className='six columns',
                                                         style={'verticalAlign': 'top'}),
-                                                ], className='row'),
+                                                ], className='row', style={'padding-left': '30px', 'padding-top': '30px'}),
                                         ]),
-                            html.Hr(),
                             dcc.Graph(
                                 id='dist-forecast-graph',
                                 figure={
                                     'layout': {
-                                        'height': 500,
-                                        #'width': 1000,
+                                        'height': 800,
+                                        # 'width': 900,
                                         'margin': {'l': 10, 'b': 10, 't': 10, 'r': 10},
                                         'paper_bgcolor': '#7FDBFF',
                                         'plot_bgcolor': '#7FDBFF',
@@ -115,13 +223,15 @@ app.layout = html.Div([
                                 }
                             ),
 
-                        ])]
+                        ])],
+                style={'padding-right': '30px', 'padding-left': '30px', 'padding-top': '10px', 'padding-bottom': '10px'}
             ),
             html.Div(
-                className="six columns",
+                # className="six columns",
                 children=[
                     html.Div(
                         children=[
+                            # html.H6('may be add a title here', style={'backgroundColor':'#111111', 'color':'white'}),
                             dcc.Dropdown(
                                 id='map-forecast-model',
 
@@ -136,7 +246,8 @@ app.layout = html.Div([
                             dcc.Graph(id='forecast-chloropath', figure={}),
                         ]
                     )
-                ]
+                ],
+                style={'padding-right': '30px', 'padding-left': '30px', 'padding-top': '30px', 'padding-bottom': '30px', 'justify-content': 'center'}
             ),
         ]
     )
@@ -154,6 +265,7 @@ app.layout = html.Div([
     Input(component_id='forecast-chloropath', component_property='clickData'),
 )
 def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
+    line_width = 4
 
     if click_data is not None and district != click_data['points'][0]['hovertext']:
         district = click_data['points'][0]['hovertext']
@@ -170,9 +282,14 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
     max_key = max(y_common_train.keys())
     max_train = y_common_train[max_key]
     fig.add_trace(
-        go.Scatter(x=dates_array[training_len-shown:training_len], y=y_common_train, mode='lines+markers', name='Training'),
+        go.Scatter(x=dates_array[training_len-shown:training_len],
+                   y=y_common_train,
+                   mode='lines+markers',
+                   name='Training',
+                   line=dict(width=line_width)),
         secondary_y=False,
     )
+    fig.update_traces(marker={'size': 12})
     #last_train_list = y_common_train[-1]
 
     # add upper and lower bounds
@@ -192,7 +309,8 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
                                  y=y_interval,
                                  fill='toself',
                                  fillcolor='rgba(0,100,80,0.2)',
-                                 line_color='rgba(255,255,255,0)',
+                                 # line_color='rgba(255,255,255,0)',
+                                 line=dict(color='rgba(255,255,255,0)'),
                                  name="SEIURV Last Beta",
                                  showlegend=False))
     if ('sevir_ml_beta' in checkbox and 'intervals' in show_interval):
@@ -211,7 +329,8 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
                                  y=y_interval,
                                  fill='toself',
                                  fillcolor='rgba(0,176,246,0.2)',
-                                 line_color='rgba(255,255,255,0)',
+                                 # line_color='rgba(255,255,255,0)',
+                                 line=dict(color='rgba(255,255,255,0)'),
                                  name="SEIURV ML beta",
                                  showlegend=False))
     if ('sarima' in checkbox and 'intervals' in show_interval):
@@ -230,7 +349,8 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
                                  y=y_interval,
                                  fill='toself',
                                  fillcolor='rgba(231,107,243,0.2)',
-                                 line_color='rgba(255,255,255,0)',
+                                 # line_color='rgba(255,255,255,0)',
+                                 line=dict(color='rgba(255,255,255,0)'),
                                  name='ARIMA',
                                  showlegend=False))
     if ('ensemble' in checkbox and 'intervals' in show_interval):
@@ -249,7 +369,8 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
                                  y=y_interval,
                                  fill='toself',
                                  fillcolor='rgba(230,171,2,0.2)',
-                                 line_color='rgba(255,255,255,0)',
+                                 # line_color='rgba(255,255,255,0)',
+                                 line=dict(color='rgba(255,255,255,0)'),
                                  name='Ensemble',
                                  showlegend=False))
 
@@ -259,7 +380,8 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
         fig.add_trace(
             go.Scatter(x=dates_array[-15:], y=y_fixed,
                        name="SEIURV Last Beta",
-                       line_color='rgb(0,100,80)',
+                       # line_color='rgb(0,100,80)',
+                       line=dict(color='rgb(0,100,80)', width=line_width),
                        mode='lines'),
             secondary_y=False,
         )
@@ -269,7 +391,8 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
         fig.add_trace(
             go.Scatter(x=dates_array[-15:], y=y_fixed,
                        name="SEIURV ML beta",
-                       line_color='rgb(0,176,246)',
+                       # line_color='rgb(0,176,246)',
+                       line=dict(color='rgb(0,176,246)', width=line_width),
                        mode='lines'),
             secondary_y=False,
         )
@@ -278,7 +401,8 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
         y_fixed = pd.concat([pd.Series(y_common_train.iloc[-1]), y])
         fig.add_trace(
             go.Scatter(x=dates_array[-15:], y=y_fixed,
-                       line_color='rgb(231,107,243)',
+                       # line_color='rgb(231,107,243)',
+                       line=dict(color='rgb(231,107,243)', width=line_width),
                        name="ARIMA",
                        mode='lines'),
                        # line = dict(color='green')),
@@ -289,7 +413,8 @@ def get_dist_forecast_plot(district, checkbox, show_interval, click_data):
         y_fixed = pd.concat([pd.Series(y_common_train.iloc[-1]), y])
         fig.add_trace(
             go.Scatter(x=dates_array[-15:], y=y_fixed,
-                       line_color='rgb(230,171,2)',
+                       # line_color='rgb(230,171,2)',
+                       line=dict(color='rgb(230,171,2)', width=line_width),
                        name="Ensemble",
                        mode='lines'),
 
@@ -347,45 +472,51 @@ def get_dist_forecast_plot(selected_model):
             return '1,000 and higher'
 
     # data_for_map_df['range'] = data_for_map_df.apply(set_cat, axis=1)
-
-    forecast_map = px.choropleth_mapbox(
-        data_for_map_df,
-        locations="id",
-        geojson=german_districts,
-        # color='range',
-        color=selected_model,
-        hover_name='district_name',
-        hover_data=['district_name', selected_model],
-        title="7 Day Incidence Forecast",
-        mapbox_style="carto-darkmatter",
-        # hot blackbody thermal
-        color_continuous_scale="Redor",
-        # color_discrete_map={
-        #     '0 - 250': '#921315',
-        #     '251 - 500': '#661313',
-        #     '501 - 750': '#D90183',
-        #     '751 - 1,000': '#FE72C5',
-        #     '1,001 and higher': '#620042'},
-        # category_orders={
-        #     'range': [
-        #         '0 - 250',
-        #         '251 - 500',
-        #         '501 - 750',
-        #         '751 - 1,000',
-        #         '1,001 and higher'
-        #     ]
-        # },
-        labels={selected_model: ''},
-        range_color=(0, 2500),
-        animation_frame='date',
-        center={"lat": 51.1657, "lon": 10.4515},
-        zoom=5,
-        opacity=0.8,
-        width=800,
-        height=800,
-
-    )
-
+    if selected_model == 'y_pred_seirv_last_beta_mean':
+        forecast_map = seirv_lastweek_beta_forecast
+    if selected_model == 'y_pred_seirv_ml_beta_mean':
+        forecast_map = seirv_ml_forecast
+    if selected_model == 'y_pred_sarima_mean':
+        forecast_map = arima_forecast
+    if selected_model == 'y_pred_ensemble_mean':
+        forecast_map = ensemble_forecast
+    # forecast_map = px.choropleth_mapbox(
+    #     data_for_map_df,
+    #     locations="id",
+    #     geojson=german_districts,
+    #     # color='range',
+    #     color=selected_model,
+    #     hover_name='district_name',
+    #     hover_data=['district_name', selected_model],
+    #     title="7 Day Incidence Forecast",
+    #     mapbox_style="carto-darkmatter",
+    #     # hot blackbody thermal
+    #     color_continuous_scale="Redor",
+    #     # color_discrete_map={
+    #     #     '0 - 250': '#921315',
+    #     #     '251 - 500': '#661313',
+    #     #     '501 - 750': '#D90183',
+    #     #     '751 - 1,000': '#FE72C5',
+    #     #     '1,001 and higher': '#620042'},
+    #     # category_orders={
+    #     #     'range': [
+    #     #         '0 - 250',
+    #     #         '251 - 500',
+    #     #         '501 - 750',
+    #     #         '751 - 1,000',
+    #     #         '1,001 and higher'
+    #     #     ]
+    #     # },
+    #     labels={selected_model: ''},
+    #     range_color=(0, 2500),
+    #     animation_frame='date',
+    #     center={"lat": 51.1657, "lon": 10.4515},
+    #     zoom=5,
+    #     opacity=0.8,
+    #     width=800,
+    #     height=800,
+    #
+    # )
     return forecast_map
 
 

@@ -23,9 +23,8 @@ from Backend.Modeling.Util.pipeline_util import train_test_split, get_list_of_ra
 from Backend.Modeling.forecast import forecast_all_models, convert_all_forecasts_to_incidences, convert_seven_day_averages
 from Backend.Visualization.plotting import plot_train_fitted_and_validation, plot_sarima_pred_plot, \
     plot_sarima_val_line_plot, plot_train_fitted_and_predictions, plot_all_forecasts
-from Backend.Modeling.Regression_Model.ARIMA import run_sarima, sarima_model_predictions, sarima_pipeline_val
 import copy
-from Backend.Modeling.Regression_Model.ARIMA import run_sarima, sarima_model_predictions, sarima_pipeline
+from Backend.Modeling.Regression_Model.ARIMA import sarima_pipeline
 
 import xgboost as xgb
 from sklearn.preprocessing import StandardScaler
@@ -322,10 +321,10 @@ def model_validation_pipeline_v2_wrapper():
     # # For each interval
 
     pipeline_intervals = [
-        ('2020-11-12', '2022-01-29'),
+        ('2020-03-01', '2022-01-28'),
     ]
 
-    forecasting_horizon = 140
+    forecasting_horizon = 14
 
     train_length_diffeqmodel = 14
     train_length_sarima = 42
@@ -339,8 +338,6 @@ def model_validation_pipeline_v2_wrapper():
     # districts = random.sample(districts, 80)
 
     districts.sort()
-
-    districts = ['Bielefeld']
 
     ensemble_model_share = {
         'seirv_last_beta': 0,
@@ -477,7 +474,7 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
                                  run_diff_eq_ml_beta=True,
                                  run_sarima=True,
                                  run_ensemble=True,
-                                 debug=True):
+                                 debug=False):
     # Create time_grid:
     intervals_grid = get_weekly_intervals_grid(pipeline_start_date, pipeline_end_date, training_period_max,
                                                forecasting_horizon)
@@ -561,14 +558,6 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
                                     pred_intervals_df,
                                     run_diff_eq_last_beta, run_diff_eq_ml_beta, run_sarima, run_ensemble,
                                     )
-            ## 3a) Try to catch bad ARIMA results
-            if sarima_results['predictions'][0] == sarima_results['predictions'][1]:
-                y_train_short = y_train_sarima.loc[14:idx_train_end]
-                sarima_results = sarima_pipeline(y_train=y_train_short, forecasting_horizon=forecasting_horizon)
-                all_combined['y_pred_sarima_mean'] = sarima_results['predictions']
-                all_combined['y_pred_sarima_upper'] = sarima_results['upper']
-                all_combined['y_pred_sarima_lower'] = sarima_results['lower']
-
 
             # Combine results:
             y_pred = {
