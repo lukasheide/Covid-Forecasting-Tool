@@ -1,13 +1,10 @@
 import pandas as pd
 import pmdarima as pmd
 
-#@MISC {pmdarima,
-#  author = {Taylor G. Smith and others},
-#  title  = {{pmdarima}: ARIMA estimators for {Python}},
-#  year   = {2017--},
+#  author = Taylor G. Smith and others,
+#  title  = pmdarima: ARIMA estimators for Python,
+#  year   = 2017,
 #  url    = "http://www.alkaline-ml.com/pmdarima",
-#  note   = {[Online; accessed <today>]}
-#}
 
 # Fitting ARIMA model
 def arimamodel(timeseriesarray):
@@ -33,14 +30,12 @@ def sarima_pipeline(y_train, forecasting_horizon):
     # 1) Fit the ARIMA model with training data
     pred_arima = arimamodel(y_train)
     params = pred_arima.get_params()
-    print(pred_arima.get_params())
 
     # 1a) Try to catch random walks
     if params['order'] == (0,1,0):
         predictions_1, conf_int = pred_arima.predict(forecasting_horizon, return_conf_int=True, alpha=0.1)
         y_train_short = y_train.loc[14:len(y_train)]
         pred_arima = arimamodel(y_train_short)
-        print('secons try: ', pred_arima.get_params())
 
     # 2) Create the forecasts, including prediction intervals
     predictions, conf_int = pred_arima.predict(forecasting_horizon, return_conf_int=True, alpha=0.1)
