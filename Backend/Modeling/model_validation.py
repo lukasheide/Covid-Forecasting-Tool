@@ -322,7 +322,7 @@ def model_validation_pipeline_v2_wrapper():
     # # For each interval
 
     pipeline_intervals = [
-        ('2020-03-01', '2022-01-28'),
+        ('2020-11-12', '2022-01-29'),
     ]
 
     forecasting_horizon = 14
@@ -335,16 +335,17 @@ def model_validation_pipeline_v2_wrapper():
     districts = opendata['district'].tolist()
 
     # Only sample:
-    districts = random.sample(districts, 100)
+    np.random.seed(420)
+    # districts = random.sample(districts, 80)
 
     districts.sort()
 
     # districts = ['Aachen', 'Hannover', 'Münster', 'Bielefeld']
 
     ensemble_model_share = {
-        'seirv_last_beta': 0.2,
-        'seirv_ml_beta': 0.4,
-        'sarima': 0.4
+        'seirv_last_beta': 0,
+        'seirv_ml_beta': 0.5,
+        'sarima': 0.5
     }
 
     # ML Layer:
@@ -599,18 +600,21 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
             }
 
 
-            ## 4) Visualization:
+            ## 5) Visualization:
             if debug:
                 plot_all_forecasts(forecast_dictionary=all_combined_incidence, y_train=y_train_diffeq_incidence,
                                    start_date_str=current_interval['start_day_train_str'],
                                    forecasting_horizon=forecasting_horizon,
                                    district=district,
                                    y_val=y_val_incidence,
+                                   y_train_fitted=convert_seven_day_averages(seirv_last_beta_only_results['y_pred_including_train_period'],start_vals_seirv['N']),
+                                   plot_y_train_fitted=False,
+                                   plot_y_train_fitted_all=False,
                                    plot_val=False,
                                    plot_diff_eq_last_beta=True,
-                                   plot_diff_eq_ml_beta=False,
-                                   plot_sarima=False,
-                                   plot_ensemble=False,
+                                   plot_diff_eq_ml_beta=True,
+                                   plot_sarima=True,
+                                   plot_ensemble=True,
                                    plot_predictions_intervals=False
                                    )
 
@@ -625,7 +629,7 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
                  #                         pred_start_date=current_interval['start_day_val_str'], district=district)
 
 
-            ## 5) Evaluation - Compute metrics:
+            ## 6) Evaluation - Compute metrics:
             metrics = {
                 'Diff_Eq_Last_Beta': compute_evaluation_metrics(y_pred=y_pred['Diff_Eq_Last_Beta'], y_val=y_val),
                 'Diff_Eq_ML_Beta': compute_evaluation_metrics(y_pred=y_pred['Diff_Eq_ML_Beta'], y_val=y_val),
@@ -633,7 +637,7 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
                 'Ensemble': compute_evaluation_metrics(y_pred=y_pred['Ensemble'], y_val=y_val),
             }
 
-            ## 6) Append everything to result list:
+            ## 7) Append everything to result list:
             weekly_results.append({
                 'week_num': week_num,
                 'year_start_forecast': current_interval['start_day_val_obj'].isocalendar()[0],
