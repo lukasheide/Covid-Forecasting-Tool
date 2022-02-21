@@ -33,9 +33,9 @@ from sklearn.preprocessing import StandardScaler
 # from Backend.Modeling.Regression Model.ARIMA import sarima_pipeline
 
 
-def diff_eq_pipeline(train_end_date: date, duration: int, districts: list, validation_duration: int,
-                     visualize=False, verbose=False, validate=True, store_results_to_db=True,
-                     with_db_update=False) -> None:
+def diff_eq_pipeline_DEPRECATED(train_end_date: date, duration: int, districts: list, validation_duration: int,
+                                visualize=False, verbose=False, validate=True, store_results_to_db=True,
+                                with_db_update=False) -> None:
     # iterate over districts(list) of interest
     # results_dict = []
 
@@ -127,7 +127,7 @@ def diff_eq_pipeline(train_end_date: date, duration: int, districts: list, valid
         return None
 
 
-def diff_eq_pipeline_wrapper(**kwargs):
+def diff_eq_pipeline_wrapper_DEPRECATED(**kwargs):
     end_date = '2021-12-14'
     time_frame_train_and_validation = 28
     forecasting_horizon = 14
@@ -153,14 +153,14 @@ def diff_eq_pipeline_wrapper(**kwargs):
         # set_up dictionary for storing results at run time:
         results_lvl2 = []
         for round_lvl2, random_train_end_date in enumerate(random_train_end_dates):
-            res = diff_eq_pipeline(train_end_date=random_train_end_date,
-                                   duration=train_period_length + forecasting_horizon,
-                                   districts=random_districts,
-                                   validation_duration=forecasting_horizon,
-                                   visualize=False,
-                                   verbose=False,
-                                   validate=True,
-                                   store_results_to_db=False)
+            res = diff_eq_pipeline_DEPRECATED(train_end_date=random_train_end_date,
+                                              duration=train_period_length + forecasting_horizon,
+                                              districts=random_districts,
+                                              validation_duration=forecasting_horizon,
+                                              visualize=False,
+                                              verbose=False,
+                                              validate=True,
+                                              store_results_to_db=False)
 
             # Print progess:
             print(f'Round {1 + round_lvl2 + round_lvl1 * len(random_train_end_dates)} / '
@@ -196,166 +196,75 @@ def diff_eq_pipeline_wrapper(**kwargs):
     grouped_df = results_df.groupby('train_length')
     temp = grouped_df[['rmse', 'mae', 'mape']].median()
 
-    pass
-
-
-# SARIMA Model
-def sarima_pipeline_old(train_end_date: date, duration: int, districts: list, validation_duration: int,
-                    visualize=False, verbose=False, validate=True, evaluate=False, with_db_update=False) -> None:
-    if with_db_update:
-        download_db_file()
-
-    # iterate over districts(list) of interest
-    # results_dict = []
-    # store pipeline data in the DB
-    # pipeline_id = start_pipeline(train_end_date, validation_duration, visualize, verbose)
-    # pipeline_id = start_pipeline(train_end_date, validation_duration, visualize, verbose)
-    predictions_list = []
-
-    if evaluate:
-        rmse_list = []
-
-    for i, district in enumerate(districts):
-
-        val_end_date = compute_end_date_of_validation_period(train_end_date, validation_duration)
-        smoothen_cases = get_smoothen_cases(district, val_end_date, duration)
-
-        y_train = smoothen_cases['seven_day_infec']
-
-        if validate == False:
-            #sarima_pipeline_val(y_train, validation_duration)
-
-            format = "%Y-%m-%d"
-            train_end_date = datetime.datetime.strptime(train_end_date, format)
-            train_end_date = train_end_date - datetime.timedelta(days=validation_duration)
-            train_end_date = str(train_end_date)
-            train_end_date = train_end_date[:10]
-
-        # 1) Import Data
-        # 1a) get_smoothed_infection_counts() -> directly from Database
-
-        # 1b) split_into_train_and_validation()
-        y_train, y_val = train_test_split(data=smoothen_cases[Column.SEVEN_DAY_SMOOTHEN],
-                                          validation_duration=validation_duration)
-
-        ## 2) Run model_pipeline
-        sarima_model = run_sarima(y_train=y_train, y_val=y_val)
-        season = sarima_model["season"]
-        predictions_val = sarima_model["model"].predict(validation_duration)
-
-        # 2b) Run model without validation data
-        if validate == False:
-            format = "%Y-%m-%d"
-            train_end_date = datetime.datetime.strptime(train_end_date, format)
-            train_end_date = train_end_date + datetime.timedelta(days=validation_duration)
-            train_end_date = str(train_end_date)
-            train_end_date = train_end_date[:10]
-
-            y_train_pred = get_smoothen_cases(district, train_end_date, duration - validation_duration)
-            y_train_pred = y_train_pred[Column.SEVEN_DAY_SMOOTHEN]
-            sarima_model_without_val = sarima_model_predictions(y_train=y_train_pred, m=season,
-                                                                length=validation_duration)
-            predictions = sarima_model_without_val.predict(validation_duration)
-
-        # returned:
-        # I) sarima_model: season, model
-        # II) sarima_model_without_val: model
-
-        ## 3) Evaluate the results
-
-        # 3a) Visualize results (mainly for debugging)
-        if visualize:
-            if validate:
-                plot_sarima_val_line_plot(y_train, y_val, predictions_val, pred_start_date=train_end_date,
-                                          district=district)
-            else:
-                plot_sarima_pred_plot(y_train_pred, predictions, district, pred_start_date=train_end_date)
-
-        # 3b) Compute metrics (RMSE, MAPE, ...)
-        if validate:
-            scores = compute_evaluation_metrics(y_pred=predictions_val, y_val=y_val)
-            # collecting pipeline results to a list to be used in step four
-            # results_dict.append({
-            #     'district': district,
-            #     'pipeline_results': pipeline_result,
-            #     'scores': scores,
-            # })
-        if validate == False:
-            predictions_list.append(predictions)
-        else:
-            predictions_list.append(predictions_val)
-
-        if evaluate:
-            rmse_list.append(scores["rmse"])
-
-        # 4) Store results in database:
-        # insert_param_and_start_vals(pipeline_id, district, start_vals, pipeline_result['model_params'])
-        # insert_prediction_vals(pipeline_id, district, pipeline_result['y_pred_without_train_period'], train_end_date)
-
-    if evaluate:
-        return rmse_list
-
-    return predictions_list
-
-    pass
-
-    ## 4a) Meta parameters
-    # 1) which model?
-    # 2) what period?
-    # 3) with what parameters?
-
-    ## 4b) Predictions
-
-    # -> basically all parameters that are set
-
 
 def model_validation_pipeline_v2_wrapper():
+
+    ########## Optional: ##########
     # Small helper function for determining date shifted by a given number of weeks
     target_date = '2021-11-03'
     num_days_shift = 14
     shifted_date_obj = datetime.strptime(target_date, '%Y-%m-%d') - timedelta(days=num_days_shift)
     shifted_date_str = shifted_date_obj.strftime('%Y-%m-%d')
     # print(f'Date 8 weeks after target_date: {shifted_date_str}')
+    ##############################
+
 
     #################### Pipeline Configuration: ####################
-    # # For each interval
 
+    # Multiple intervals over which the pipeline is supposed to be run can be setup here.
     pipeline_intervals = [
         ('2020-03-01', '2022-01-28'),
     ]
 
+    # Number of days to be forecasted:
     forecasting_horizon = 14
 
+    # Number of days prior to forecasting period that the models are supposed to be trained on:
     train_length_diffeqmodel = 14
     train_length_sarima = 42
     training_period_max = max(train_length_diffeqmodel, train_length_sarima)
 
+    # Get List of Districts:
     opendata = get_all_table_data(table_name='district_list')
     districts = opendata['district'].tolist()
 
+    ########## Optional: ##########
     # Only sample:
-    np.random.seed(420)
+    # np.random.seed(420)
     # districts = random.sample(districts, 80)
+    ################################
 
     districts.sort()
 
+    # Our ensemble model is computed as a weighted average of the other three models. The weights can be set here:
     ensemble_model_share = {
         'seirv_last_beta': 0,
         'seirv_ml_beta': 0.5,
         'sarima': 0.5
     }
 
-    # ML Layer:
+    ### ML Layer:
+    # For the machine learning layer the XGBoost Model provided by the beta estimation machine learning jupyter notebook
+    # (Backend/Modeling/Differential_Equation_Modeling/Machine_Learning_Layer/beta_estimation) has to be imported
+    # so that the model can be used for producing forecasts for our ML_Beta DiffEq model. As the model needs the
+    # predictors to be standardized the standardizer model also has to be imported:
+
+    # Both Models will only be created by running the above described jupyter notebook.
     ml_model_path = '../Assets/MachineLearningLayer/Models/xgb_model_lukas.pkl'
     standardizer_model_path = '../Assets/MachineLearningLayer/Models/standardizer_model.pkl'
 
     ################################################################
 
+    # For each Pipeline Interval the Model Validation pipeline is called. This is usually only done once, unless one
+    # wants to run two unconnected time intervals. (Example: Run model for Apr 2020 - Oct 2020 + Jun 2021 - Jan 2022)
+
+    # The results are saved in a dictionary which is instantiated below:
     results_dict = {}
     for num, pipeline_interval in enumerate(pipeline_intervals):
         print(f'################## Starting Model Validation Pipeline for pipeline interval {num+1}/{len(pipeline_intervals)} '
               f'for time interval: {pipeline_interval[0]} until {pipeline_interval[1]} ################## ')
 
+        # As described above, the results are saved in the results_dict dictionary:
         results_dict[num] = (
             model_validation_pipeline_v2(pipeline_start_date=pipeline_interval[0], pipeline_end_date=pipeline_interval[1],
                                          forecasting_horizon=forecasting_horizon,
@@ -368,7 +277,10 @@ def model_validation_pipeline_v2_wrapper():
 
 
     ### Prepare results for exporting them as a dataframe:
-    # Very complicated unpacking of multiple levels deep dictionary:
+    # Below the results are unpacked to produce two dataframes which can be used for further analyses.
+    # However, as this requires a deeply nested dictionary to be unpacked to code below is somewhat complicated.
+    # Unless you want to dive into the depths of nested python dictionaries we suggest skipping this part and
+    # continuing at the bottom :-DD
 
     # Create Lvl1-DataFrame:
     ## Unbox dictionary:
@@ -455,11 +367,16 @@ def model_validation_pipeline_v2_wrapper():
 
     #### Export both DataFrames for further analysis as CSVs:
 
+    # The Forecasts Dataframe (df_lvl1) contains detailed information regarding the forecasts of the different
+    # models and the correct data (validation data). Using the idx column it this table is connected
+    # to the Metrics Dataframe (df_lvl2) that evaluates the different approaches over each forecasting horizon
+    # and district combination.
+
     # Run-Information (including metrics)
     df_lvl1.to_csv(
         path_or_buf=f'../Assets/Data/Evaluation/model_validation_data_metrics_{datetime.now().strftime("%d_%m_%H:%M")}.csv')
 
-    # Estimates
+    # Forecast for each date/district combination for each forecasting interval set at the top of the wrapper function.
     df_lvl2.to_csv(
         path_or_buf=f'../Assets/Data/Evaluation/model_validation_data_forecasts_{datetime.now().strftime("%d_%m_%H:%M")}.csv')
 
@@ -475,11 +392,25 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
                                  run_sarima=True,
                                  run_ensemble=True,
                                  debug=False):
-    # Create time_grid:
+
+    # 1) Preparation steps:
+
+    ## Create time_grid:
+    # Intervals_grid is a list of dictionaries. The provided time interval is split into smaller intervals which
+    # are eventually used for training and then validating our models. To explain this better one example:
+    # Let's assume that the pipeline is supposed to be run from Calendar Week (CW) 1 - 40 in 2020.
+    # Given a two week forecasting horizon, as well as a 4 week training horizon (at least for the Arima model) this
+    # means that the intervals in which one pipeline run is executed are the following:
+    # 1.    Training:   CW 1 - 4    Forecasting / Validation:   CW 5 - 6
+    # 2.    Training:   CW 2 - 5    Forecasting / Validation:   CW 6 - 7
+    #         ...
+    # 35.   Training:   CW 35 - 38  Forecasting / Validation:   CW 39 - 40
+    #
+    # => Each interval grid is shifted one week ahead.
     intervals_grid = get_weekly_intervals_grid(pipeline_start_date, pipeline_end_date, training_period_max,
                                                forecasting_horizon)
 
-    # Compute training duration:
+    # Compute training duration (in days):
     duration_full = date_difference_strings(d1=pipeline_start_date, d2=pipeline_end_date)
 
     # Import ML-Model:
@@ -494,29 +425,33 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
         ml_model = None
         standardizer_obj = None
 
-    # Import Prediction Intervals:
+    ## Import Prediction Intervals:
+    # These intervals are used for computing the prediction intervals for forecasting. Using them we can provide
+    # prediction intervals for both differential equation models. The models are computed in the evaluation_pipeline.R
+    # script. Here more information can be found regarding how exactly the values are computed.
     pred_intervals_df = get_prediction_intervals()
 
-    # Iterate over districts:
+    ## Iterate over districts:
+    # Instantiate dictionary for storing results:
     results_dict = {}
+    # Save start time for printing the estimated time until when the function is finished.
     start_time = datetime.now()
     for i, district in enumerate(districts):
         print_progress_with_computation_time_estimate(completed=i + 1, total=len(districts), start_time=start_time)
 
-        ## 2a) Import Historical Infections
-        # Import Training Data:
-
+        ## 2) Inmport Training Data
+        # 2a) Import Historical Infections for the current district:
         infections_df = get_smoothen_cases(district=district, duration=duration_full + 1, end_date=pipeline_end_date)
-        # append one column for formatted dates:
+
+        # Append one column for formatted dates:
         infections_df['date_str'] = infections_df[Column.DATE].apply(
             lambda row: datetime.strptime(row, '%Y%m%d').strftime('%Y-%m-%d'))
 
-        # Iterate over weeks:
+        # Iterate over the weekly intervals set-up above in step 1:
         weekly_results = []
         for week_num, current_interval in enumerate(intervals_grid):
-            ### 2) Import Training Data
-            ## 2a) Import Historical Infections
 
+            ## Compute indices so that the correct training and validation data is used:
             # Training indices:
             idx_train_start_sarima = infections_df.loc[infections_df['date_str'] == current_interval['start_day_train_str']].index[0]
             idx_train_start_diffeq = idx_train_start_sarima + (train_length_sarima - train_length_diffeqmodel)
@@ -533,7 +468,7 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
                              Column.SEVEN_DAY_SMOOTHEN].reset_index(drop=True)
             y_val = infections_df.loc[idx_val_start:idx_val_end, Column.SEVEN_DAY_SMOOTHEN].reset_index(drop=True)
 
-            ## 2b) Get Starting Values for SEIRV Model:
+            ## 2b) Get Starting Values for SEIRV Model compartments:
             train_start_date_diffeq_obj = current_interval['start_day_train_obj'] + timedelta(days=14)
             train_start_date_diff_eq_str = train_start_date_diffeq_obj.strftime('%Y-%m-%d')
 
@@ -551,6 +486,7 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
                 ml_matrix_predictors = None
 
             ### 3) Models
+            # Get the predictions for all 4 models (at least if all flags are set to true):
             seirv_last_beta_only_results, seirv_ml_results, sarima_results, ensemble_results, all_combined = \
                 forecast_all_models(y_train_diffeq, y_train_sarima, forecasting_horizon,
                                     ml_matrix_predictors, start_vals_seirv, fixed_model_params_seirv,
@@ -657,10 +593,4 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
 
 
 if __name__ == '__main__':
-    # smoothen_cases = get_smoothen_cases('Münster', '2021-03-31', 40)
-    # y_train, y_val = train_test_split(smoothen_cases)
-    # train_start_date = date_int_str(y_train[Column.DATE][0])
-    # start_vals = get_starting_values('Münster', train_start_date)
-    # print(start_vals)
-
     model_validation_pipeline_v2_wrapper()

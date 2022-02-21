@@ -78,7 +78,7 @@ LEAST_SQUARES_WEIGHT = {
 def draw_value_from_param_distribution(paramname):
     """
     This function did not end up being used in our final modeling infrastructure. More details why and can be found
-    above. The aim of this function was to draw random parameter values for introducing stochasticity. 
+    above. The aim of this function was to draw random parameter values for introducing stochasticity.
     """
 
     # get information for parameter:

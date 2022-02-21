@@ -44,9 +44,11 @@ def seirv_ml_layer(y_train_diffeq, start_vals_seirv, fixed_model_params_seirv, f
     beta_pred_ml = ml_model.predict(ml_matrix_predictors_all)[0]
     beta_pred_last_beta = model_params_tuple[0]
 
+    # Here a mix of both betas can be computed for testing purposes. Under production this should bet set to
+    # 100% Beta_Pred_ML of course:
     opt_beta = 0.70*beta_pred_last_beta + 0.30*beta_pred_ml
 
-    # Overwrite fitted beta with ML beta:
+    # Overwrite fitted beta in fitted params with ML beta to ensure that this value does end up being used:
     model_params_temp = list(model_params_tuple)
     model_params_temp[0] = opt_beta
     model_params_tuple = tuple(model_params_temp)

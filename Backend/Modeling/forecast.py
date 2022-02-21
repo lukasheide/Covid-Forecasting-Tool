@@ -16,12 +16,12 @@ def forecast_all_models(y_train_diffeq, y_train_sarima, forecasting_horizon, ml_
                         ):
     ## 3.1) SEIRV + Last Beta
     if run_diff_eq_last_beta:
+        # Get point estimates from SEIRV Pipeline:
         seirv_last_beta_only_results = seirv_pipeline(y_train=y_train_diffeq,
                                                       start_vals_fixed=start_vals_seirv,
                                                       fixed_model_params=fixed_model_params_seirv,
                                                       forecast_horizon=forecasting_horizon,
                                                       allow_randomness_fixed_beta=False, district=district)
-
         ## Compute Upper and Lower Bound:
         if pred_intervals_df is not None:
             upper_bound, lower_bound = compute_prediction_intervals(
@@ -39,18 +39,12 @@ def forecast_all_models(y_train_diffeq, y_train_sarima, forecasting_horizon, ml_
                                           forecasting_horizon, ml_matrix_predictors, standardizer_obj, ml_model,
                                           pred_intervals_df)
 
-
-
     ## 3.3) SARIMA
-    # input: y_train_sarima (6 weeks), forecast_horizon (14 days)
-    # output: {y_pred_mean, y_pred_upper, y_pred_lower, params}
     if run_sarima:
         sarima_results = sarima_pipeline(y_train=y_train_sarima,
                                          forecasting_horizon=forecasting_horizon)
 
     ## 3.4) Ensemble Model
-    # Ensemble Share:
-    # Can only be run if all pipelines are run:
     if run_ensemble and run_diff_eq_last_beta and run_diff_eq_ml_beta and run_sarima:
         ensemble_results = compute_ensemble_forecast(ensemble_model_share=ensemble_model_share,
                                                      seirv_last_beta_only_results=seirv_last_beta_only_results,

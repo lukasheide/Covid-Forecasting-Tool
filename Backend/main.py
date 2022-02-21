@@ -1,5 +1,5 @@
 from Backend.Data.DataManager.db_calls import get_all_table_data
-from Backend.Modeling.model_validation import diff_eq_pipeline, diff_eq_pipeline_wrapper, sarima_pipeline
+from Backend.Modeling.model_validation import diff_eq_pipeline_DEPRECATED, diff_eq_pipeline_wrapper_DEPRECATED, sarima_pipeline
 import pandas as pd
 import matplotlib
 
@@ -43,18 +43,18 @@ def main(run_diff_eq_wrapper = False, run_diff_eq_pipeline=True, run_sarima_pipe
 
     # Call wrapper function used for finding optimal training period length:
     if run_diff_eq_wrapper:
-        diff_eq_pipeline_wrapper()
+        diff_eq_pipeline_wrapper_DEPRECATED()
 
     # Call differential equation model validation pipeline:
     if run_diff_eq_pipeline:
-        diff_eq_pipeline(train_end_date=end_date,
-                         duration=time_frame_train_and_validation,
-                         districts=districts,
-                         validation_duration=forecasting_horizon,
-                         visualize=True,
-                         verbose=False,
-                         validate=False, # should be similar to 'visualize' boolean value
-                         store_results_to_db=False)
+        diff_eq_pipeline_DEPRECATED(train_end_date=end_date,
+                                    duration=time_frame_train_and_validation,
+                                    districts=districts,
+                                    validation_duration=forecasting_horizon,
+                                    visualize=True,
+                                    verbose=False,
+                                    validate=False,  # should be similar to 'visualize' boolean value
+                                    store_results_to_db=False)
 
 
     ##### Stuff below will be refactored soon #####
