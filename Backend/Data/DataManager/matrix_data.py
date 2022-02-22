@@ -9,7 +9,7 @@ from Backend.Data.DataManager.db_calls import get_all_table_data, get_district_d
     update_db, get_policy_data, get_variant_data, get_mobility_data, get_weather_data
 
 from Backend.Modeling.Differential_Equation_Modeling.seiurv_model import seiurv_pipeline, fit_seirv_model, \
-    fit_seirv_model_only_beta
+    fit_seiurv_model_only_beta
 from Backend.Visualization.plotting import plot_train_and_fitted_infections_line_plot, \
     plot_beta_matrix_estimation
 
@@ -386,10 +386,10 @@ def get_weekly_beta_v2(district, start_date, end_date, debug=False):
             'V0': training_pipeline_results['model_start_vals_forecast_period']['V'],
         }
 
-        validation_pipeline_result = fit_seirv_model_only_beta(y_val,
-                                                               start_vals_fixed=fixed_start_vals_from_training,
-                                                               fixed_model_params=fixed_model_params_train,
-                                                               district=district)
+        validation_pipeline_result = fit_seiurv_model_only_beta(y_val,
+                                                                start_vals_fixed=fixed_start_vals_from_training,
+                                                                fixed_model_params=fixed_model_params_train,
+                                                                district=district)
 
         if debug:
             plot_beta_matrix_estimation(y_train_true=y_train,

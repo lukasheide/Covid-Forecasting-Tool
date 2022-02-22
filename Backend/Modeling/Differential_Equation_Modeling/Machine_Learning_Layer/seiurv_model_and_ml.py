@@ -3,7 +3,7 @@ import pandas as pd
 
 from Backend.Data.DataManager.matrix_data import prepare_all_beta_predictors
 from Backend.Modeling.Differential_Equation_Modeling.prediction_intervals import compute_prediction_intervals
-from Backend.Modeling.Differential_Equation_Modeling.seiurv_model import seiurv_pipeline, forecast_seirv
+from Backend.Modeling.Differential_Equation_Modeling.seiurv_model import seiurv_pipeline, forecast_seiurv
 
 
 def seirv_ml_layer(y_train_diffeq, start_vals_seirv, fixed_model_params_seirv, forecasting_horizon,
@@ -55,9 +55,9 @@ def seirv_ml_layer(y_train_diffeq, start_vals_seirv, fixed_model_params_seirv, f
 
     ## 4) Forecast with obtained beta guess:
     # Rerun model with new beta guess:
-    y_pred_point_estimate = forecast_seirv(all_model_params=model_params_tuple,
-                                           y0=start_vals_tuple,
-                                           forecast_horizon=forecasting_horizon)
+    y_pred_point_estimate = forecast_seiurv(all_model_params=model_params_tuple,
+                                            y0=start_vals_tuple,
+                                            forecast_horizon=forecasting_horizon)
 
     ## 5) Compute Bounds:
     ## Compute Upper and Lower Bound:

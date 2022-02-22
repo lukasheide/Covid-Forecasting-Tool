@@ -56,14 +56,14 @@ def seiurv_pipeline(y_train: np.array,
 
 
     # 2.2 Run forecasting - Starting point: beginning of training period
-    pred_daily_infections_from_start = forecast_seirv(all_model_params=model_params,
-                                                      y0=fitting_result['start_vals'] + (0,),
-                                                      forecast_horizon=forecast_horizon + len(y_train))
+    pred_daily_infections_from_start = forecast_seiurv(all_model_params=model_params,
+                                                       y0=fitting_result['start_vals'] + (0,),
+                                                       forecast_horizon=forecast_horizon + len(y_train))
 
     # 2.3 Run forecasting - Starting point: after training period
-    pred_daily_infections = forecast_seirv(all_model_params=model_params,
-                                           y0=fitting_result['end_vals'] + (0,),
-                                           forecast_horizon=forecast_horizon)
+    pred_daily_infections = forecast_seiurv(all_model_params=model_params,
+                                            y0=fitting_result['end_vals'] + (0,),
+                                            forecast_horizon=forecast_horizon)
 
 
     # Bundle up model params and start vals to dictionaries to return them:
@@ -83,7 +83,7 @@ def seiurv_pipeline(y_train: np.array,
     return results_dict
 
 
-def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple, fixed_model_params: tuple, district=None) -> dict:
+def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple, fixed_model_params: tuple, district=None, debug=False) -> dict:
     """
     Takes as input a numpy array with the daily new infections and a tuple containing the population size N and fixed
     starting values for each compartment: I0, R0 and V0. E0 and S0 are fitted.
@@ -122,6 +122,12 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple, fixed_model_para
 
 
     ## 4) Call fitting function:
+    # Here the least_squares function from the scipy package is used. It takes a function pointer as input as well
+    # as the parameters to be fitted and additional arguments that are required for executing the passed function.
+    # Least squares changes the passed parameters such that the value returned by the passed function is minimized.
+    # In our case we compute the weighted residuals (difference between true infection count and score predicted by
+    # our model).
+
     ret = least_squares(
         fun=compute_weighted_residuals,
         x0=fit_params_start_guess,
@@ -132,7 +138,7 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple, fixed_model_para
         bounds=(0, np.inf)
     )
 
-    # get optimal parameters from least squares result:
+    # Get optimal parameters from least squares result:
     opt_params = tuple(ret.x)
 
     ## 5) Prepare model parameters and start values to run the model again:
@@ -149,11 +155,11 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple, fixed_model_para
     V0 = start_vals_fixed['V']
     S0 = N - E0 - I0 - R0 - V0
 
-    # pack all together and add start value 0 for cumulated infections:
+    # Pack all together and add start value 0 for cumulated infections:
     y0_train = (S0, E0, I0, U0, R0, V0, 0)
 
     ## 6) Apply fitted parameters to get the end values for all compartments:
-    # extend t_grid so that also the last day is included:
+    # Extend t_grid so that also the last day is included:
     t_grid_apply_again = np.linspace(0, (num_days_train + 1), (num_days_train + 1) + 1)
 
     # Retrieve values for each compartment over time:
@@ -163,14 +169,15 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple, fixed_model_para
 
 
     #### Debugging ####
-    # plot_train_and_fitted_infections_line_plot(y_train, daily_infections_fitted)
+    if debug:
+        plot_train_and_fitted_infections_line_plot(y_train, daily_infections_fitted)
 
 
     ## 7) Prepare results for returning them
     # Pack retrieved values for each compartment over time into one tuple:
     compartment_time_series = (S, E, I, U, R, V)
 
-    # Compute end values:
+    # Retrieve end values:
     end_vals = (S[-1], E[-1], I[-1], U[-1], R[-1], V[-1])
     start_vals = (S0, E0, I0, U0, R0, V0)
 
@@ -193,7 +200,7 @@ def fit_seirv_model(y_train: np.array, start_vals_fixed: tuple, fixed_model_para
     return fitting_results
 
 
-def fit_seirv_model_only_beta(y_train: np.array, start_vals_fixed: tuple, fixed_model_params: tuple, district=None) -> dict:
+def fit_seiurv_model_only_beta(y_train: np.array, start_vals_fixed: tuple, fixed_model_params: tuple, district=None) -> dict:
     """
     Takes as input a numpy array with the daily new infections and a tuple containing the population size N and fixed
     starting values for each compartment: I0, R0 and V0. E0 and S0 are fitted.
@@ -300,7 +307,7 @@ def fit_seirv_model_only_beta(y_train: np.array, start_vals_fixed: tuple, fixed_
     return fitting_results
 
 
-def forecast_seirv(all_model_params: tuple, y0: np.array, forecast_horizon=14) -> np.array:
+def forecast_seiurv(all_model_params: tuple, y0: np.array, forecast_horizon=14) -> np.array:
     ## 1) Set up variables needed for applying the model:
     # Create a grid of time points (in days)
     t_grid = np.linspace(0, forecast_horizon, forecast_horizon + 1)
@@ -335,9 +342,6 @@ def setup_model_params_for_forecasting_after_fitting(fixed_model_params, fitted_
     Combines fitted and fixed model parameter into one tuple.
     """
 
-
-    ########## CAREFUL WITH STUFF BELOW ############
-    # todo repair setting up model params
 
     ## Beta:
     if not random_draw_beta:
