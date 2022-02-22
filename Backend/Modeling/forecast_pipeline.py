@@ -1,28 +1,15 @@
 import joblib
 from datetime import datetime, timedelta
-import numpy as np
 import pandas as pd
-from datetime import date
 
 from Backend.Data.DataManager.data_access_methods import get_smoothen_cases, get_starting_values, get_model_params
-from Backend.Data.DataManager.data_util import Column, date_int_str, compute_end_date_of_validation_period, \
-    create_dates_array, get_forecasting_df_columns, print_progress_with_computation_time_estimate
-from Backend.Data.DataManager.db_calls import start_pipeline, insert_param_and_start_vals, insert_prediction_vals, \
-    get_all_table_data, start_forecast_pipeline, update_db, end_forecast_pipeline
+from Backend.Data.DataManager.data_util import Column, date_int_str, create_dates_array, get_forecasting_df_columns, print_progress_with_computation_time_estimate
+from Backend.Data.DataManager.db_calls import get_all_table_data, start_forecast_pipeline, update_db, end_forecast_pipeline
 from Backend.Data.DataManager.matrix_data import get_predictors_for_ml_layer
 from Backend.Modeling.Differential_Equation_Modeling.prediction_intervals import get_prediction_intervals
-from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seiurv_pipeline
-from Backend.Modeling.Differential_Equation_Modeling.seirv_model_and_ml import seirv_ml_layer
-from Backend.Evaluation.metrics import compute_evaluation_metrics
-from Backend.Modeling.Util.pipeline_util import train_test_split, get_list_of_random_dates, get_list_of_random_districts
 from Backend.Modeling.forecasting_wrapper_functions import forecast_all_models, convert_all_forecasts_to_incidences, \
     convert_seven_day_averages
-from Backend.Modeling.model_validation import sarima_pipeline
-from Backend.Visualization.plotting import plot_train_fitted_and_validation, plot_sarima_pred_plot, \
-    plot_sarima_val_line_plot, plot_train_fitted_and_predictions, plot_all_forecasts
-
-import xgboost as xgb
-from sklearn.preprocessing import StandardScaler
+from Backend.Visualization.plotting import plot_all_forecasts
 
 
 def forecasting_pipeline(full_run=False, debug=False):

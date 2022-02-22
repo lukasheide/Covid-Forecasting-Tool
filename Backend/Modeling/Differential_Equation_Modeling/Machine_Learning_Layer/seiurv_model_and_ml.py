@@ -3,7 +3,7 @@ import pandas as pd
 
 from Backend.Data.DataManager.matrix_data import prepare_all_beta_predictors
 from Backend.Modeling.Differential_Equation_Modeling.prediction_intervals import compute_prediction_intervals
-from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seiurv_pipeline, forecast_seirv
+from Backend.Modeling.Differential_Equation_Modeling.seiurv_model import seiurv_pipeline, forecast_seirv
 
 
 def seirv_ml_layer(y_train_diffeq, start_vals_seirv, fixed_model_params_seirv, forecasting_horizon,

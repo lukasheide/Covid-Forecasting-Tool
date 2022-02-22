@@ -7,7 +7,7 @@ from Backend.Modeling.Differential_Equation_Modeling.optimization_functions impo
 from scipy.optimize import curve_fit, leastsq, least_squares
 import matplotlib.pyplot as plt
 
-from Backend.Modeling.Differential_Equation_Modeling.seirv_mechanics import solve_ode, ode_seirv, \
+from Backend.Modeling.Differential_Equation_Modeling.seiurv_mechanics import solve_ode, ode_seirv, \
     compute_daily_infections
 from Backend.Visualization.plotting import plot_train_and_val_infections, plot_train_and_fitted_infections_line_plot, plot_train_fitted_and_validation
 from Backend.Modeling.Util.pipeline_util import models_params_to_dictionary, models_compartment_values_to_dictionary
@@ -20,19 +20,22 @@ def seiurv_pipeline(y_train: np.array,
                     allow_randomness_fixed_params=False, allow_randomness_fixed_beta=False, random_runs=100, pred_quantile=0.9, district=None):
 
     """
-    The goal of this pipeline is to produce a forecast using our differential equation model given an array with
+    Goal: The goal of this pipeline is to produce a forecast using our differential equation model given an array with
     training data, as well as starting values for the compartments and values for the fixed model parameters
     (those that are not fitted to the data).
 
+    Input:
     Takes as input a numpy array containing daily infection counts for the training period and a tuple containing
-    the population size N and fixed starting values for each compartment: I0, R0 and V0. E0 and S0 are fitted.
+    the population size N and fixed starting values for the compartment that are not fitted to data: S0, R0 and V0.
+    E0, I0 and U0 are fitted.
 
-    The starting value for the exposed and susceptible compartments are then fitted as well as the force of infection
+    Steps:
+    1) The starting value for the exposed and susceptible compartments are then fitted as well as the force of infection
     parameter beta.
 
-    The obtained fitted parameters are then applied to the desired forecasting period.
+    2) The obtained fitted parameters are then applied to the desired forecasting period.
 
-    The result dictionary contains the predicted daily infections, the model parameters and starting values for the
+    3) The result dictionary contains the predicted daily infections, the model parameters and starting values for the
     forecasting step.
     """
 
@@ -42,34 +45,26 @@ def seiurv_pipeline(y_train: np.array,
 
     ## 2) Model application / forecasting:
 
-    ## 2.1 Model Run with fixed parameters derived from fitting:
-    # 2.1.1 Set up starting values and model parameters used for applying the model in the next step:
+    # 2.1 Set up starting values and model parameters used for applying the model in the next step:
     model_params = setup_model_params_for_forecasting_after_fitting(fixed_model_params=fixed_model_params,
                                                                     fitted_model_params=fitting_result['fitted_params'],
                                                                     random_draw_fixed_params=allow_randomness_fixed_params)
 
-
-    ## Overwrite Resulting Beta result for forecasting if a value for beta was passed to the pipeline:
+    ## Overwrite Resulting Beta result for forecasting if a value for beta was passed to the SEIURV pipeline:
     if beta_for_predictions is not None:
         model_params[0] = beta_for_predictions
 
 
-    # 2.1.2 Run forecasting - Starting point: beginning of training period
+    # 2.2 Run forecasting - Starting point: beginning of training period
     pred_daily_infections_from_start = forecast_seirv(all_model_params=model_params,
                                                       y0=fitting_result['start_vals'] + (0,),
                                                       forecast_horizon=forecast_horizon + len(y_train))
 
-    # Run forecasting - Starting point: after training period
+    # 2.3 Run forecasting - Starting point: after training period
     pred_daily_infections = forecast_seirv(all_model_params=model_params,
                                            y0=fitting_result['end_vals'] + (0,),
                                            forecast_horizon=forecast_horizon)
 
-
-    ## Prepare everything for return:
-    # Handle randomness:
-    if not allow_randomness_fixed_params and not allow_randomness_fixed_beta:
-        pred_daily_infections_upper_quantile = None
-        pred_daily_infections_lower_quantile = None
 
     # Bundle up model params and start vals to dictionaries to return them:
     model_params_as_dictionary = models_params_to_dictionary(model_params)
@@ -79,8 +74,8 @@ def seiurv_pipeline(y_train: np.array,
     results_dict = {
         'y_pred_including_train_period': pred_daily_infections_from_start,
         'y_pred_without_train_period': pred_daily_infections,
-        'y_pred_without_train_period_upper_bound': pred_daily_infections_upper_quantile,       # None if randomness was excluded!
-        'y_pred_without_train_period_lower_bound': pred_daily_infections_lower_quantile,       # None if randomness was excluded!
+        'y_pred_without_train_period_upper_bound': None,       # These are added in a later step!
+        'y_pred_without_train_period_lower_bound': None,
         'model_params_forecast_period': model_params_as_dictionary,
         'model_start_vals_forecast_period': model_start_vals_as_dictionary
     }

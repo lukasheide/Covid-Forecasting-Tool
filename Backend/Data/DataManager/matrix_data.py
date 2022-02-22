@@ -8,7 +8,7 @@ from Backend.Data.DataManager.data_util import Column, date_int_str, print_progr
 from Backend.Data.DataManager.db_calls import get_all_table_data, get_district_data, get_table_data_by_duration, \
     update_db, get_policy_data, get_variant_data, get_mobility_data, get_weather_data
 
-from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seiurv_pipeline, fit_seirv_model, \
+from Backend.Modeling.Differential_Equation_Modeling.seiurv_model import seiurv_pipeline, fit_seirv_model, \
     fit_seirv_model_only_beta
 from Backend.Visualization.plotting import plot_train_and_fitted_infections_line_plot, \
     plot_beta_matrix_estimation

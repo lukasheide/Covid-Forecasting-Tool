@@ -38,19 +38,23 @@ def compute_prediction_intervals(y_pred, intervals_residuals_df, avg_pred, model
     return y_pred_upper, y_pred_lower
 
 
-def compute_ensemble_forecast(ensemble_model_share, seirv_last_beta_only_results, seirv_ml_results, sarima_results):
+def compute_ensemble_forecast(ensemble_model_share, seiurv_last_beta_only_results, seiurv_ml_results, sarima_results):
 
-    # Compute weighted average:
-    ensemble_y_pred_point = ensemble_model_share['seirv_last_beta'] * seirv_last_beta_only_results['y_pred_without_train_period'] + \
-                            ensemble_model_share['seirv_ml_beta'] * seirv_ml_results['y_pred_mean'] + \
+    ## Compute weighted average:
+
+    # Point estimate:
+    ensemble_y_pred_point = ensemble_model_share['seirv_last_beta'] * seiurv_last_beta_only_results['y_pred_without_train_period'] + \
+                            ensemble_model_share['seirv_ml_beta'] * seiurv_ml_results['y_pred_mean'] + \
                             ensemble_model_share['sarima'] * sarima_results['predictions']
 
-    ensemble_y_pred_upper = ensemble_model_share['seirv_last_beta'] * seirv_last_beta_only_results['y_pred_without_train_period_upper_bound'] + \
-                            ensemble_model_share['seirv_ml_beta'] * seirv_ml_results['y_pred_upper'] + \
+    # Upper bound:
+    ensemble_y_pred_upper = ensemble_model_share['seirv_last_beta'] * seiurv_last_beta_only_results['y_pred_without_train_period_upper_bound'] + \
+                            ensemble_model_share['seirv_ml_beta'] * seiurv_ml_results['y_pred_upper'] + \
                             ensemble_model_share['sarima'] * sarima_results['upper']
 
-    ensemble_y_pred_lower = ensemble_model_share['seirv_last_beta'] * seirv_last_beta_only_results['y_pred_without_train_period_lower_bound'] + \
-                            ensemble_model_share['seirv_ml_beta'] * seirv_ml_results['y_pred_lower'] + \
+    # Lower bound:
+    ensemble_y_pred_lower = ensemble_model_share['seirv_last_beta'] * seiurv_last_beta_only_results['y_pred_without_train_period_lower_bound'] + \
+                            ensemble_model_share['seirv_ml_beta'] * seiurv_ml_results['y_pred_lower'] + \
                             ensemble_model_share['sarima'] * sarima_results['lower']
 
     ensemble_results_dict = {

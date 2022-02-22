@@ -29,10 +29,10 @@ def sarima_pipeline(y_train, forecasting_horizon):
 
     # 1) Fit the ARIMA model with training data
     pred_arima = arimamodel(y_train)
-    params = pred_arima.get_params_DEPRECATED()
+    params = pred_arima.get_params()
 
     # 1a) Try to catch random walks
-    if params['order'] == (0,1,0):
+    if params['order'] == (0, 1, 0):
         predictions_1, conf_int = pred_arima.predict(forecasting_horizon, return_conf_int=True, alpha=0.1)
         y_train_short = y_train.loc[14:len(y_train)]
         pred_arima = arimamodel(y_train_short)

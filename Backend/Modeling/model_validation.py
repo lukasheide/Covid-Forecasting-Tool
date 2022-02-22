@@ -1,6 +1,4 @@
 import datetime
-import random
-import statistics
 
 import joblib
 import pandas as pd
@@ -11,23 +9,16 @@ from Backend.Data.DataManager.data_util import Column, date_int_str, compute_end
     create_dates_array, print_progress_with_computation_time_estimate
 from Backend.Data.DataManager.db_calls import start_pipeline, insert_param_and_start_vals, insert_prediction_vals, \
     get_all_table_data
-from Backend.Data.DataManager.matrix_data import get_weekly_intervals_grid, get_predictors_for_ml_layer, \
-    prepare_all_beta_predictors
+from Backend.Data.DataManager.matrix_data import get_weekly_intervals_grid, get_predictors_for_ml_layer
 from Backend.Data.DataManager.remote_db_manager import download_db_file
 from Backend.Modeling.Differential_Equation_Modeling.prediction_intervals import get_prediction_intervals
-from Backend.Modeling.Differential_Equation_Modeling.seirv_model import seiurv_pipeline, forecast_seirv
+from Backend.Modeling.Differential_Equation_Modeling.seiurv_model import seiurv_pipeline
 from Backend.Evaluation.metrics import compute_evaluation_metrics
-from Backend.Modeling.Differential_Equation_Modeling.seirv_model_and_ml import seirv_ml_layer
 from Backend.Modeling.Util.pipeline_util import train_test_split, get_list_of_random_dates, \
     get_list_of_random_districts, date_difference_strings
 from Backend.Modeling.forecasting_wrapper_functions import forecast_all_models, convert_all_forecasts_to_incidences, convert_seven_day_averages
-from Backend.Visualization.plotting import plot_train_fitted_and_validation, plot_sarima_pred_plot, \
-    plot_sarima_val_line_plot, plot_train_fitted_and_predictions, plot_all_forecasts
+from Backend.Visualization.plotting import plot_train_fitted_and_validation, plot_train_fitted_and_predictions, plot_all_forecasts
 import copy
-from Backend.Modeling.Regression_Model.ARIMA import sarima_pipeline
-
-import xgboost as xgb
-from sklearn.preprocessing import StandardScaler
 
 
 # from Backend.Modeling.Regression Model.ARIMA import sarima_pipeline
