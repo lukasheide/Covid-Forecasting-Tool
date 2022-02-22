@@ -337,48 +337,18 @@ def merge_fitted_and_fixed_start_vals(fitted_start_vals, tot_pop_size, fixed_sta
     return S0, E0, I0, R0, V0, 0
 
 
-def setup_model_params_for_forecasting_after_fitting(fixed_model_params, fitted_model_params, random_draw_fixed_params=False, random_draw_beta=False):
+def setup_model_params_for_forecasting_after_fitting(fixed_model_params, fitted_model_params):
     """
     Combines fitted and fixed model parameter into one tuple.
+    This format is required to properly call the seiurv-forecast function with.
     """
 
-
-    ## Beta:
-    if not random_draw_beta:
-        beta = fitted_model_params['beta']
-
-    else:
-        beta = draw_random_beta(
-            beta_estimate=fitted_model_params['beta'],
-            sd_passed=False
-        )
-
-    ## Fixed Params:
-    if not random_draw_fixed_params:
-        gamma_I = params_SEIURV_fixed['gamma_I']['mean']
-        gamma_U = params_SEIURV_fixed['gamma_U']['mean']
-        delta = params_SEIURV_fixed['delta']['mean']
-        theta = params_SEIURV_fixed['theta']['mean']
-        rho = params_SEIURV_fixed['rho']['mean']
-
-    else:
-        gamma_I = draw_value_from_param_distribution('gamma_I')
-        gamma_U = draw_value_from_param_distribution('gamma_U')
-        delta = draw_value_from_param_distribution('delta')
-        theta = draw_value_from_param_distribution('theta')
-        rho = draw_value_from_param_distribution('rho')
-
-
-    ########## CAREFUL WITH STUFF ABOVE ############
-
-    # For now just use values of previous run:
     beta = fitted_model_params['beta']
     gamma_I = fixed_model_params['gamma_I']
     gamma_U = fixed_model_params['gamma_U']
     delta = fixed_model_params['delta']
     theta = fixed_model_params['theta']
     rho = fixed_model_params['rho']
-
 
     return beta, gamma_I, gamma_U, delta, theta, rho
 
