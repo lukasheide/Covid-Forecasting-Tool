@@ -59,51 +59,10 @@ def seiurv_pipeline(y_train: np.array,
                                                       y0=fitting_result['start_vals'] + (0,),
                                                       forecast_horizon=forecast_horizon + len(y_train))
 
-    # 2.2.1) No Randomness:
-    if not allow_randomness_fixed_params and not allow_randomness_fixed_beta:
-
-        # Run forecasting - Starting point: after training period
-        pred_daily_infections = forecast_seirv(all_model_params=model_params,
-                                               y0=fitting_result['end_vals'] + (0,),
-                                               forecast_horizon=forecast_horizon)
-
-    # 2.2.2) Random Runs:
-    else:
-        results_list = []
-        for run in range(random_runs):
-            # 2.2.2.1) Set up starting values and model parameters used for applying the model in the next step:
-            model_params_randomness = setup_model_params_for_forecasting_after_fitting(
-                fitted_model_params=fitting_result['fitted_params'], random_draw_fixed_params=allow_randomness_fixed_params, random_draw_beta=allow_randomness_fixed_beta)
-
-            # 2.2.2.2)
-            # Run forecasting - Starting point: after training period
-            pred_daily_infections = forecast_seirv(all_model_params=model_params_randomness,
-                                                   y0=fitting_result['end_vals'] + (0,),
-                                                   forecast_horizon=forecast_horizon)
-            # 2.2.2.3)
-            # Push results to list:
-            results_list.append({
-                'model_params':model_params_randomness,
-                'pred_daily_infections':pred_daily_infections
-            })
-
-        ## Computations based on multiple runs:
-        # Setup numpy array:
-        all_pred_daily_infections = np.array([model_run['pred_daily_infections'] for model_run in results_list])
-
-        # Compute average prediction:
-        pred_daily_infections_mean = np.mean(all_pred_daily_infections, axis=0)
-
-        # 90% Quantile:
-        pred_daily_infections_upper_quantile = np.quantile(all_pred_daily_infections, q=pred_quantile, axis=0)
-        # 10% Quantile:
-        pred_daily_infections_lower_quantile = np.quantile(all_pred_daily_infections, q=1-pred_quantile, axis=0)
-
-        # FOR DEBUGGING:
-        # plt.plot(pred_daily_infections_mean)
-        # plt.plot(pred_daily_infections_upper_quantile)
-        # plt.plot(pred_daily_infections_lower_quantile)
-        # plt.show()
+    # Run forecasting - Starting point: after training period
+    pred_daily_infections = forecast_seirv(all_model_params=model_params,
+                                           y0=fitting_result['end_vals'] + (0,),
+                                           forecast_horizon=forecast_horizon)
 
 
     ## Prepare everything for return:
