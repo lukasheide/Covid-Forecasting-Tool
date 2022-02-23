@@ -1,5 +1,6 @@
 # Regional Forecasting Tool for Covid-19 
-<img src="Assets/Images/Logos/wwu_logo.png" height=40 style="float: right;">
+<img src="Assets/Images/Logos/wwu_logo.png" height=40>
+<img src="Assets/Images/Logos/ercis_logo.png" height=40>
 
 ### Goal and Motivation:
 The goal of this project was to develop a short-term forecasting tool for 
