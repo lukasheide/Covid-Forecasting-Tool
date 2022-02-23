@@ -35,7 +35,7 @@ provides forecasts for the next 14 days.
     - [SEIURV + Machine Learning Beta](#Model-2\)-SEIURV-ML-Beta)
   - [Regression Model](#Regression-Model)
     - [ARIMA](#Model-3\)-Arima-Model)
-  - [Combined Model](#Combined-Models)
+  - [Combined Model](#Combined-Model)
     - [Ensemble Model](#Model-4\)-Ensemble-Model)
 - [Architecture](#architecture)
 - [How to use](#how-to-use)
@@ -114,7 +114,7 @@ approach. The pmdarima package was used to implement our ARIMA model.
 
 <img src="Assets/Images/Models/arima_fitting.png" height=280>
 
-### Combined Models
+### Combined Model
 #### Model 4) Ensemble Model
 Lastly we also created an ensemble model that allows us to combine the 
 predictions of our previously introduced models. For now, our ensemble
