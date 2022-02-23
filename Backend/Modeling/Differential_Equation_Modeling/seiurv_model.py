@@ -47,8 +47,7 @@ def seiurv_pipeline(y_train: np.array,
 
     # 2.1 Set up starting values and model parameters used for applying the model in the next step:
     model_params = setup_model_params_for_forecasting_after_fitting(fixed_model_params=fixed_model_params,
-                                                                    fitted_model_params=fitting_result['fitted_params'],
-                                                                    random_draw_fixed_params=allow_randomness_fixed_params)
+                                                                    fitted_model_params=fitting_result['fitted_params'])
 
     ## Overwrite Resulting Beta result for forecasting if a value for beta was passed to the SEIURV pipeline:
     if beta_for_predictions is not None:
