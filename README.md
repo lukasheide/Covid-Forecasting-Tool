@@ -30,8 +30,14 @@ provides forecasts for the next 14 days.
 
 ## Table of Contents
 - [Modeling](#modeling)
+  - [Differential Equation Models](#Differential-Equation-Models)
+    - [SEIURV + Last Beta](#Model-1\)-SEIURV-Last-Beta)
+    - [SEIURV + Machine Learning Beta](#Model-2\)-SEIURV-ML-Beta)
+  - [Regression Model](#Regression-Model)
+    - [ARIMA](#Model-3\)-Arima-Model)
+  - [Combined Model](#Combined-Models)
+    - [Ensemble Model](#Model-4\)-Ensemble-Model)
 - [Architecture](#architecture)
-- [Dashboard](#dashboard)
 - [How to use](#how-to-use)
   - [Technical Setup](#Technical-Setup)
   - [Configuration](#configuration)
@@ -96,7 +102,7 @@ We ended up using an XGBoost model as this yielded the best performance.
 <img src="Assets/Images/Models/ml_layer_process_chart.png" height=200>
 <img src="Assets/Images/Models/ml_models.png" height=250>
 
-### Regression Models
+### Regression Model
 #### Model 3) ARIMA Model
 Besides our differential equation models we also used an ARIMA model that
 belongs to the modeling family of regression models. Unlike mechanistic 
@@ -108,7 +114,8 @@ approach. The pmdarima package was used to implement our ARIMA model.
 
 <img src="Assets/Images/Models/arima_fitting.png" height=280>
 
-### Ensemble Model
+### Combined Models
+#### Model 4) Ensemble Model
 Lastly we also created an ensemble model that allows us to combine the 
 predictions of our previously introduced models. For now, our ensemble
 model is simply a weighted average of the predictions of our other models.
@@ -116,7 +123,7 @@ Our ensemble model could also be expanded to a more sophisticated appraoach
 by using a so-called meta learner. This meta learner would be trained to
 combine intelligently combine the predictions of the other models by, for
 example, considering the strengths and weaknesses of the other models
-in certain situations. If, for example, one model perform rather poorly in
+in certain situations. If, for example, one model performs rather poorly in
 certain situations, e.g. the beginning of a new wave, then the meta learner
 could learn to adjust the weights in such situations. This offers 
 interesting opportunities for future investigation but was out of scope of
@@ -125,8 +132,50 @@ our project seminar.
 <img src="Assets/Images/Models/forecast_evaluation.png" height=300>
 
 ## Architecture
+Below the technical architecture of our implementation is depicted. It
+consists of four different layers that will be explained in the following.
 
-## Dashboard
+<img src="Assets/Images/Architecture/architecture.png" height=320>
+
+### Data Layer
+This layer starts the flow of the application and provides all the data 
+required for the models to generate their predictions. It consists of 
+four main data sources. CoronaDaten Platform is the core data source of 
+the application, which provides all the Covid-19 related data where 
+MeteoStat, DESTATIS, and ECDC data is used to train the machine learning 
+model of the machine learning layer. 
+The data from CoronaDaten Platform and MeteoStat are accessed via API calls.  DESTATIS and ECDC data is directly accessed as files using http requests. 
+
+### Storage Layer
+By taking the diversity, the growth of the data based on product 
+requirements, and the product’s portability into consideration, 
+Storage Layer was built on SQLite database engine, which is lightweight, 
+can perform conventional SQL queries and provides easy serverless setup. 
+Due to the majority of data being transferred and used in Pandas Dataframe 
+format within the application, SQLAlchemy is utilized for the 
+object-relational mapping between Python and SQLite. The layer is 
+responsible for all data storage and distribution within the application.
+
+### Modeling Layer
+This layer contains all the models used to perform forecasting developed 
+based on Python. The model-specific basic implementation libraries are 
+used, and adaptations are made according to the project requirements and 
+scope. As the core layer of the application, this layer is responsible 
+for generating forecasts and related complementary processes.
+
+### Visualization Layer
+The interactive dashboard is comprised in this layer where the user is 
+allowed to select, visualize, compare regional forecast results generated 
+by our models. Dash by Plotly, built on top of Flask, was considered due 
+to its simple yet powerful capabilities for visualisation and user 
+interactions compared to other dashboard-capable python libraries. 
+Dash offers a variety of interactive components with better customization 
+ability, which allows the product dashboard to be made aesthetically 
+pleasing. The Dash application is locally deployed and uses JSON objects 
+to communicate with the backend application script, which is also 
+automatically handled internally within Dash itself hence also referred 
+to as a tightly-integrated backend and front-end.
+
 
 ## How to use
 ### Technical Setup
