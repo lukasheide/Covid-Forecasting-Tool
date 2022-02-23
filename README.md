@@ -24,7 +24,8 @@ the Information Systems Master program at the WWU Münster.
 <img src="Assets/Images/Dashboard/dashboard_forecasts.png" height=320>
 <img src="Assets/Images/Dashboard/dashboard_map.png" height=320>
 
-The images above depict our final end product, our forecasting tool.
+The images above depict our final end product, our forecasting tool that 
+provides forecasts for the next 14 days.
 
 
 ## Table of Contents
@@ -37,7 +38,7 @@ The images above depict our final end product, our forecasting tool.
 
 ## Modeling
 ### Differential Equation Models
-<img src="Assets/Images/Models/ModelStructure.png" height=320>
+<img src="Assets/Images/Models/model_structure.png" height=320>
 
 Our final product consists of four models that are depicted above. Model 1
 and 2 are differential equation models. Differential equation models are 
@@ -59,7 +60,34 @@ infectious yet. Infectious individuals that are capable of infecting
 others are again split into two groups for detected (**I**) and 
 undetected cases (**U**). Individuals that recently recovered (**R**) 
 and currently considered as immune are contained in the last compartment. 
+\
+Our model is trained by fitting the so-called force of infection parameter β
+to the last 14 days. The higher the value of β the more individuals are 
+infected by one infectious individual (ceteris paribus) and thus the 
+steeper the infection curve. 
+The starting values for the different compartments are computed using 
+publicly available data provided by the RKI on CoronaDaten Platform. 
+The fitting process is depicted below. 
 
+<img src="Assets/Images/Models/beta_fitting.png" height=300>
+
+#### Model 2) SEIURV - ML Beta
+
+<img src="Assets/Images/Models/model_structure_focus_ml.png" height=200>
+
+Our second model is based on the previously introduced SEIURV model. 
+Instead of simply using the fitted β for the next period we use add a 
+machine learning layer on top of the SEIURV model to predict the optimal
+value of β in the next period. This approach allows us to also integrate 
+other influencing factors including intervention measures, variants, 
+mobility and weather data.
+
+The corresponding machine learning layer consists of six different steps
+depicted below. We ended up using an XGBoost model as this yielded the best
+performance. 
+
+<img src="Assets/Images/Models/ml_layer_process_chart.png" height=200>
+<img src="Assets/Images/Models/ml_models.png" height=200>
 
 ## Architecture
 
