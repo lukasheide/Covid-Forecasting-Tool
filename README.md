@@ -18,8 +18,8 @@ We have taken on the challenge of developing a forecasting tool at a low
 aggregation level within a semester-long project seminar in the context of
 the Information Systems Master program at the WWU Münster.
 
-<img src="./Assets/Images/dashboard_forecasts.png" height=330>
-<img src="./Assets/Images/dashboard_map.png" height=330>
+<img src="./Assets/Images/dashboard_forecasts.png" height=320>
+<img src="./Assets/Images/dashboard_map.png" height=320>
 
 The images above depict our final end product, our forecasting tool.
 
