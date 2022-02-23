@@ -5,13 +5,13 @@ import numpy as np
 import math
 import plotly.express as px
 
-from Backend.Data.DataManager.db_functions import get_table_data, update_district_matrices, get_filtered_table_data
+from Backend.Data.DataManager.db_functions import update_district_matrices_DEPRECATED, get_table_data_DEPRECATED
 
 # updating all_district_data should be executed before
-list_of_districts = get_table_data("district_list", 0, 0, "district", False)
+list_of_districts = get_table_data_DEPRECATED("district_list", 0, 0, "district", False)
 list_of_districts = list_of_districts['district'].to_list()
 
-list_of_dates = get_table_data("Münster", 0, 0, "date", False)
+list_of_dates = get_table_data_DEPRECATED("Münster", 0, 0, "date", False)
 list_of_dates = list_of_dates['date'].to_list()
 
 
@@ -19,7 +19,7 @@ def dist_correlation_by_incidents():
     district_incidents_matrix = {}
 
     for district in list_of_districts:
-        district_data = get_table_data(district, 0, 0, "daily_incidents_rate", False)
+        district_data = get_table_data_DEPRECATED(district, 0, 0, "daily_incidents_rate", False)
 
         district_data = district_data['daily_incidents_rate'].to_numpy()
         district_data = [float(i) for i in district_data]
@@ -29,7 +29,7 @@ def dist_correlation_by_incidents():
     all_data_df = pd.DataFrame(district_incidents_matrix)
     all_districts_correlation = all_data_df.corr(method='pearson')
 
-    update_district_matrices('districts', 'incidents', all_districts_correlation, 'district_name')
+    update_district_matrices_DEPRECATED('districts', 'incidents', all_districts_correlation, 'district_name')
 
 
 def date_correlation_by_vac_incidents():
@@ -41,7 +41,7 @@ def date_correlation_by_vac_incidents():
     all_vacc['date'] = list_of_dates
 
     for district in list_of_districts:
-        dist_data = get_table_data(district, 0, 0, ['daily_incidents_rate', 'vacc_percentage'], False)
+        dist_data = get_table_data_DEPRECATED(district, 0, 0, ['daily_incidents_rate', 'vacc_percentage'], False)
         all_incidents[district] = dist_data['daily_incidents_rate'].to_list()
         all_vacc[district] = dist_data['vacc_percentage'].to_list()
 
@@ -68,14 +68,14 @@ def date_correlation_by_vac_incidents():
     all_data_df = pd.DataFrame(vac_incidents_matrix, index=[0])
     all_data_df = all_data_df.T
     all_data_df.rename(columns={all_data_df.columns[0]: 'correlation'}, inplace=True)
-    update_district_matrices('date', 'vac_to_incidents', all_data_df, 'date')
+    update_district_matrices_DEPRECATED('date', 'vac_to_incidents', all_data_df, 'date')
 
 
 def dist_daily_incidents_vacc_corre():
     dist_correl_values = {}
 
     for district in list_of_districts:
-        dist_data = get_table_data(district, 0, 0, ['date', 'daily_incidents_rate', 'vacc_percentage'], False)
+        dist_data = get_table_data_DEPRECATED(district, 0, 0, ['date', 'daily_incidents_rate', 'vacc_percentage'], False)
 
         incidents_array = []
         vacc_array = []
@@ -95,7 +95,7 @@ def dist_daily_incidents_vacc_corre():
         dist_correl_values[district] = daily_correl_values
 
     all_data_df = pd.DataFrame(dist_correl_values)
-    update_district_matrices('dist_daily', 'vac_to_incidents', all_data_df, 'date')
+    update_district_matrices_DEPRECATED('dist_daily', 'vac_to_incidents', all_data_df, 'date')
     # all_district_data = pd.DataFrame(attributes[:], columns=['date', 'value', 'attribute'])
 
 
@@ -103,7 +103,7 @@ def dist_incidents_vacc_corre():
     dist_correl_values = {}
 
     for district in list_of_districts:
-        dist_data = get_table_data(district, 0, 0, ['date', 'daily_incidents_rate', 'vacc_percentage'], False)
+        dist_data = get_table_data_DEPRECATED(district, 0, 0, ['date', 'daily_incidents_rate', 'vacc_percentage'], False)
 
         incidents_array = dist_data['daily_incidents_rate'].to_list()
         vacc_array = dist_data['vacc_percentage'].to_list()
@@ -135,7 +135,7 @@ def dist_incidents_vacc_corre():
     all_data_df.rename(columns={all_data_df.columns[0]: 'correlation'}, inplace=True)
     all_data_df['district'] = all_data_df.index
 
-    german_districts = json.load(open("simplified_geo_data.geojson", 'r', encoding='utf-8'))
+    german_districts = json.load(open("../Assets/simplified_geo_data.geojson", 'r', encoding='utf-8'))
     dist_id = 1000
 
     state_id_map = {}

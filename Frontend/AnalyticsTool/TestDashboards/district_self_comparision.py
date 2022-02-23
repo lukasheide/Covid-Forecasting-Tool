@@ -5,11 +5,11 @@ from dash import html
 import pandas as pd
 import plotly.express as px
 
-from Backend.Data.DataManager.db_functions import get_table_data
+from Backend.Data.DataManager.db_functions import get_table_data_DEPRECATED
 
 app = dash.Dash(__name__)
 
-district_list = get_table_data('district_list', 0, 0, "district", False)
+district_list = get_table_data_DEPRECATED('district_list', 0, 0, "district", False)
 
 all_district_data = pd.DataFrame()
 attr_list = ['daily_infec',
@@ -62,7 +62,7 @@ app.layout = html.Div([
 def create_district_data(district):
     attributes = []
 
-    dis_data = get_table_data(district, 0, 0, ['date',
+    dis_data = get_table_data_DEPRECATED(district, 0, 0, ['date',
                                                'daily_infec',
                                                'seven_day_infec',
                                                'cum_infec',
@@ -73,8 +73,8 @@ def create_district_data(district):
                                                'adjusted_active_cases',
                                                'daily_incidents_rate',
                                                'daily_vacc',
-                                               'cum_vacc',
-                                               'vacc_percentage'], False)
+                                                          'cum_vacc',
+                                                          'vacc_percentage'], False)
     for index, row in dis_data.iterrows():
         attributes.append([row['date'], row['daily_infec'], 'daily_infec'])
         attributes.append([row['date'], row['seven_day_infec'], 'seven_day_infec'])
