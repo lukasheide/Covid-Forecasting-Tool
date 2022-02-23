@@ -37,6 +37,13 @@ def update_db(table_name, dataframe, replace=True):
     dataframe.to_sql(table_name, engine, if_exists=exec_type, index=False)
 
 
+def drop_table_by_name(table_name):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    cursor.executescript('DROP TABLE IF EXISTS '+table_name+';')
+
+
 def update_db_with_index(table_name, dataframe, index_label):
     """
        store a dataframe in a table with a given table name with specified df column as the index label(s).

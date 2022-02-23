@@ -7,6 +7,14 @@ matplotlib.interactive(True)
 
 def main():
     #todo insert all important pipelines here
+
+    # forecast pipeline:
+        # run data pipeline
+        # create pipeline tables
+        # update destatis, oxcgrt, ecdc data (destatis base.csv should be present)
+        # get prediction intervals.csv
+        # run pipeline --> remaining
+
     pass
 
 

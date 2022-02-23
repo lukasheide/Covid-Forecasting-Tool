@@ -1,3 +1,4 @@
+import os
 import time
 from math import floor
 
@@ -6,7 +7,7 @@ from Backend.Data.DataManager.data_access_methods import get_starting_values, ge
 from Backend.Data.DataManager.data_util import Column, date_int_str, print_progress, \
     print_progress_with_computation_time_estimate
 from Backend.Data.DataManager.db_calls import get_all_table_data, get_district_data, get_table_data_by_duration, \
-    update_db, get_policy_data, get_variant_data, get_mobility_data, get_weather_data
+    update_db, get_policy_data, get_variant_data, get_mobility_data, get_weather_data, drop_table_by_name
 
 from Backend.Modeling.Differential_Equation_Modeling.seiurv_model import seiurv_pipeline, fit_seirv_model, \
     fit_seiurv_model_only_beta
@@ -34,7 +35,7 @@ def create_weekly_matrix():
 
     mob_data = get_all_table_data(table_name='destatis_mobility_data')
     start_date = '2020-03-10'
-    end_date = '2022-01-28'
+    end_date = datetime.today().strftime('%Y-%m-%d')
 
     # start_date = '2021-11-01'
     # end_date = '2021-12-01'
@@ -457,6 +458,7 @@ def get_weekly_intervals_grid(start_day, last_day, duration_train, duration_val)
 
 
 def create_complete_matrix_data(debug=True):
+    create_weekly_matrix()
     districts = get_all_table_data(table_name='district_list')
     districts_list = districts['district'].tolist()
 
@@ -474,7 +476,13 @@ def create_complete_matrix_data(debug=True):
         final_df = pd.concat([final_df, district_df])
 
     final_df.fillna(0)
-    final_df.to_csv('../Assets/Data/all_matrix_data_v3.csv')
+    os.makedirs(os.path.dirname('Assets/Data/all_matrix_data_v3.csv'), exist_ok=True)
+    final_df.to_csv('Assets/Data/all_matrix_data_v3.csv')
+    update_db('all_matrix_data', final_df)
+
+    # remove all intermediate 'matrix_[district_name]' tables
+    for i, district in enumerate(districts_list):
+        drop_table_by_name('matrix_'+district)
 
     ## Debugging:
     if debug:
@@ -483,8 +491,6 @@ def create_complete_matrix_data(debug=True):
 
         # group by district:
         temp_df = df_outliers.groupby(['district'])['district'].count()
-
-    # update_db('all_matrix_data', final_df)
 
 
 def get_predictors_for_ml_layer(district, start_date):
@@ -529,25 +535,5 @@ def prepare_all_beta_predictors(y_train_last_two_weeks: np.array, previous_beta:
 
 
 if __name__ == '__main__':
-    # mob_data = get_all_table_data(table_name='destatis_mobility_data')
-    # mob_data_dist = mob_data['Kreisname'].to_list()
-    # opendata = get_all_table_data(table_name='district_details')
-    # opendata_dist = opendata['district'].tolist()
-    #
-    # for mob_dist in mob_data_dist:
-    #
-    #     found = False
-    #     for district in opendata_dist:
-    #         if mob_dist == district:
-    #             found = True
-    #
-    #     if not found:
-    #         print("case '"+mob_dist+"' :")
-    # Kaiserslautern
-    # create_weekly_matrix()
-    # get_weekly_variant_data('2020-03-01')
-    # weekly_mobility_dict = get_weekly_mobility_data('Stadt Neustadt a.d. W.', get_all_table_data(table_name='destatis_mobility_data'),  '2020-03-01')
-    create_weekly_matrix()
+    # to create the matrix data for the machine learning layer
     create_complete_matrix_data()
-    # get_weekly_beta_v2('Münster','2021-02-01', '2022-01-01')
-    # get_predictors_for_ml_layer('Münster', '2021-01-15')

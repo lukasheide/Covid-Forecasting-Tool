@@ -35,8 +35,8 @@ def forecasting_pipeline(full_run=False, debug=False):
     # predictors to be standardized the standardizer model also has to be imported:
 
     # Both Models will only be created by running the above described jupyter notebook.
-    ml_model_path = '../Assets/MachineLearningLayer/Models/xgb_model_lukas.pkl'
-    standardizer_model_path = '../Assets/MachineLearningLayer/Models/standardizer_model.pkl'
+    ml_model_path = 'Assets/MachineLearningLayer/Models/xgb_model_lukas.pkl'
+    standardizer_model_path = 'Assets/MachineLearningLayer/Models/standardizer_model.pkl'
 
     ### Ensemble Weights:
     # The ensemble model is computed as a weighted average of the other three models. The weights can be set here:

@@ -1,4 +1,5 @@
 import datetime
+import os
 import re
 import time
 import urllib
@@ -21,7 +22,7 @@ def update_all_district_data():
         extract all the required covid-19 related data is extracted for all the districts
     """
     update_district_list()
-    update_district_details()
+    # update_district_details()
     district_list = get_table_data("district_list", [Column.DISTRICT])
     district_list.sort_values(Column.DISTRICT, inplace=True, ascending=True)
     update_population_map()
@@ -46,7 +47,7 @@ def parallel_corona_datenplatform_api_requests(district):
     list_of_urls = [
         # Cases
         'https://www.corona-datenplattform.de/api/3/action/datastore_search?limit=1000'
-        '&resource_id=8966dc58-c7f6-47a5-8af6-603fe72a5d4a&q=' + district + ':kr_inf_md',
+        '&resource_id=3cc32ee9-a5de-42f2-afca-f9c07c956d66&q=' + district + ':kr_inf_md',
 
         # Deaths
         'https://www.corona-datenplattform.de/api/3/action/datastore_search?limit=1000&resource'
@@ -62,7 +63,7 @@ def parallel_corona_datenplatform_api_requests(district):
 
         # Incidence:
         'https://www.corona-datenplattform.de/api/3/action/datastore_search?limit=1000'
-        '&resource_id=8966dc58-c7f6-47a5-8af6-603fe72a5d4a&q=' + district + ':kr_inz_rate'
+        '&resource_id=3cc32ee9-a5de-42f2-afca-f9c07c956d66&q=' + district + ':kr_inz_rate'
     ]
 
     def get_url(url):
@@ -141,6 +142,15 @@ def update_district_data(district):
 
         if column_check_okay and re.match("^(d[0-9]{8})", key):
             cum_cases_list[key] = value if value is not None else cum_cases_list[list(cum_cases_list)[-1]]
+
+    column_check_okay = False
+    for key, value in deaths['result']['records'][0].items():
+
+        if value == 'kr_tod_md':
+            column_check_okay = True
+
+        if column_check_okay and re.match("^(d[0-9]{8})", key):
+            daily_deaths_list[key] = value if value is not None else daily_deaths_list[list(daily_deaths_list)[-1]]
 
     column_check_okay = False
     # collect cumulative deaths
@@ -291,7 +301,8 @@ def update_district_list():
     district_list = list(set(district_list))
     df = pd.DataFrame(district_list)
     df.columns = ['state', 'district']
-    df.to_csv('../Assets/Data/district_list.csv')
+    os.makedirs(os.path.dirname("Assets/Data/district_list.csv"), exist_ok=True)
+    df.to_csv('Assets/Data/district_list.csv')
     update_db('district_list', df)
 
 

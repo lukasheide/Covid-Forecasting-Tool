@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 
+from Backend.Data.DataManager.remote_file_manager import download_pred_intervals_file
+
 
 def compute_prediction_intervals(y_pred, intervals_residuals_df, avg_pred, model_name):
     # Get classes depending on how the infections currently are:
@@ -66,5 +68,5 @@ def compute_ensemble_forecast(ensemble_model_share, seiurv_last_beta_only_result
 
 def get_prediction_intervals():
     # get the latest version of the file from the server before reading
-    # download_pred_intervals_file()
-    return pd.read_csv('../Assets/Forecasts/PredictionIntervals/prediction_intervals.csv', delimiter=",")
+    download_pred_intervals_file()
+    return pd.read_csv('Assets/Forecasts/PredictionIntervals/prediction_intervals.csv', delimiter=",")

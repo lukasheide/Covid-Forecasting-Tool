@@ -56,7 +56,7 @@ def update_oxcgrt_policy_table():
     download_oxcgrt_policy_data()
     print('latest update of mobility data fetched successfully!')
 
-    latest_file_loc = '../Assets/Data/Scraped/oxcgrt/' + datetime.datetime.today().strftime('%d%m%y') + '.csv'
+    latest_file_loc = 'Assets/Data/Scraped/oxcgrt/' + datetime.datetime.today().strftime('%d%m%y') + '.csv'
     df = pd.read_csv(latest_file_loc)
     df = df.drop(df.columns[0], axis=1)
     germany = df[df['country_code'] == 'DEU']
@@ -86,5 +86,7 @@ if __name__ == '__main__':
 
     """
        only the method below needs to be executed to update the data from the sources mentioned above
+       IMPORTANT: destatis mobility data at least once every three weeks should be downloaded. 
+                  otherwise data gaps may occur and will no be able to continue
     """
     # extract_all_other_data()
