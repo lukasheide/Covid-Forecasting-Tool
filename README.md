@@ -1,6 +1,6 @@
 # Regional Forecasting Tool for Covid-19 Using Open Data
-<img src="Assets/Images/Logos/ercis_logo.png" height=40>
-<img src="Assets/Images/Logos/wwu_logo.png" height=45>
+<img src="Assets/Images/Logos/ercis_logo.png" height=60>
+<img src="Assets/Images/Logos/wwu_logo.png" height=70>
 
 
 ### Goal and Motivation:
@@ -147,7 +147,7 @@ MeteoStat, DESTATIS, and ECDC data is used to train the machine learning
 model of the machine learning layer. 
 The data from CoronaDaten Platform and MeteoStat are accessed via API calls.  DESTATIS and ECDC data is directly accessed as files using http requests. 
 
-### <img src="Assets/Images/Icons/storage.png" height=30> Storage Layer</div>
+### <img src="Assets/Images/Icons/storage.png" height=30> Storage Layer
 By taking the diversity, the growth of the data based on product 
 requirements, and the product’s portability into consideration, 
 Storage Layer was built on SQLite database engine, which is lightweight, 
@@ -179,5 +179,15 @@ to as a tightly-integrated backend and front-end.
 
 
 ## How to use
-### Technical Setup
-### Configuration
+### <img src="Assets/Images/Icons/wrench.png" height=28> Technical Setup
+1) Ensure that you have Python version 3.9 installed <img src="Assets/Images/Icons/python-icon.png" height=15>. We worked with PyCharm as an IDE and suggest to use it as well especially due to its handy debugging functionalities  <img src="Assets/Images/Icons/pycharm.png" height=18>.
+2) Clone our repository to your desired local folder.
+3) Install all requirements. To do so This can be done by running: 
+```
+pip install -r requirements.txt 
+```
+4) Optional: If you also want to run our R script used that was mainly used for producing
+plots for our presentation as well as evaluation purposes make sure to install the latest version as well. <img src="Assets/Images/Icons/r-icon.png" height=15>
+We used version R 4.1.1 for our project.
+
+### <img src="Assets/Images/Icons/configuration.png" height=30> Configuration
