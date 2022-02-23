@@ -461,7 +461,6 @@ def create_complete_matrix_data(debug=True):
     districts_list = districts['district'].tolist()
 
     final_df = pd.DataFrame([])
-    no_weather_dist = []
 
     for i, district in enumerate(districts_list):
         print_progress(completed=i+1, total=len(districts_list))
@@ -476,7 +475,6 @@ def create_complete_matrix_data(debug=True):
 
     final_df.fillna(0)
     final_df.to_csv('../Assets/Data/all_matrix_data_v3.csv')
-    print(no_weather_dist)
 
     ## Debugging:
     if debug:

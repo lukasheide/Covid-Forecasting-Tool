@@ -9,17 +9,25 @@ from meteostat import Point, Daily
 from Backend.Data.DataManager.data_util import format_name, date_str_to_int, validate_dates_for_query, validate_date, \
     Column
 
+"""
+    only methods that directly connects/query the DB. All method returns are dataframes
+"""
+
 
 def get_engine():
-    engine = sqlalchemy.create_engine('sqlite:///../Assets/Data/opendaten.db')
+    engine = sqlalchemy.create_engine('sqlite:///Assets/Data/opendaten.db')
     return engine
 
 
 def get_db_connection():
-    return sqlite3.connect('../Assets/Data/opendaten.db')
+    return sqlite3.connect('Assets/Data/opendaten.db')
 
 
 def update_db(table_name, dataframe, replace=True):
+    """
+       store a dataframe in a table with a given table name. if the table not exists, sqlalchemy handles the table
+       creation internally. if the table exists, records and be appended or replaced(truncate and store)
+    """
     table_name = format_name(table_name)
     exec_type = 'replace'
     # prepare_table(table_name) this will not need to be used
@@ -30,6 +38,11 @@ def update_db(table_name, dataframe, replace=True):
 
 
 def update_db_with_index(table_name, dataframe, index_label):
+    """
+       store a dataframe in a table with a given table name with specified df column as the index label(s).
+       if the table not exists, sqlalchemy handles the table creation internally.
+       if the table exists, records and be appended or replaced(truncate and store).
+    """
     table_name = format_name(table_name)
     engine = get_engine()
     dataframe.to_sql(table_name, engine, if_exists='replace', index=True, index_label=index_label)
@@ -38,6 +51,11 @@ def update_db_with_index(table_name, dataframe, index_label):
 def get_table_data_by_duration(table='Münster', start_date='2020-03-01',
                                end_date=datetime.today().strftime('%Y-%m-%d'),
                                duration=0, attributes=None):
+    """
+        exclusively can be used for querying covid data tables (by district name as table name) by time period and
+        list of attributes of interest.
+    """
+
     if attributes is None:
         attributes = 'all'
     table_name = format_name(table)
@@ -78,6 +96,10 @@ def get_table_data_by_duration(table='Münster', start_date='2020-03-01',
 
 
 def get_table_data_by_day(table='Münster', date=datetime.today().strftime('%Y%m%d'), attributes=None):
+    """
+        exclusively can be used for querying covid data tables (by district name as table name) by a specific day and
+        list of attributes of interest.
+    """
     if attributes is None:
         attributes = 'all'
     table_name = format_name(table)
@@ -109,6 +131,9 @@ def get_table_data_by_day(table='Münster', date=datetime.today().strftime('%Y%m
 
 
 def get_district_data(district, attributes=None):
+    """
+        get other-data (ex: population, center lat/lang, etc) of a district of interest
+    """
     attributes_str = ''
 
     if type(attributes) is list:
@@ -130,13 +155,39 @@ def get_district_data(district, attributes=None):
     return pd.read_sql(query_sql, engine)
 
 
+def get_table_data(table, attributes):
+    table_name = format_name(table)
+    engine = get_engine()
+
+    attributes_str = ''
+    if type(attributes) is list or type(attributes) is tuple:
+        attributes_str = ",".join(attributes)
+
+    elif type(attributes) is str:
+        attributes_str = attributes
+
+    else:
+        attributes_str = '*'
+
+    query_sql = 'SELECT ' + attributes_str + ' FROM ' + table_name
+
+    return pd.read_sql(query_sql, engine)
+
+
 def get_all_table_data(table_name):
+    """
+        get all the data from a table
+    """
     table_name = format_name(table_name)
     engine = get_engine()
     return pd.read_sql(table_name, engine)
 
 
 def get_policy_data(date=None):
+    """
+        get intervention-policy index for a date given.
+        index value is at country level therefore common for any district
+    """
     engine = get_engine()
 
     if date is not None:
@@ -168,6 +219,10 @@ def get_policy_data(date=None):
 
 
 def get_variant_data(date=None):
+    """
+        get the dominant variant name for a date given.
+        variant is at country level therefore common for any district
+    """
     engine = get_engine()
     data_start_date_obj = datetime.strptime('2020-09-28', '%Y-%m-%d') # start date of the 2020-40th week
 
@@ -219,6 +274,10 @@ def get_variant_data(date=None):
 
 
 def get_mobility_data(district, date=None):
+    """
+        get the mobility data of a district for a date given.
+        mobility data is at district level therefore, specific for each district
+    """
     engine = get_engine()
 
     if date is not None:
@@ -252,6 +311,11 @@ def get_mobility_data(district, date=None):
 
 
 def get_weather_data(district, date=None):
+    """
+        get the weather( avg. temperature, avg. wind) of a district for a date given.
+        weather data is at district level therefore, specific for each district
+        LAT LON of the district's main city is retrieved from district_details table
+    """
     temp_filler = 15.0
     wind_filler = 10.0
     if district == 'Garmisch-Partenkirchen':
@@ -281,6 +345,9 @@ def get_weather_data(district, date=None):
 
 
 def get_district_forecast_data(district):
+    """
+        get the latest forecast of a given district from the latest forecast pipeline run results
+    """
     engine = get_engine()
 
     query_sql = 'SELECT * ' \
@@ -295,6 +362,9 @@ def get_district_forecast_data(district):
 
 
 def get_all_latest_forecasts():
+    """
+        get the latest forecast of of all the districts from the latest forecast pipeline run results
+    """
     engine = get_engine()
 
     query_sql = 'SELECT * ' \
@@ -306,16 +376,18 @@ def get_all_latest_forecasts():
     return pd.read_sql(query_sql, engine)
 
 
-def clean_create_model_store():
+def clean_create_validation_store():
+    """
+        create the model validation pipeline relational schema tables
+    """
     connection = get_db_connection()
     cursor = connection.cursor()
 
-    # clean
-    cursor.executescript('DROP TABLE IF EXISTS prediction;')
+    cursor.executescript('DROP TABLE IF EXISTS validation_forecast;')
     cursor.executescript('DROP TABLE IF EXISTS param_and_start_vals;')
-    cursor.executescript('DROP TABLE IF EXISTS pipeline;')
+    cursor.executescript('DROP TABLE IF EXISTS validation_pipeline;')
 
-    create_pipeline_sql = "CREATE TABLE IF NOT EXISTS pipeline( " \
+    create_pipeline_sql = "CREATE TABLE IF NOT EXISTS validation_pipeline( " \
                           "pipeline_id INTEGER PRIMARY KEY, " \
                           "end_date TEXT NOT NULL," \
                           "val_duration INTEGER NOT NULL," \
@@ -339,10 +411,10 @@ def clean_create_model_store():
                        "rho REAL NOT NULL," \
                        "PRIMARY KEY (district_name, pipeline_id)" \
                        "FOREIGN KEY(pipeline_id) " \
-                       "REFERENCES pipeline(pipeline_id));"
+                       "REFERENCES validation_pipeline(pipeline_id));"
     cursor.execute(create_param_sql)
 
-    create_prediction_sql = "CREATE TABLE IF NOT EXISTS prediction( " \
+    create_prediction_sql = "CREATE TABLE IF NOT EXISTS validation_forecast( " \
                             "prediction_id INTEGER PRIMARY KEY," \
                             "pipeline_id INTEGER NOT NULL," \
                             "district_name TEXT NOT NULL," \
@@ -356,10 +428,12 @@ def clean_create_model_store():
 
 
 def clean_create_forecast_store():
+    """
+        create the model forecast pipeline relational schema tables
+    """
     connection = get_db_connection()
     cursor = connection.cursor()
 
-    # clean
     cursor.executescript('DROP TABLE IF EXISTS district_forecast;')
     cursor.executescript('DROP TABLE IF EXISTS forecast_pipeline;')
 
@@ -398,10 +472,13 @@ def clean_create_forecast_store():
     cursor.executescript(create_prediction_sql)
 
 
-def start_pipeline(end_date, validation_duration, visualize, validate, verbose):
+def start_validation_pipeline(end_date, validation_duration, visualize, validate, verbose):
+    """
+        creates an entry in 'validation_pipeline' to start the new pipeline run and returns the pipeline id
+    """
     connection = get_db_connection()
     cursor = connection.cursor()
-    sql_srt = 'INSERT INTO pipeline (end_date, ' \
+    sql_srt = 'INSERT INTO validation_pipeline (end_date, ' \
               'val_duration, ' \
               'visualize, ' \
               'verbose, ' \
@@ -417,7 +494,7 @@ def start_pipeline(end_date, validation_duration, visualize, validate, verbose):
         verbose,
         datetime.now().strftime("%d-%b-%Y (%H:%M:%S.%f)"),
         False))
-    cursor.execute('SELECT MAX(pipeline_id) FROM pipeline;')
+    cursor.execute('SELECT MAX(pipeline_id) FROM validation_pipeline;')
     pipeline_id = cursor.fetchone()[0]
 
     connection.commit()
@@ -427,6 +504,9 @@ def start_pipeline(end_date, validation_duration, visualize, validate, verbose):
 
 
 def start_forecast_pipeline(t_start_date, t_end_date, f_start_date, f_end_date, full_run):
+    """
+        creates an entry in 'forecast_pipeline' to start the new pipeline run and returns the pipeline id
+    """
     connection = get_db_connection()
     cursor = connection.cursor()
     sql_srt = 'INSERT INTO forecast_pipeline (' \
@@ -455,6 +535,9 @@ def start_forecast_pipeline(t_start_date, t_end_date, f_start_date, f_end_date, 
 
 
 def end_forecast_pipeline(pipeline_id):
+    """
+        end the forecast-pipeline run under the given pipeline
+    """
     connection = get_db_connection()
     cursor = connection.cursor()
 
@@ -472,6 +555,9 @@ def end_forecast_pipeline(pipeline_id):
 
 
 def insert_param_and_start_vals(pipeline_id, district_name, start_vals, model_params):
+    """
+        stores the parameters and starting values of the validation pipeline run
+    """
     connection = get_db_connection()
     cursor = connection.cursor()
 
@@ -496,7 +582,10 @@ def insert_param_and_start_vals(pipeline_id, district_name, start_vals, model_pa
     connection.close()
 
 
-def insert_prediction_vals(pipeline_id, district_name, predictions, train_end_date):
+def insert_forecast_vals(pipeline_id, district_name, predictions, train_end_date):
+    """
+        insert the forecasts generated for a district from the validation pipeline run under the given pipeline_id
+    """
     connection = get_db_connection()
     cursor = connection.cursor()
     current_day = datetime.strptime(train_end_date, '%Y-%m-%d')
@@ -506,10 +595,8 @@ def insert_prediction_vals(pipeline_id, district_name, predictions, train_end_da
     for i, cases in predictions.iterrows():
         current_day = current_day + timedelta(days=1)
         current_day_str = current_day.strftime('%Y-%m-%d')
-        # prepare the list
-        param_list = ()
 
-        sql_srt = 'INSERT INTO prediction (' \
+        sql_srt = 'INSERT INTO validation_forecast (' \
                   'district_name, ' \
                   'pipeline_id,' \
                   'date,' \
@@ -521,14 +608,11 @@ def insert_prediction_vals(pipeline_id, district_name, predictions, train_end_da
 
 
 if __name__ == '__main__':
-    # get_table_data_by_duration('Bremen', '2020-10-25', '2020-11-22', attributes=[Column.ADJ_ACT_CASES.value,
-    #                                                                              Column.VACCINATION_PERCENTAGE.value,
-    #                                                                              Column.CURRENT_INFECTIOUS.value])
-    # get_table_data_by_duration()
-    # clean_create_model_store()
-    clean_create_forecast_store()
-    # df = get_all_latest_forecasts()
-    # get_district_forecast_data('Münster')
-    # pass
-    # get_mobility_data("Münster", date='2022-01-27')
-    # get_weather_data("Wesermarsch", '2022-01-27')
+    """
+        at the very beginning, below two methods
+    """
+    # clean_create_validation_store()
+    # clean_create_forecast_store()
+    """
+        must be executed once to create the corresponding DB tables
+    """

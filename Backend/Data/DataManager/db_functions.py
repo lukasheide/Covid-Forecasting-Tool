@@ -2,11 +2,12 @@ import sqlite3
 
 import pandas as pd
 import sqlalchemy
-from datetime import datetime
+
+from Backend.Data.DataManager.data_util import format_name
 
 
 def get_engine():
-    engine = sqlalchemy.create_engine('sqlite:///../Assets/Data/opendaten.db')
+    engine = sqlalchemy.create_engine('sqlite:///Assets/Data/opendaten.db')
     return engine
 
 
@@ -34,46 +35,11 @@ def prepare_table(table_name):
     connection.close()
 
 
-def format_name(table_name):
-    string = table_name
-
-    u = 'ü'.encode()
-    U = 'Ü'.encode()
-    a = 'ä'.encode()
-    A = 'Ä'.encode()
-    o = 'ö'.encode()
-    O = 'Ö'.encode()
-    ss = 'ß'.encode()
-
-    string = string.encode()
-    string = string.replace(u, b'ue')
-    string = string.replace(U, b'Ue')
-    string = string.replace(a, b'ae')
-    string = string.replace(A, b'Ae')
-    string = string.replace(o, b'oe')
-    string = string.replace(O, b'Oe')
-    string = string.replace(ss, b'ss')
-
-    string = string.decode('utf-8')
-
-    string = string.replace(", ", "_")
-    string = string.replace("/", "_")
-    string = string.replace(" ", "_")
-    string = string.replace(".", "_")
-    string = string.replace("-", "_")
-    string = string.replace("(", "")
-    string = string.replace(")", "")
-
-    # print(string)
-
-    return string
-
-
 def get_db_connection():
-    return sqlite3.connect('../Assets/Data/opendaten.db')
+    return sqlite3.connect('Assets/Data/opendaten.db')
 
 
-def update_db(table_name, dataframe):
+def update_db_DEPRECATED(table_name, dataframe):
     table_name = format_name(table_name)
     prepare_table(table_name)
     engine = get_engine()
@@ -82,7 +48,12 @@ def update_db(table_name, dataframe):
     # dataframe.to_sql(table_name, engine, if_exists='append', index=False)
 
 
-def update_district_matrices(table_name, definition,  dataframe, index_label):
+def update_district_matrices_DEPRECATED(table_name, definition,  dataframe, index_label):
+    """
+        creates correlation matrix data table with given input specifications.
+        this method is exclusively used for calculating correlation between districts based on covid data.
+        UPDATE: this method is deprecated and has no impact to any of the pipelines
+    """
 
     table_name = format_name(table_name)
     table_name = 'cor_matrix_' + definition + '_' + table_name
@@ -92,33 +63,12 @@ def update_district_matrices(table_name, definition,  dataframe, index_label):
     dataframe.to_sql(table_name, engine, if_exists='replace', index=True, index_label=index_label)
 
 
-def evaluate_and_joining_dates(date1, date2):
-    today = int(datetime.today().strftime('%Y%m%d'))
-    # from_date = 0
-    # to_date = 0
-    #
-    # if date1 < today and date2 < today:
-    #     if date1 < date2:
-    #         from_date = date1
-    #         to_date = date2
-    #
-    #     else:
-    #         from_date = date2
-    #         to_date = date1
-    #
-    # elif today < date1 < date2:
-    #     print("invalid date parameter!")
-
-
-def get_relation_data():
-    reloaded_data = get_table_data('cor_matrix_incidents_districts', 0, 0, False, True)
-    # reloaded_data = reloaded_data.sort_values(district, ascending=False)
-    # reloaded_data = reloaded_data[district][:10].index.tolist()
-    # reloaded_data.set_index()
+def get_relation_data_DEPRECATED():
+    reloaded_data = get_table_data_DEPRECATED('cor_matrix_incidents_districts', 0, 0, False, True)
     return reloaded_data
 
 
-def get_table_data(table, date1, date2, attributes, with_index):
+def get_table_data_DEPRECATED(table, date1, date2, attributes, with_index):
     table_name = format_name(table)
     engine = get_engine()
 
@@ -152,5 +102,4 @@ def get_filtered_table_data(table, result_attr, cond_attr, con_value):
 
     return pd.read_sql(query_str, engine)
 
-# def generate_incidents_correlation():
 

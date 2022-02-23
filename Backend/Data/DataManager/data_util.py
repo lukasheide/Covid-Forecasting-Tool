@@ -1,13 +1,20 @@
 import datetime
 import sys
-import time
+from datetime import datetime, timedelta
 
 import numpy as np
-from datetime import datetime, timedelta
+
+"""
+util methods and classes for common usage
+"""
 
 
 class Column:
-    # columns of tables named after 'districts'
+    """
+    column name constants for DB query purposes
+    """
+
+    # common columns of tables which named after 'districts'. ex: Muenster
     DATE = 'date'
     DAILY_INFECTIONS = 'daily_infec'
     CURRENT_INFECTIOUS = 'curr_infectious'
@@ -34,6 +41,9 @@ class Column:
 
 
 def format_name(table_name):
+    """
+    this function does alphabetic transfer on a district's German name to English to make it a variable like name.
+    """
     string = table_name
 
     u = 'ü'.encode()
@@ -87,6 +97,9 @@ def validate_dates_for_query(start_date, end_date):
 
 
 def validate_date(date):
+    """
+    this function validates if an entered date string is a valid date
+    """
     date_positions = date.split("-")
     current_year = int(datetime.today().strftime('%Y'))
 
@@ -99,19 +112,29 @@ def validate_date(date):
 
 
 def date_str_to_int(date_str):
+    """
+    this function convert date string ("2021-10-02") to the look alike integer (20211002)
+    """
     date = int(str(date_str).replace("-", ""))
 
     return date
 
 
 def date_int_str(date_int):
+    """
+    this function convert date look alike integer (20211002) to the look alike date string ("2021-10-02")
+    """
     date = datetime.strptime(date_int, '%Y%m%d')
-    date = date.strftime('%Y-%m-%d')
+    date_str = date.strftime('%Y-%m-%d')
 
-    return date
+    return date_str
 
 
 def get_correct_district_name(wrong_name):
+    """
+    this function is used to reformat some specific destatis-data district names into the corresponding
+    coronadaten platform district names :'(
+    """
     if wrong_name == 'Flensburg':
         return 'Flensburg, Stadt'
     elif wrong_name == 'Kiel':
@@ -263,6 +286,9 @@ def get_correct_district_name(wrong_name):
 
 
 def compute_end_date_of_validation_period(train_end_date, duration):
+    """
+    this function is used to get the end of validation period date string given the duration of the validation
+    """
     current_day = datetime.strptime(train_end_date, '%Y-%m-%d')
     current_day = current_day + datetime.timedelta(days=duration)
 
@@ -270,6 +296,9 @@ def compute_end_date_of_validation_period(train_end_date, duration):
 
 
 def print_progress(completed, total, extra='', ):
+    """
+    this function is used to print the progress of a given execution (Ex: Loop)
+    """
     progress = round((completed / total) * 100 / 10)
     progress_str = "["
 
@@ -284,6 +313,9 @@ def print_progress(completed, total, extra='', ):
 
 
 def print_progress_with_computation_time_estimate(completed, total, start_time, extra='', ):
+    """
+    this function is used to print the progress of a given execution with remaining time to finish (Ex: Loop)
+    """
     progress = round((completed / total) * 100 / 10)
     progress_str = "["
 
@@ -377,6 +409,9 @@ def get_forecasting_df_columns():
 
 
 def create_dates_array(start_date_str, num_days, month_day_only=False):
+    """
+    this function is used to print the progress of a given execution (Ex: Loop)
+    """
 
     start_date_obj = datetime.strptime(start_date_str, '%Y-%m-%d')
     current_date_obj = start_date_obj
