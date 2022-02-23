@@ -45,7 +45,7 @@ German districts.
 
 ## Modeling
 ### Differential Equation Models
-<img src="Assets/Images/Models/model_structure.png" height=320>
+<img src="Assets/Images/Models/model_structure.png" height=280>
 
 Our final product consists of four models that are depicted above. Model 1
 and 2 are differential equation models. Differential equation models are 
@@ -56,7 +56,7 @@ based on health status and to model the transitions between the
 compartments using differential equations. 
 
 #### Model 1) SEIURV - Last Beta
-<img src="Assets/Images/Models/SEIURV_modelflow.png" height=320>
+<img src="Assets/Images/Models/SEIURV_modelflow.png" height=280>
 
 Our differential equation model consists of 6 different compartments. Two
 compartments for susceptible individuals that are susceptible of getting
