@@ -1,8 +1,6 @@
 # Regional Forecasting Tool for Covid-19 
 
-<img src="./Assets/Images/dashboard_forecasts.png" height=300>
-<img src="./Assets/Images/dashboard_map.png" height=300>
-
+### Goal and Motivation:
 The goal of this project was to develop a short-term forecasting tool for 
 COVID-19 on a regional level using open data that could support local health
 authorities in Germany.
@@ -20,6 +18,8 @@ We have taken on the challenge of developing a forecasting tool at a low
 aggregation level within a semester-long project seminar in the context of
 the Information Systems Master program at the WWU Münster.
 
+<img src="./Assets/Images/dashboard_forecasts.png" height=300>
+<img src="./Assets/Images/dashboard_map.png" height=300>
 
 
 ## Table of Contents
