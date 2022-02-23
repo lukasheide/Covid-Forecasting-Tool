@@ -1,6 +1,6 @@
 # Regional Forecasting Tool for Covid-19 Using Open Data
 <img src="Assets/Images/Logos/ercis_logo.png" height=60>
-<img src="Assets/Images/Logos/wwu_logo.png" height=70>
+<img src="Assets/Images/Logos/wwu_logo.png" height=75>
 
 
 ### Goal and Motivation:
@@ -187,7 +187,20 @@ to as a tightly-integrated backend and front-end.
 pip install -r requirements.txt 
 ```
 4) Optional: If you also want to run our R script used that was mainly used for producing
-plots for our presentation as well as evaluation purposes make sure to install the latest version as well. <img src="Assets/Images/Icons/r-icon.png" height=15>
+plots for our presentation as well as evaluation purposes make sure to install the latest version as well. <img src="./Assets/Images/Icons/r-icon.png" height=15>
 We used version R 4.1.1 for our project.
 
 ### <img src="Assets/Images/Icons/configuration.png" height=30> Configuration
+In the following we will explain the most important functions and pipelines and how to run them. 
+
+#### 1) Data Pipeline
+
+#### 2) Matrix Creation Pipeline
+
+#### 3) Machine Learning Layer
+
+#### 4) Evaluation Pipeline
+
+#### 5) Forecasting Pipeline
+
+#### 6) Dashboard
