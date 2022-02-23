@@ -2,17 +2,21 @@ import datetime
 import pandas as pd
 import numpy as np
 
-from Backend.Data.data_scraping.data_scraping_calls import update_ecdc_variant_data, update_destatis_mobility_data, \
-    update_oxcgrt_policy_data
+from Backend.Data.DataScraping.data_scraping_calls import download_ecdc_variant_data, download_destatis_mobility_data, \
+    download_oxcgrt_policy_data
 from Backend.Data.DataManager.data_util import get_correct_district_name
 from Backend.Data.DataManager.db_calls import update_db, get_all_table_data
 
+"""
+    get the latest updates from ECDC, DESTATIS and OXCGRT and update the DB
+"""
+
 
 def update_ecdc_variant_table():
-    update_ecdc_variant_data()
+    download_ecdc_variant_data()
     print('latest update of variant data fetched successfully!')
 
-    latest_file_loc = '../Assets/Data/Scraped/ecdc/' + datetime.datetime.today().strftime('%d%m%y') + '.csv'
+    latest_file_loc = 'Assets/Data/Scraped/ecdc/' + datetime.datetime.today().strftime('%d%m%y') + '.csv'
     df = pd.read_csv(latest_file_loc)
     germany = df[df['country'] == 'Germany']
     germany = germany.drop(['country', 'country_code'], axis=1)
@@ -20,9 +24,8 @@ def update_ecdc_variant_table():
     update_db('ecdc_varient_data', germany)
 
 
-# IMPORTANT: only used to extract the initial data
 def store_destatis_base_data():
-    base_data_file = '../Assets/Data/Scraped/destatis/destatis_base.csv'
+    base_data_file = 'Assets/Data/Scraped/destatis/destatis_base.csv'
     base_data = pd.read_csv(base_data_file)
 
     for index, row in base_data.iterrows():
@@ -32,13 +35,13 @@ def store_destatis_base_data():
 
 
 def update_destatis_mobility_table():
-    update_destatis_mobility_data()
+    download_destatis_mobility_data()
     print('latest update of mobility data fetched successfully!')
 
     all_data = get_all_table_data(table_name='destatis_mobility_data')
     all_data_last_date = [*all_data.columns[-1:]][0]
 
-    latest_file = '../Assets/Data/Scraped/destatis/' + datetime.datetime.today().strftime('%d%m%y') + '.csv'
+    latest_file = 'Assets/Data/Scraped/destatis/' + datetime.datetime.today().strftime('%d%m%y') + '.csv'
     latest_data = pd.read_csv(latest_file, sep=";")
 
     start_column = int(latest_data.columns.get_loc(all_data_last_date))
@@ -50,7 +53,7 @@ def update_destatis_mobility_table():
 
 
 def update_oxcgrt_policy_table():
-    update_oxcgrt_policy_data()
+    download_oxcgrt_policy_data()
     print('latest update of mobility data fetched successfully!')
 
     latest_file_loc = '../Assets/Data/Scraped/oxcgrt/' + datetime.datetime.today().strftime('%d%m%y') + '.csv'
@@ -69,8 +72,19 @@ def update_oxcgrt_policy_table():
     update_db('xocgrt_policy_data', germany)
 
 
-if __name__ == '__main__':
-    ## store_destatis_base_data()
+def extract_all_other_data():
     update_ecdc_variant_table()
     update_destatis_mobility_table()
     update_oxcgrt_policy_table()
+
+
+if __name__ == '__main__':
+    """
+        IMPORTANT: the method below only used to extract the initial destatis data from the file we privately received
+    """
+    # store_destatis_base_data()
+
+    """
+       only the method below needs to be executed to update the data from the sources mentioned above
+    """
+    # extract_all_other_data()
