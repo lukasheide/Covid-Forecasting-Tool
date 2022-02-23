@@ -273,6 +273,13 @@ def plot_all_forecasts(forecast_dictionary, y_train, start_date_str, forecasting
                        plot_ensemble=True,
                        plot_predictions_intervals=False
                        ):
+
+    """
+    Flexible function to combine all sorts of combinations of the different models + prediction intervals, validation
+    and training data into one plot.
+    """
+
+
     plt.rcParams['figure.figsize'] = 10, 5
     plt.tight_layout()
     plt.clf()
@@ -407,7 +414,8 @@ def plot_all_forecasts(forecast_dictionary, y_train, start_date_str, forecasting
 
     # Change y-axis lower bound to 0 and extend upper bound of y-axis by a factor of 1.35:
     x1, x2, y1, y2 = plt.axis()
-    plt.axis((x1, x2, 0, y2*1.35))
-    plt.axis((x1, x2, 0, 650))
+
+    # plt.axis((x1, x2, 0, y2*1.35))
+    # plt.axis((x1, x2, 0, 650))
 
     plt.show()

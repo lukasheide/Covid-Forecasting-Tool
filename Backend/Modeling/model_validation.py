@@ -212,7 +212,7 @@ def model_validation_pipeline_v2_wrapper():
     # wants to run two unconnected time intervals. (Example: Run model for Apr 2020 - Oct 2020 + Jun 2021 - Jan 2022)
 
     pipeline_intervals = [
-        ('2020-03-01', '2022-01-28'),
+        ('2021-10-01', '2022-01-28'),
     ]
 
     # Number of days to be forecasted:
@@ -238,7 +238,7 @@ def model_validation_pipeline_v2_wrapper():
     # districts.sort()
     #
     ### Option 2: Set districts manually:
-    # districts = ['Münster', 'Bielefeld']
+    districts = ['Münster', 'Bielefeld']
     ##############################################################################
 
     # The ensemble model is computed as a weighted average of the other three models. The weights can be set here:
@@ -397,7 +397,7 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
                                  run_diff_eq_ml_beta=True,
                                  run_sarima=True,
                                  run_ensemble=True,
-                                 debug=False):
+                                 debug=True):
 
     # 1) Preparation steps:
 
@@ -541,7 +541,7 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
                                    y_train_fitted=convert_seven_day_averages(seirv_last_beta_only_results['y_pred_including_train_period'],start_vals_seirv['N']),
                                    plot_y_train_fitted=False,
                                    plot_y_train_fitted_all=False,
-                                   plot_val=False,
+                                   plot_val=True,
                                    plot_diff_eq_last_beta=True,
                                    plot_diff_eq_ml_beta=True,
                                    plot_sarima=True,
