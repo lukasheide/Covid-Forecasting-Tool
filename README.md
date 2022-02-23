@@ -16,17 +16,17 @@ adherence to social distancing and many other factors.
 However, forecasting models and tools that are used for policy-making are 
 for the most part only available at the federal or state level. 
 Infectious disease forecasting is considered one of the most 
-difficult forecasting disciplines.  
-We have taken on the challenge of developing a forecasting tool at a low 
-aggregation level within a semester-long project seminar in the context of
+difficult forecasting disciplines. We have taken on the challenge of 
+developing a forecasting tool at a low aggregation level within a 
+semester-long project seminar in the context of
 the Information Systems Master program at the WWU Münster.
 
 <img src="Assets/Images/Dashboard/dashboard_forecasts.png" height=320>
 <img src="Assets/Images/Dashboard/dashboard_map.png" height=320>
 
-The images above depict our final end product, our Covid-19 forecasting
-dashboard that provides predictions for the next 14 days for all 400
-German districts.
+The images above depicts our final product: A Covid-19 forecasting
+dashboard that provides predictions of four different models
+for the next 14 days for all 400 German districts.
 
 
 ## Table of Contents
