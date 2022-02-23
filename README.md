@@ -87,7 +87,7 @@ depicted below. We ended up using an XGBoost model as this yielded the best
 performance. 
 
 <img src="Assets/Images/Models/ml_layer_process_chart.png" height=200>
-<img src="Assets/Images/Models/ml_models.png" height=200>
+<img src="Assets/Images/Models/ml_models.png" height=250>
 
 ## Architecture
 
