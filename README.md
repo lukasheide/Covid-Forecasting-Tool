@@ -21,6 +21,8 @@ the Information Systems Master program at the WWU Münster.
 <img src="./Assets/Images/dashboard_forecasts.png" height=300>
 <img src="./Assets/Images/dashboard_map.png" height=300>
 
+The images above depict our final end product, our forecasting tool.
+
 
 ## Table of Contents
 - [Modeling](#modeling)
