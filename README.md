@@ -24,8 +24,9 @@ the Information Systems Master program at the WWU Münster.
 <img src="Assets/Images/Dashboard/dashboard_forecasts.png" height=320>
 <img src="Assets/Images/Dashboard/dashboard_map.png" height=320>
 
-The images above depict our final end product, our forecasting tool that 
-provides forecasts for the next 14 days.
+The images above depict our final end product, our Covid-19 forecasting
+dashboard that provides predictions for the next 14 days for all 400
+German districts.
 
 
 ## Table of Contents
@@ -146,7 +147,7 @@ MeteoStat, DESTATIS, and ECDC data is used to train the machine learning
 model of the machine learning layer. 
 The data from CoronaDaten Platform and MeteoStat are accessed via API calls.  DESTATIS and ECDC data is directly accessed as files using http requests. 
 
-### Storage Layer
+### Storage Layer <img src="Assets/Images/Icons/storage.png" height=30>
 By taking the diversity, the growth of the data based on product 
 requirements, and the product’s portability into consideration, 
 Storage Layer was built on SQLite database engine, which is lightweight, 
