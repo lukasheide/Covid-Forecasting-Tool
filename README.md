@@ -138,7 +138,7 @@ consists of four different layers that will be explained in the following.
 
 <img src="Assets/Images/Architecture/architecture.png" height=320>
 
-### Data Layer <img src="Assets/Images/Icons/data.png" height=30>
+###  <img src="Assets/Images/Icons/data.png" height=30> Data Layer
 This layer starts the flow of the application and provides all the data 
 required for the models to generate their predictions. It consists of 
 four main data sources. CoronaDaten Platform is the core data source of 
@@ -147,7 +147,7 @@ MeteoStat, DESTATIS, and ECDC data is used to train the machine learning
 model of the machine learning layer. 
 The data from CoronaDaten Platform and MeteoStat are accessed via API calls.  DESTATIS and ECDC data is directly accessed as files using http requests. 
 
-### Storage Layer <img src="Assets/Images/Icons/storage.png" height=30>
+### <img src="Assets/Images/Icons/storage.png" height=30> Storage Layer</div>
 By taking the diversity, the growth of the data based on product 
 requirements, and the product’s portability into consideration, 
 Storage Layer was built on SQLite database engine, which is lightweight, 
@@ -157,14 +157,14 @@ format within the application, SQLAlchemy is utilized for the
 object-relational mapping between Python and SQLite. The layer is 
 responsible for all data storage and distribution within the application.
 
-### Modeling Layer <img src="Assets/Images/Icons/modeling.png" height=30>
+### <img src="Assets/Images/Icons/modeling.png" height=30> Modeling Layer 
 This layer contains all the models used to perform forecasting developed 
 based on Python. The model-specific basic implementation libraries are 
 used, and adaptations are made according to the project requirements and 
 scope. As the core layer of the application, this layer is responsible 
 for generating forecasts and related complementary processes.
 
-### Visualization Layer <img src="Assets/Images/Icons/visualization.png" height=30>
+### <img src="Assets/Images/Icons/visualization.png" height=30> Visualization Layer
 The interactive dashboard is comprised in this layer where the user is 
 allowed to select, visualize, compare regional forecast results generated 
 by our models. Dash by Plotly, built on top of Flask, was considered due 
