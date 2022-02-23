@@ -1,4 +1,4 @@
-# Regional Forecasting Tool for Covid-19 
+# Regional Forecasting Tool for Covid-19 <img src="Assets/Images/Logos/wwu_logo.png" height=20>
 
 ### Goal and Motivation:
 The goal of this project was to develop a short-term forecasting tool for 
@@ -18,8 +18,8 @@ We have taken on the challenge of developing a forecasting tool at a low
 aggregation level within a semester-long project seminar in the context of
 the Information Systems Master program at the WWU Münster.
 
-<img src="./Assets/Images/dashboard_forecasts.png" height=320>
-<img src="./Assets/Images/dashboard_map.png" height=320>
+<img src="Assets/Images/Dashboard/dashboard_forecasts.png" height=320>
+<img src="Assets/Images/Dashboard/dashboard_map.png" height=320>
 
 The images above depict our final end product, our forecasting tool.
 
