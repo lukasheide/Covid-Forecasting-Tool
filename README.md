@@ -1,6 +1,7 @@
 # Regional Forecasting Tool for Covid-19 
-<img src="Assets/Images/Logos/wwu_logo.png" height=40>
 <img src="Assets/Images/Logos/ercis_logo.png" height=40>
+<img src="Assets/Images/Logos/wwu_logo.png" height=45>
+
 
 ### Goal and Motivation:
 The goal of this project was to develop a short-term forecasting tool for 
@@ -35,6 +36,30 @@ The images above depict our final end product, our forecasting tool.
   - [Configuration](#configuration)
 
 ## Modeling
+### Differential Equation Models
+<img src="Assets/Images/Models/ModelStructure.png" height=320>
+
+Our final product consists of four models that are depicted above. Model 1
+and 2 are differential equation models. Differential equation models are 
+among the most popular subfamilies of mechanistic models for predicting 
+infectious disease spreading. The idea behind this modeling family is to 
+divide the affected population into different compartments 
+based on health status and to model the transitions between the
+compartments using differential equations. 
+
+#### Model 1) SEIURV - Last Beta
+<img src="Assets/Images/Models/SEIURV_modelflow.png" height=320>
+
+Our differential equation model consists of 6 different compartments. Two
+compartments for susceptible individuals that are susceptible of getting
+infected when getting in contact with infectious individuals: 
+Vaccinated (**V**) and non-vaccinated (**S**). The exposed compartment 
+(**E**) contains individuals that recently got infected but are not 
+infectious yet. Infectious individuals that are capable of infecting 
+others are again split into two groups for detected (**I**) and 
+undetected cases (**U**). Individuals that recently recovered (**R**) 
+and currently considered as immune are contained in the last compartment. 
+
 
 ## Architecture
 
