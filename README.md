@@ -5,11 +5,11 @@
 
 ### Goal and Motivation:
 The goal of this project was to develop a short-term forecasting tool for 
-COVID-19 on a regional level using open data that could support local health
-authorities in Germany.
-The motivation of our project is the fact that local infection incidence 
-can sometimes be very different from other districts, even for districts 
-in the same state. This heterogeneity can be explained by the many different 
+COVID-19 on a regional level using open data to support local health
+authorities.
+The spread of infectious diseases at the local level can sometimes vary 
+greatly, even in districts of the same federal state. 
+This heterogeneity can be explained by a wide variety of different 
 influencing factors that vary between districts, including different 
 vaccination rates, local intervention measures, spread of variants, 
 adherence to social distancing and many other factors.
