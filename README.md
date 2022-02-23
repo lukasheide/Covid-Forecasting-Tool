@@ -30,7 +30,7 @@ provides forecasts for the next 14 days.
 
 ## Table of Contents
 - [Modeling](#modeling)
-  - [Differential Equation Models](#Differential-Equation-Models)
+  - [Differential Equation Models](###Differential-Equation-Models)
     - [SEIURV + Last Beta](#Model-1\)-SEIURV-Last-Beta)
     - [SEIURV + Machine Learning Beta](#Model-2\)-SEIURV-ML-Beta)
   - [Regression Model](#Regression-Model)
