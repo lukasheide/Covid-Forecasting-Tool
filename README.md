@@ -1,4 +1,4 @@
-# Regional Forecasting Tool for Covid-19 
+# Regional Forecasting Tool for Covid-19 Using Open Data
 <img src="Assets/Images/Logos/ercis_logo.png" height=40>
 <img src="Assets/Images/Logos/wwu_logo.png" height=45>
 
