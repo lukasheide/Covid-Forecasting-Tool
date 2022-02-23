@@ -138,7 +138,7 @@ consists of four different layers that will be explained in the following.
 
 <img src="Assets/Images/Architecture/architecture.png" height=320>
 
-### Data Layer
+### Data Layer <img src="Assets/Images/Icons/data.png" height=30>
 This layer starts the flow of the application and provides all the data 
 required for the models to generate their predictions. It consists of 
 four main data sources. CoronaDaten Platform is the core data source of 
@@ -157,14 +157,14 @@ format within the application, SQLAlchemy is utilized for the
 object-relational mapping between Python and SQLite. The layer is 
 responsible for all data storage and distribution within the application.
 
-### Modeling Layer
+### Modeling Layer <img src="Assets/Images/Icons/modeling.png" height=30>
 This layer contains all the models used to perform forecasting developed 
 based on Python. The model-specific basic implementation libraries are 
 used, and adaptations are made according to the project requirements and 
 scope. As the core layer of the application, this layer is responsible 
 for generating forecasts and related complementary processes.
 
-### Visualization Layer
+### Visualization Layer <img src="Assets/Images/Icons/visualization.png" height=30>
 The interactive dashboard is comprised in this layer where the user is 
 allowed to select, visualize, compare regional forecast results generated 
 by our models. Dash by Plotly, built on top of Flask, was considered due 
