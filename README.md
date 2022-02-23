@@ -1,6 +1,7 @@
 # Regional Forecasting Tool for Covid-19 
 
-<img src="./Assets/Images/dashboard_map.png" width=200>
+<img src="./Assets/Images/dashboard_forecasts.png" height=300>
+<img src="./Assets/Images/dashboard_map.png" height=300>
 
 The goal of this project was to develop a short-term forecasting tool for 
 COVID-19 on a regional level using open data that could support local health
