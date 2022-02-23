@@ -1,8 +1,6 @@
 import numpy as np
 import pandas as pd
 
-from Backend.Data.DataManager.remote_db_manager import download_pred_intervals_file
-
 
 def compute_prediction_intervals(y_pred, intervals_residuals_df, avg_pred, model_name):
     # Get classes depending on how the infections currently are:

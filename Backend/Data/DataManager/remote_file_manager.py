@@ -7,8 +7,15 @@ from pathlib import Path
 
 from datetime import datetime
 
+"""
+    these methods are used to handle the files which are needed be keep up to date but cannot be used with git
+"""
+
 
 def download_db_file():
+    """
+        downloading sqlite .db file
+    """
     transport = Transport((Server.host, Server.port))
     transport.connect(username=Server.username, password=Server.password)
     sftp = SFTPClient.from_transport(transport)
@@ -29,6 +36,9 @@ def download_db_file():
 
 
 def upload_db_file():
+    """
+        uploading sqlite .db file
+    """
     transport = Transport((Server.host, Server.port))
     transport.connect(username=Server.username, password=Server.password)
     sftp = SFTPClient.from_transport(transport)
@@ -55,6 +65,9 @@ def upload_db_file():
 
 
 def download_pred_intervals_file():
+    """
+        downloading prediction_intervals.csv file
+    """
     transport = Transport((Server.host, Server.port))
     transport.connect(username=Server.username, password=Server.password)
     sftp = SFTPClient.from_transport(transport)
@@ -79,6 +92,9 @@ def download_pred_intervals_file():
 
 
 def upload_pred_intervals_file():
+    """
+        downloading prediction_intervals.csv file
+    """
     transport = Transport((Server.host, Server.port))
     transport.connect(username=Server.username, password=Server.password)
     sftp = SFTPClient.from_transport(transport)
@@ -110,7 +126,7 @@ def upload_pred_intervals_file():
 
 if __name__ == '__main__':
 
-    task = 'download_pred_intervals'
+    task = 'download'
 
     if task == 'upload':
         upload_db_file()

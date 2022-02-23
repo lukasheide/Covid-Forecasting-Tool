@@ -7,16 +7,17 @@ from dash import html
 import pandas as pd
 import plotly.express as px
 
-from Backend.Data.DataManager.db_functions import get_table_data
-
+from Backend.Data.DataManager.db_functions import get_table_data_DEPRECATED
+# make the dashboard with plotly
 app = dash.Dash(__name__)
 
-district_list = get_table_data('district_list', 0, 0, "district", False)
+# load the district list
+district_list = get_table_data_DEPRECATED('district_list', 0, 0, "district", False)
 
-# data for the chloropath maps
-german_districts = json.load(open("Data/AnalyticsTool/simplified_geo_data.geojson", 'r', encoding='utf-8'))
+# geojson data for the choropleth maps
+german_districts = json.load(open("Frontend/AnalyticsTool/Assets/simplified_geo_data.geojson", 'r', encoding='utf-8'))
 # 'all' for bluff to correct later
-all_dis_correl_data = get_table_data('cor_matrix_incidents_districts', 0, 0, 'all', True)
+all_dis_correl_data = get_table_data_DEPRECATED('cor_matrix_incidents_districts', 0, 0, 'all', True)
 dist_id = 1000
 
 state_id_map = {}
@@ -43,7 +44,7 @@ def create_data_set(reloaded_data):
     frames = []
 
     for district in reloaded_data:
-        dis_data = get_table_data(district, 0, 0, ['date',
+        dis_data = get_table_data_DEPRECATED(district, 0, 0, ['date',
                                                    'daily_infec',
                                                    'cum_infec',
                                                    'daily_deaths',
@@ -54,7 +55,7 @@ def create_data_set(reloaded_data):
                                                    'daily_incidents_rate',
                                                    'daily_vacc',
                                                    'cum_vacc',
-                                                   'vacc_percentage'], False)
+                                                              'vacc_percentage'], False)
         dis_data['district'] = district
         frames.append(dis_data)
 
@@ -84,7 +85,7 @@ def create_data_set(reloaded_data):
 
 
 def get_top_relation(district):
-    reloaded_data = get_table_data('cor_matrix_incidents_districts', 0, 0, district, True)
+    reloaded_data = get_table_data_DEPRECATED('cor_matrix_incidents_districts', 0, 0, district, True)
     reloaded_data = reloaded_data.sort_values(district, ascending=False)
     reloaded_data = reloaded_data[district][:10].index.tolist()
 

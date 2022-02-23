@@ -7,10 +7,10 @@ from datetime import date, datetime, timedelta
 from Backend.Data.DataManager.data_access_methods import get_smoothen_cases, get_starting_values, get_model_params
 from Backend.Data.DataManager.data_util import Column, date_int_str, compute_end_date_of_validation_period, \
     create_dates_array, print_progress_with_computation_time_estimate
-from Backend.Data.DataManager.db_calls import start_pipeline, insert_param_and_start_vals, insert_prediction_vals, \
+from Backend.Data.DataManager.db_calls import start_validation_pipeline, insert_param_and_start_vals, insert_forecast_vals, \
     get_all_table_data
 from Backend.Data.DataManager.matrix_data import get_weekly_intervals_grid, get_predictors_for_ml_layer
-from Backend.Data.DataManager.remote_db_manager import download_db_file
+from Backend.Data.DataManager.remote_file_manager import download_db_file
 from Backend.Modeling.Differential_Equation_Modeling.prediction_intervals import get_prediction_intervals
 from Backend.Modeling.Differential_Equation_Modeling.seiurv_model import seiurv_pipeline
 from Backend.Evaluation.metrics import compute_evaluation_metrics
@@ -35,7 +35,7 @@ def diff_eq_pipeline_DEPRECATED(train_end_date: date, duration: int, districts: 
         download_db_file()
 
     # store pipeline data in the DB
-    pipeline_id = start_pipeline(train_end_date, validation_duration, visualize, validate, verbose)
+    pipeline_id = start_validation_pipeline(train_end_date, validation_duration, visualize, validate, verbose)
 
     # set up results dictionary:
     results_dict = {}
@@ -103,7 +103,7 @@ def diff_eq_pipeline_DEPRECATED(train_end_date: date, duration: int, districts: 
         if store_results_to_db:
             insert_param_and_start_vals(pipeline_id, district, start_vals,
                                         pipeline_result['model_params_forecast_period'])
-            insert_prediction_vals(pipeline_id, district, pipeline_result['y_pred_without_train_period'],
+            insert_forecast_vals(pipeline_id, district, pipeline_result['y_pred_without_train_period'],
                                    train_end_date)
 
         #  5) Append results to dictionary:

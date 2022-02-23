@@ -1,7 +1,6 @@
 import numpy as np
 from datetime import datetime, timedelta
 
-from Backend.Data.DataManager.opendata_db_calls import get_list_of_districts
 import random
 
 
@@ -77,8 +76,9 @@ def get_list_of_random_districts(num, seed=42):
 
 
     #### Code below will be updated:
-    if False:
-        all_districts_lst = get_list_of_districts()
+    # if the full district is needed it can be taken using 'get_table_data("district_list", [Column.DISTRICT])'
+    # if False:
+        # all_districts_lst = get_list_of_districts()
 
     # Ensure that number of desired districts does not exceed number of districts:
     if num > len(all_districts_lst):
