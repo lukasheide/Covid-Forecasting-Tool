@@ -186,7 +186,7 @@ to as a tightly-integrated backend and front-end.
 ```
 pip install -r requirements.txt 
 ```
-4) Optional: If you also want to run our R script used that was mainly used for producing
+4) Optional: If you also want to run our R script that was mainly used for producing
 plots for our presentation as well as evaluation purposes make sure to install the latest version as well. <img src="./Assets/Images/Icons/r-icon.png" height=15>
 We used version R 4.1.1 for our project.
 
