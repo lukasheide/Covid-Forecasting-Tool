@@ -257,7 +257,7 @@ def get_weekly_variant_data(start_date):
     return weekly_variant_dict
 
 
-def get_weekly_beta(district, start_date, debug=False):
+def get_weekly_beta_DEPRECATED(district, start_date, debug=False):
     weekly_beta_values = {}
     weekly_infections = {}
     start_date_obj = datetime.strptime(start_date, '%Y-%m-%d')
@@ -320,7 +320,14 @@ def get_weekly_beta(district, start_date, debug=False):
 
 
 def get_weekly_beta_v2(district, start_date, end_date, debug=False):
-    # print(f"Starting computation of weekly betas at time: {datetime.now()}")
+
+    """
+    The Purpose of this function is to compute for each district / time interval combination the fitted beta
+    for the training period (last beta) and the fitted beta for the validation period (what would've been the
+    perfect beta in this period). This data is then later used for training the machine learning model.
+    """
+
+    print(f"Starting computation of weekly betas at time: {datetime.now()}")
 
     weekly_beta_t_minus_1_values = {}
     weekly_beta_values = {}
@@ -460,7 +467,7 @@ def get_weekly_intervals_grid(start_day, last_day, duration_train, duration_val)
 
 
 def create_complete_matrix_data(debug=True):
-    # create_weekly_matrix()
+    create_weekly_matrix()
     districts = get_all_table_data(table_name='district_list')
     districts_list = districts['district'].tolist()
 
