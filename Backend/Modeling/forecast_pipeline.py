@@ -12,7 +12,7 @@ from Backend.Modeling.forecasting_wrapper_functions import forecast_all_models, 
 from Backend.Visualization.plotting import plot_all_forecasts
 
 
-def forecasting_pipeline(full_run=False, debug=False):
+def forecasting_pipeline(full_run=False, debug=True):
 
     ######################################## Pipeline Configuration: ########################################
     ## Below important configurations of the forecasting pipeline parameters can be done:
@@ -145,7 +145,7 @@ def forecasting_pipeline(full_run=False, debug=False):
                                plot_diff_eq_ml_beta=True,
                                plot_sarima=True,
                                plot_ensemble=False,
-                               plot_predictions_intervals=False
+                               plot_predictions_intervals=True
                                )
 
         ### 6) Upload to DB
