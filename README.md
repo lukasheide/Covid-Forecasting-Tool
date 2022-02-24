@@ -199,6 +199,36 @@ In the following we will explain the most important functions and pipelines and 
 #### 2) Matrix Creation Pipeline
 
 #### 3) Machine Learning Layer
+The machine learning layer is used to create, train, evaluate and export a
+machine learning model to predict the best fitting beta for the forecasting
+period for the **SEIURV + ML** model. We decided to utilize a Jupyter
+Notebook for this purpose mainly due to its ability to output and store
+visualizations which makes it easier to follow along for the other team
+members. Also for the implementation team this was useful as it was easy 
+to step by step  execute specific code snippets only instead of having 
+to run an entire script.
+This comes with the downside that the 
+[notebook](Backend/Modeling/Differential_Equation_Modeling/Machine_Learning_Layer/beta_estimation.ipynb) 
+cannot be called from another script unlike a normal python script.  
+Before running the notebook the csv file [all_matrix_data_v3.csv](Assets/Data) has to
+be created by the matrix creation pipeline or alternatively an existing file has to
+be placed under [Assets/Data/](Assets/Data). This CSV file contains the data
+used for training the model including the optimal beta for a certain time 
+period for a certain district that was computed using a least squares approach,
+information about the fitted data in the training period before the validation
+period as well as all other predictors including weather, mobility, intervention
+measure data, etc. 
+The best performing model is saved as a pickle file for using it for 
+producing new forecasts with the SEIURV + ML model.  
+Below the residuals (difference between fitted beta and predicted beta) can 
+be seen. It can be observed that the errors made by the machine learning
+model tend to be smaller than the ones made if one simply uses the fitted
+beta from the previous period.
+
+<img src="Assets/Images/Models/ml_residuals_last_beta.png" height=250> 
+<img src="Assets/Images/Models/ml_residuals_ml_beta.png" height=250>
+
+
 
 #### 4) Evaluation Pipeline
 
