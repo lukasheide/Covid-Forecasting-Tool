@@ -9,7 +9,8 @@ from pathlib import Path
 from datetime import datetime
 
 """
-    these methods are used to handle the files which are needed be keep up to date but cannot be used with git
+These methods are used to upload and download files to the server. This includes our local database files
+as well as csv files, for example, regarding the prediction intervals.
 """
 
 
@@ -124,6 +125,11 @@ def upload_pred_intervals_file():
 
 
 if __name__ == '__main__':
+
+    """
+    These methods are used to upload and download files to the server. This includes our local database files
+    as well as csv files, for example, regarding the prediction intervals.
+    """
 
     task = 'download_pred_intervals'
 
