@@ -45,13 +45,13 @@ district_list = district_data['district'].tolist()
 district_list.sort()
 
 # create the district list of latest 14 days of predictions in the prediction table
-dates_list = all_district_forecasts['date'].unique().sort()[-14:]
+dates_list = all_district_forecasts['date'].unique()[-14:]
 
 ########### creating all three forcast maps #############
 # resolution and zoom
-map_width = 900
-map_height = 900
-map_zoom = 5
+map_width = 700
+map_height = 700
+map_zoom = 4.5
 
 ### create common data ###
 data_for_map_df = all_district_forecasts[all_district_forecasts['cases'].isna()]
@@ -166,7 +166,7 @@ app.layout = html.Div([
         style={'backgroundColor': '#111111', 'color': 'white',},
         children=[
             html.Div(
-                # className="six columns",
+                className="six columns",
                 children=[
                     html.Div([
                             html.Div(
@@ -211,7 +211,7 @@ app.layout = html.Div([
                                 id='dist-forecast-graph',
                                 figure={
                                     'layout': {
-                                        'height': 800,
+                                        # 'height': 800,
                                         # 'width': 900,
                                         'margin': {'l': 10, 'b': 10, 't': 10, 'r': 10},
                                         'paper_bgcolor': '#7FDBFF',
@@ -224,7 +224,7 @@ app.layout = html.Div([
                 style={'padding-right': '30px', 'padding-left': '30px', 'padding-top': '10px', 'padding-bottom': '10px'}
             ),
             html.Div(
-                # className="six columns",
+                className="six columns",
                 children=[
                     html.Div(
                         children=[
@@ -244,7 +244,7 @@ app.layout = html.Div([
                         ]
                     )
                 ],
-                style={'padding-right': '30px', 'padding-left': '30px', 'padding-top': '30px', 'padding-bottom': '30px', 'justify-content': 'center'}
+                style={'padding-right': '30px', 'padding-left': '30px', 'padding-top': '10px', 'padding-bottom': '10px', 'justify-content': 'center'}
             ),
         ]
     )

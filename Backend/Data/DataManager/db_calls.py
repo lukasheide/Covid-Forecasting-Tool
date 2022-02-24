@@ -42,6 +42,7 @@ def drop_table_by_name(table_name):
     cursor = connection.cursor()
 
     cursor.executescript('DROP TABLE IF EXISTS '+table_name+';')
+    connection.close()
 
 
 def update_db_with_index(table_name, dataframe, index_label):
@@ -477,6 +478,8 @@ def clean_create_forecast_store():
                             "FOREIGN KEY(pipeline_id) " \
                             "REFERENCES forecast_pipeline(pipeline_id));"
     cursor.executescript(create_prediction_sql)
+
+    connection.close()
 
 
 def start_validation_pipeline(end_date, validation_duration, visualize, validate, verbose):

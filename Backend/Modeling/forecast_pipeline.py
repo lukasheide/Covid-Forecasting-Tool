@@ -2,7 +2,8 @@ import joblib
 from datetime import datetime, timedelta
 import pandas as pd
 
-from Backend.Data.DataManager.data_access_methods import get_smoothen_cases, get_starting_values, get_model_params
+from Backend.Data.DataManager.data_access_methods import get_smoothen_cases, get_starting_values, get_model_params, \
+    eval_and_get_latest_possible_starting_date
 from Backend.Data.DataManager.data_util import Column, date_int_str, create_dates_array, get_forecasting_df_columns, print_progress_with_computation_time_estimate
 from Backend.Data.DataManager.db_calls import get_all_table_data, start_forecast_pipeline, update_db, end_forecast_pipeline
 from Backend.Data.DataManager.matrix_data import get_predictors_for_ml_layer
@@ -12,13 +13,13 @@ from Backend.Modeling.forecasting_wrapper_functions import forecast_all_models, 
 from Backend.Visualization.plotting import plot_all_forecasts
 
 
-def forecasting_pipeline(full_run=False, debug=True):
+def forecasting_pipeline(full_run=False, debug=False, forecast_from=None):
 
     ######################################## Pipeline Configuration: ########################################
     ## Below important configurations of the forecasting pipeline parameters can be done:
 
     # Last day of training: (usually this should be set to the latest day for which RKI infection data is available)
-    training_end_date = '2022-01-30'
+    training_end_date = eval_and_get_latest_possible_starting_date(forecast_from)
 
     # Number of days to used for forecasting:
     forecasting_horizon = 14
@@ -174,8 +175,6 @@ def forecasting_pipeline(full_run=False, debug=True):
         update_db(table_name='district_forecast', dataframe=final_forecast_df, replace=False)
 
     end_forecast_pipeline(pipeline_id)
-
-
 
 
 if __name__ == '__main__':

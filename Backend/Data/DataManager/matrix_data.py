@@ -5,7 +5,7 @@ from math import floor
 from meteostat import Point, Daily
 from Backend.Data.DataManager.data_access_methods import get_starting_values, get_model_params
 from Backend.Data.DataManager.data_util import Column, date_int_str, print_progress, \
-    print_progress_with_computation_time_estimate
+    print_progress_with_computation_time_estimate, format_name
 from Backend.Data.DataManager.db_calls import get_all_table_data, get_district_data, get_table_data_by_duration, \
     update_db, get_policy_data, get_variant_data, get_mobility_data, get_weather_data, drop_table_by_name
 
@@ -107,6 +107,8 @@ def create_weekly_matrix():
                       'beta',
                       'beta_t_minus_1',
                       'start_date_forecasting']
+        # this table creation is only intermediate
+        # and will be deleted at the end of create_complete_matrix_data() execution
         update_db('matrix_' + district, df)
         end_time = datetime.now()
         extra_str = '--> ' + district + ' | calculation time: ' + str(end_time - start_time)
@@ -458,7 +460,7 @@ def get_weekly_intervals_grid(start_day, last_day, duration_train, duration_val)
 
 
 def create_complete_matrix_data(debug=True):
-    create_weekly_matrix()
+    # create_weekly_matrix()
     districts = get_all_table_data(table_name='district_list')
     districts_list = districts['district'].tolist()
 
@@ -482,7 +484,7 @@ def create_complete_matrix_data(debug=True):
 
     # remove all intermediate 'matrix_[district_name]' tables
     for i, district in enumerate(districts_list):
-        drop_table_by_name('matrix_'+district)
+        drop_table_by_name(format_name('matrix_'+district))
 
     ## Debugging:
     if debug:

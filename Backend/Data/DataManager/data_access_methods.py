@@ -1,5 +1,6 @@
-from Backend.Data.DataManager.data_util import Column
-from Backend.Data.DataManager.db_calls import get_table_data_by_duration, get_table_data_by_day, get_district_data
+from Backend.Data.DataManager.data_util import Column, date_int_str, date_str_to_int
+from Backend.Data.DataManager.db_calls import get_table_data_by_duration, get_table_data_by_day, get_district_data, \
+    get_table_data
 from Backend.Modeling.Differential_Equation_Modeling.model_params import params_SEIURV_fixed
 
 """
@@ -49,6 +50,28 @@ def get_model_params(district, train_start_date):
     }
 
     return model_params
+
+
+def eval_and_get_latest_possible_starting_date(given_date):
+
+    dates_df = get_table_data('Münster', Column.DATE)
+    dates_list = dates_df[Column.DATE].to_list()
+    dates_list.sort()
+    latest_start_date = dates_list[-1]
+
+    if given_date is None:
+        latest_start_date = date_int_str(latest_start_date)
+        print("starting with the latest possible date --> " + latest_start_date)
+        return latest_start_date
+    else:
+        given_date_int = date_str_to_int(given_date)
+        if int(given_date_int) > int(latest_start_date):
+            print("given start date should not be head of today!")
+            latest_start_date = date_int_str(latest_start_date)
+            print("starting with the latest possible date --> " + latest_start_date)
+            return latest_start_date
+        else:
+            return given_date
 
 
 if __name__ == '__main__':
