@@ -135,7 +135,7 @@ def dist_incidents_vacc_corre():
     all_data_df.rename(columns={all_data_df.columns[0]: 'correlation'}, inplace=True)
     all_data_df['district'] = all_data_df.index
 
-    german_districts = json.load(open("../Assets/simplified_geo_data.geojson", 'r', encoding='utf-8'))
+    german_districts = json.load(open("Assets/simplified_geo_data.geojson", 'r', encoding='utf-8'))
     dist_id = 1000
 
     state_id_map = {}

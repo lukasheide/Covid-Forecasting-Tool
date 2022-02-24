@@ -53,13 +53,13 @@ def plot_train_fitted_and_predictions(y_train_fitted: np.array, y_train_true: np
     plt.legend(loc="upper left")
 
     if save_results:
-        plt.savefig(f'../Assets/Forecasts/Plots/Forecast_{district}_StartDate_{pred_start_date}.png')
+        plt.savefig(f'Assets/Forecasts/Plots/Forecast_{district}_StartDate_{pred_start_date}.png')
         temp_df = pd.DataFrame({'Training': pd.Series(y_train_true),
                                 'Prediction': pd.Series(y_pred_full)
                                 })
 
         temp_df.to_csv(
-            path_or_buf=f'../Assets/Forecasts/CSV_files/Forecast_{district}_StartDate_{pred_start_date}.csv',
+            path_or_buf=f'Assets/Forecasts/CSV_files/Forecast_{district}_StartDate_{pred_start_date}.csv',
             sep=';'
         )
 
@@ -188,7 +188,7 @@ def plot_sarima_val_line_plot(train_array, test_array, predictions: int, pred_st
 
     # plt.show()
 
-    plt.savefig(f'../Assets/Forecasts/Plots/Sarima_Evaluate_{district}_StartDate_{pred_start_date}.png')
+    plt.savefig(f'Assets/Forecasts/Plots/Sarima_Evaluate_{district}_StartDate_{pred_start_date}.png')
 
 
 def plot_sarima_pred_plot(y_train, predictions: int, district, pred_start_date):
@@ -216,7 +216,7 @@ def plot_sarima_pred_plot(y_train, predictions: int, district, pred_start_date):
 
     plt.show()
 
-    plt.savefig(f'../Assets/Forecasts/Plots/Sarima_Forecast_{district}_StartDate_{pred_start_date}.png')
+    plt.savefig(f'Assets/Forecasts/Plots/Sarima_Forecast_{district}_StartDate_{pred_start_date}.png')
 
 
 def plot_evaluation_metrics(rmse, districts, i, round):

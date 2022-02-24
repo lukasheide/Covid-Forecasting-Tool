@@ -255,8 +255,8 @@ def model_validation_pipeline_v2_wrapper():
     # predictors to be standardized the standardizer model also has to be imported:
 
     # Both Models will only be created by running the above described jupyter notebook.
-    ml_model_path = '../Assets/MachineLearningLayer/Models/xgb_model_lukas.pkl'
-    standardizer_model_path = '../Assets/MachineLearningLayer/Models/standardizer_model.pkl'
+    ml_model_path = 'Assets/MachineLearningLayer/Models/xgb_model_lukas.pkl'
+    standardizer_model_path = 'Assets/MachineLearningLayer/Models/standardizer_model.pkl'
 
     ################################################################
 
@@ -380,11 +380,11 @@ def model_validation_pipeline_v2_wrapper():
 
     # Run-Information (including metrics)
     df_lvl1.to_csv(
-        path_or_buf=f'../Assets/Data/Evaluation/model_validation_data_metrics_{datetime.now().strftime("%d_%m_%H:%M")}.csv')
+        path_or_buf=f'Assets/Data/Evaluation/model_validation_data_metrics_{datetime.now().strftime("%d_%m_%H:%M")}.csv')
 
     # Forecast for each date/district combination for each forecasting interval set at the top of the wrapper function.
     df_lvl2.to_csv(
-        path_or_buf=f'../Assets/Data/Evaluation/model_validation_data_forecasts_{datetime.now().strftime("%d_%m_%H:%M")}.csv')
+        path_or_buf=f'Assets/Data/Evaluation/model_validation_data_forecasts_{datetime.now().strftime("%d_%m_%H:%M")}.csv')
 
 
 
@@ -397,7 +397,7 @@ def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecas
                                  run_diff_eq_ml_beta=True,
                                  run_sarima=True,
                                  run_ensemble=True,
-                                 debug=True):
+                                 debug=False):
 
     # 1) Preparation steps:
 
