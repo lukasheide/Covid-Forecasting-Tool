@@ -197,9 +197,19 @@ In the following we will explain the most important functions and pipelines and 
 #### 1) Data Pipeline
 
 #### 2) Matrix Creation Pipeline
-The purpose of the matrix creation pipeline is to create the dataset
+The aim of the matrix creation pipeline is to create the dataset
 that is used to for training the machine learning model in the machine 
-learning layer.
+learning layer. For this purpose, the SEIURV model is fitted to the 
+infection figures for each calendar week and district over a defined 
+period (in this case for the entire period since the start of the 
+pandemic in Germany until January 2022). 
+For this purpose, the optimal beta is fitted for both the 
+training period before the prediction period and 
+the validation period. The fitted beta of the training period serves is also
+used for the forecasting period in the case of the **SEIURV + Last Beta** 
+model. The latter beta answers the question as to which value of beta
+would have yielded the best results for forecasting. This beta therefore
+serves as the target variable of the machine learning layer.
 
 Additionally we used ...
 TODO LASITHA: INSERT OTHER PREDICTORS + DATA SOURCES HERE
