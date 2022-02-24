@@ -197,6 +197,16 @@ In the following we will explain the most important functions and pipelines and 
 #### 1) Data Pipeline
 
 #### 2) Matrix Creation Pipeline
+The purpose of the matrix creation pipeline is to create the dataset
+that is used to for training the machine learning model in the machine 
+learning layer.
+
+Additionally we used ...
+TODO LASITHA: INSERT OTHER PREDICTORS + DATA SOURCES HERE
+
+The resulting matrix is saved as csv file and stored in 
+[Assets/Data/](Assets/Data).
+
 
 #### 3) Machine Learning Layer
 The machine learning layer is used to create, train, evaluate and export a
@@ -212,21 +222,21 @@ This comes with the downside that the
 cannot be called from another script unlike a normal python script.  
 Before running the notebook the csv file [all_matrix_data_v3.csv](Assets/Data) has to
 be created by the matrix creation pipeline or alternatively an existing file has to
-be placed under [Assets/Data/](Assets/Data). This CSV file contains the data
-used for training the model including the optimal beta for a certain time 
-period for a certain district that was computed using a least squares approach,
-information about the fitted data in the training period before the validation
-period as well as all other predictors including weather, mobility, intervention
-measure data, etc. 
+be placed under [Assets/Data/](Assets/Data). As describes above, this CSV file
+contains the training data for the machine learning layer. After a number of
+preprocessing steps that include the removal of outliers and standardizing all
+predictors different machine learning regression models are evaluated.
 The best performing model is saved as a pickle file for using it for 
-producing new forecasts with the SEIURV + ML model.  
+producing new forecasts with the SEIURV + ML model. This approach allows 
+the model used to be re-trained and extended at any time before it is 
+fed into the forecasting pipeline.
 Below the residuals (difference between fitted beta and predicted beta) can 
 be seen. It can be observed that the errors made by the machine learning
 model tend to be smaller than the ones made if one simply uses the fitted
 beta from the previous period.
 
-<img src="Assets/Images/Models/ml_residuals_last_beta.png" height=250> 
-<img src="Assets/Images/Models/ml_residuals_ml_beta.png" height=250>
+<img src="Assets/Images/Models/ml_residuals_last_beta.png" height=220> 
+<img src="Assets/Images/Models/ml_residuals_ml_beta.png" height=220>
 
 
 
