@@ -264,7 +264,7 @@ def plot_beta_matrix_estimation(y_train_true, y_val_true, y_train_pred_full, y_v
 def plot_all_forecasts(forecast_dictionary, y_train, start_date_str, forecasting_horizon, district,
                        y_val=None,
                        y_train_fitted=None,
-                       plot_val=True,
+                       plot_val=False,
                        plot_y_train_fitted=False,
                        plot_y_train_fitted_all=False,
                        plot_diff_eq_last_beta=True,
@@ -394,9 +394,9 @@ def plot_all_forecasts(forecast_dictionary, y_train, start_date_str, forecasting
     plt.ylabel('7-day Incidence')
     plt.xlabel('Days')
 
-    # plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 
-    if y_train[0] < y_val[-1]:
+    # If last value of y_train is larger than the first:
+    if y_train[0] < y_train[-1]:
         trend ='increasing'
     else:
         trend = 'decreasing'
