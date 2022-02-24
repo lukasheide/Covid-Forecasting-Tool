@@ -13,7 +13,6 @@ def download_ecdc_variant_data():
     os.makedirs(os.path.dirname(full_file_name), exist_ok=True)
 
     urllib.request.urlretrieve("https://opendata.ecdc.europa.eu/covid19/virusvariant/csv/data.csv", full_file_name)
-    print('latest ecdc data downloaded!')
 
 
 def download_destatis_mobility_data():
@@ -21,7 +20,6 @@ def download_destatis_mobility_data():
     os.makedirs(os.path.dirname(full_file_name), exist_ok=True)
 
     urllib.request.urlretrieve("https://service.destatis.de/DE/maps/2020/data/map_reg.csv", full_file_name)
-    print('latest destatis data downloaded!')
 
 
 def download_oxcgrt_policy_data():
@@ -30,4 +28,3 @@ def download_oxcgrt_policy_data():
 
     urllib.request.urlretrieve("https://raw.githubusercontent.com/OxCGRT/covid-policy-tracker/master/data/timeseries"
                                "/containment_health_index.csv", full_file_name)
-    print('latest oxcgrt data downloaded!')

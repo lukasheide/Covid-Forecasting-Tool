@@ -466,7 +466,7 @@ def get_weekly_intervals_grid(start_day, last_day, duration_train, duration_val)
     return intervals_grid
 
 
-def create_complete_matrix_data(debug=True):
+def create_complete_matrix_data(debug=False):
     create_weekly_matrix()
     districts = get_all_table_data(table_name='district_list')
     districts_list = districts['district'].tolist()

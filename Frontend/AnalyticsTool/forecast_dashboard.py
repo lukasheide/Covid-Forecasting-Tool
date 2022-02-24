@@ -1,4 +1,6 @@
 import json
+import webbrowser
+from threading import Timer
 
 import dash
 import numpy as np
@@ -485,6 +487,15 @@ def get_dist_forecast_plot(selected_model):
         forecast_map = ensemble_forecast
 
     return forecast_map
+
+
+def open_browser():
+    webbrowser.open_new('http://127.0.0.1:8050/')
+
+
+def start_dashboard():
+    Timer(1, open_browser).start()
+    app.run_server()
 
 
 if __name__ == '__main__':

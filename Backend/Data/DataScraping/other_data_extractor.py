@@ -2,6 +2,7 @@ import datetime
 import pandas as pd
 import numpy as np
 
+from Backend.Data.DataManager.remote_file_manager import upload_destatis_base_file, download_destatis_base_file
 from Backend.Data.DataScraping.data_scraping_calls import download_ecdc_variant_data, download_destatis_mobility_data, \
     download_oxcgrt_policy_data
 from Backend.Data.DataManager.data_util import get_correct_district_name
@@ -22,9 +23,11 @@ def update_ecdc_variant_table():
     germany = germany.drop(['country', 'country_code'], axis=1)
     germany = germany.sort_values(by=['year_week'])
     update_db('ecdc_varient_data', germany)
+    print('latest update of variant data stored successfully!')
 
 
 def store_destatis_base_data():
+    download_destatis_base_file()
     base_data_file = 'Assets/Data/Scraped/destatis/destatis_base.csv'
     base_data = pd.read_csv(base_data_file)
 
@@ -37,6 +40,9 @@ def store_destatis_base_data():
 def update_destatis_mobility_table():
     download_destatis_mobility_data()
     print('latest update of mobility data fetched successfully!')
+
+    store_destatis_base_data()
+    print('destatis base data fetched successfully and stored in the db!')
 
     all_data = get_all_table_data(table_name='destatis_mobility_data')
     all_data_last_date = [*all_data.columns[-1:]][0]
@@ -51,10 +57,15 @@ def update_destatis_mobility_table():
     merged_new_data = pd.concat([all_data, latest_data], axis=1)
     update_db('destatis_mobility_data', merged_new_data)
 
+    # update the local destatis_base.csv with new merged data and update the remote file as well
+    all_data = get_all_table_data(table_name='destatis_mobility_data')
+    all_data.to_csv('Assets/Data/Scraped/destatis/destatis_base.csv')
+    upload_destatis_base_file()
+
 
 def update_oxcgrt_policy_table():
     download_oxcgrt_policy_data()
-    print('latest update of mobility data fetched successfully!')
+    print('latest update of policy data fetched successfully!')
 
     latest_file_loc = 'Assets/Data/Scraped/oxcgrt/' + datetime.datetime.today().strftime('%d%m%y') + '.csv'
     df = pd.read_csv(latest_file_loc)
@@ -70,6 +81,7 @@ def update_oxcgrt_policy_table():
     germany = germany.reindex(columns=['date', 'policy_index'])
 
     update_db('xocgrt_policy_data', germany)
+    print('latest update of policy data stored successfully!')
 
 
 def extract_all_other_data():

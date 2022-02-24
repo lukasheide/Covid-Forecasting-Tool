@@ -21,8 +21,6 @@ def update_all_district_data():
     """
         extract all the required covid-19 related data is extracted for all the districts
     """
-    update_district_list()
-    # update_district_details()
     district_list = get_table_data("district_list", [Column.DISTRICT])
     district_list.sort_values(Column.DISTRICT, inplace=True, ascending=True)
     update_population_map()

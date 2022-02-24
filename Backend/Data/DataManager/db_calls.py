@@ -384,16 +384,17 @@ def get_all_latest_forecasts():
     return pd.read_sql(query_sql, engine)
 
 
-def clean_create_validation_store():
+def clean_create_validation_store(with_clean=False):
     """
         create the model validation pipeline relational schema tables
     """
     connection = get_db_connection()
     cursor = connection.cursor()
 
-    cursor.executescript('DROP TABLE IF EXISTS validation_forecast;')
-    cursor.executescript('DROP TABLE IF EXISTS param_and_start_vals;')
-    cursor.executescript('DROP TABLE IF EXISTS validation_pipeline;')
+    if with_clean:
+        cursor.executescript('DROP TABLE IF EXISTS validation_forecast;')
+        cursor.executescript('DROP TABLE IF EXISTS param_and_start_vals;')
+        cursor.executescript('DROP TABLE IF EXISTS validation_pipeline;')
 
     create_pipeline_sql = "CREATE TABLE IF NOT EXISTS validation_pipeline( " \
                           "pipeline_id INTEGER PRIMARY KEY, " \
@@ -435,15 +436,16 @@ def clean_create_validation_store():
     connection.close()
 
 
-def clean_create_forecast_store():
+def create_forecast_store(with_clean=False):
     """
         create the model forecast pipeline relational schema tables
     """
     connection = get_db_connection()
     cursor = connection.cursor()
 
-    cursor.executescript('DROP TABLE IF EXISTS district_forecast;')
-    cursor.executescript('DROP TABLE IF EXISTS forecast_pipeline;')
+    if with_clean:
+        cursor.executescript('DROP TABLE IF EXISTS district_forecast;')
+        cursor.executescript('DROP TABLE IF EXISTS forecast_pipeline;')
 
     create_sql = "CREATE TABLE IF NOT EXISTS forecast_pipeline( " \
                  "pipeline_id INTEGER PRIMARY KEY, " \
