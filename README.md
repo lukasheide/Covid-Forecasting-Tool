@@ -26,7 +26,7 @@ the Information Systems Master program at the WWU Münster.
 
 The images above depicts our final product: A Covid-19 forecasting
 dashboard that provides predictions of four different models
-for the next 14 days for all 400 German districts.
+for the next 14 days for all 401 German districts.
 
 
 ## Table of Contents
@@ -145,7 +145,8 @@ four main data sources. CoronaDaten Platform is the core data source of
 the application, which provides all the Covid-19 related data where 
 MeteoStat, DESTATIS, and ECDC data is used to train the machine learning 
 model of the machine learning layer. 
-The data from CoronaDaten Platform and MeteoStat are accessed via API calls.  DESTATIS and ECDC data is directly accessed as files using http requests. 
+The data from CoronaDaten Platform and MeteoStat are accessed via API calls.  
+DESTATIS and ECDC data is directly accessed as files using http requests. 
 
 ### <img src="Assets/Images/Icons/storage.png" height=30> Storage Layer
 By taking the diversity, the growth of the data based on product 
@@ -169,7 +170,7 @@ The interactive dashboard is comprised in this layer where the user is
 allowed to select, visualize, compare regional forecast results generated 
 by our models. Dash by Plotly, built on top of Flask, was considered due 
 to its simple yet powerful capabilities for visualisation and user 
-interactions compared to other dashboard-capable python libraries. 
+interactions compared to other dashboard-capable Python libraries. 
 Dash offers a variety of interactive components with better customization 
 ability, which allows the product dashboard to be made aesthetically 
 pleasing. The Dash application is locally deployed and uses JSON objects 
