@@ -5,7 +5,8 @@ import pandas as pd
 from Backend.Data.DataManager.data_access_methods import get_smoothen_cases, get_starting_values, get_model_params, \
     eval_and_get_latest_possible_starting_date
 from Backend.Data.DataManager.data_util import Column, date_int_str, create_dates_array, get_forecasting_df_columns, print_progress_with_computation_time_estimate
-from Backend.Data.DataManager.db_calls import get_all_table_data, start_forecast_pipeline, update_db, end_forecast_pipeline
+from Backend.Data.DataManager.db_calls import get_all_table_data, start_forecast_pipeline, update_db, \
+    end_forecast_pipeline, create_forecast_store
 from Backend.Data.DataManager.matrix_data import get_predictors_for_ml_layer
 from Backend.Modeling.Differential_Equation_Modeling.prediction_intervals import get_prediction_intervals
 from Backend.Modeling.forecasting_wrapper_functions import forecast_all_models, convert_all_forecasts_to_incidences, \
@@ -13,7 +14,16 @@ from Backend.Modeling.forecasting_wrapper_functions import forecast_all_models, 
 from Backend.Visualization.plotting import plot_all_forecasts
 
 
-def forecasting_pipeline(full_run=False, debug=False, forecast_from=None):
+def forecasting_pipeline(full_run=True, debug=False, forecast_from=None, with_clean=False):
+    """
+
+    :param full_run: generates forecasts for all the districts
+                    or districts in the variable 'manual_districts' will be used
+    :param debug: execute additional step to visualize each district forecast
+    :param forecast_from: can specify a date you need to produce forecast from. if None today's date will be used
+    :param with_clean: used to drop the forecast store tables if exists or will only be created if not exist
+    :return:
+    """
 
     ######################################## Pipeline Configuration: ########################################
     ## Below important configurations of the forecasting pipeline parameters can be done:
@@ -51,6 +61,9 @@ def forecasting_pipeline(full_run=False, debug=False, forecast_from=None):
     training_start_date = datetime.strptime(training_end_date, '%Y-%m-%d') - timedelta(days=training_period_max)
     forecast_start_date = datetime.strptime(training_end_date, '%Y-%m-%d') + timedelta(days=1)
     forecast_end_date = forecast_start_date + timedelta(days=forecasting_horizon)
+
+    # create all the tables needed if not created.
+    create_forecast_store(with_clean)
 
     # Store starting values of the pipeline to DB, initialize a new pipeline in the database and get it's ID so that
     # the results of the pipeline can later be stored correctly to that pipeline ID:
