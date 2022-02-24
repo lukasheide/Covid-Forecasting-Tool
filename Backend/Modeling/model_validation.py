@@ -212,7 +212,7 @@ def model_validation_pipeline_v2_wrapper():
     # wants to run two unconnected time intervals. (Example: Run model for Apr 2020 - Oct 2020 + Jun 2021 - Jan 2022)
 
     pipeline_intervals = [
-        ('2021-10-01', '2022-01-28'),
+        ('2021-01-01', '2022-01-28'),
     ]
 
     # Number of days to be forecasted:
@@ -238,14 +238,14 @@ def model_validation_pipeline_v2_wrapper():
     # districts.sort()
     #
     ### Option 2: Set districts manually:
-    districts = ['Münster', 'Bielefeld']
+    # districts = ['Münster', 'Bielefeld']
     ##############################################################################
 
     # The ensemble model is computed as a weighted average of the other three models. The weights can be set here:
     ensemble_model_share = {
-        'seirv_last_beta': 0,
-        'seirv_ml_beta': 0.5,
-        'sarima': 0.5
+        'seirv_last_beta': 0.2,
+        'seirv_ml_beta': 0.4,
+        'sarima': 0.4
     }
 
     ### ML Layer:

@@ -41,9 +41,9 @@ def forecasting_pipeline(full_run=False, debug=True):
     ### Ensemble Weights:
     # The ensemble model is computed as a weighted average of the other three models. The weights can be set here:
     ensemble_model_share = {
-        'seirv_last_beta': 0,
-        'seirv_ml_beta': 0.5,
-        'sarima': 0.5
+        'seirv_last_beta': 0.2,
+        'seirv_ml_beta': 0.4,
+        'sarima': 0.4
     }
 
     # Compute start/end dates for training/validation baased on the above set training_end_date variable:
