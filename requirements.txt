@@ -89,3 +89,4 @@ pmdarima
 paramiko
 isoweek
 xgboost
+packaging==21.2

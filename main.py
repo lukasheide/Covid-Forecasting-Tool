@@ -6,8 +6,8 @@ from Frontend.AnalyticsTool.forecast_dashboard import start_dashboard
 
 
 def run_quick_forecast():
-    run_data_pipeline()
-    forecasting_pipeline()
+    # run_data_pipeline()
+    # forecasting_pipeline()
     start_dashboard()
 
 
@@ -16,12 +16,10 @@ def run_forecast_with_eval():
     # run Evaluation Pipeline
     forecasting_pipeline()
     start_dashboard()
-    pass
 
 
 def run_model_validation():
     model_validation_pipeline_v2_wrapper()
-    pass
 
 
 if __name__ == '__main__':
