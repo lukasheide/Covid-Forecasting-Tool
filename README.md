@@ -243,8 +243,23 @@ model. The latter beta answers the question as to which value of beta
 would have yielded the best results for forecasting. This beta therefore
 serves as the target variable of the machine learning layer.
 
-Additionally we used ...
-TODO LASITHA: INSERT OTHER PREDICTORS + DATA SOURCES HERE
+To create the matrix we use three additional predictors along with the fitted beta. These predictor were choosen after conducting several literature studies about indirect/direct influencing factors for infectious diseases. this way we could integrate the impact of influencing factors to our model which is the main idea behind integrating the machine learning layer. The used predictors and their sources are as follows;
+
+- **Mobility data :** 
+Obtained from DESTATIS (The Federal Statistical Office Germany) official website where they provide mobiltiy data of the mobile devices connection changes from their service towers during the past 30 days period.  
+    _source:_ https://www.destatis.de/DE/Service/EXDAT/Datensaetze/mobilitaetsindikatoren-mobilfunkdaten.html  
+
+- **Policy (Intervention) index data:** 
+Obtained from OxCGRT (The Oxford Covid-19 Government Response Tracker) official webisite where they provide an index for the strictness of the goverment interventions covering more than 180 countries.  
+    _source:_ https://www.bsg.ox.ac.uk/research/research-projects/covid-19-government-response-tracker  
+    
+- **Weather data(temperature and wind) :**
+Obtained from Meteostat who is one of the largest vendors of open weather and climate data.  
+    _source:_ https://www.meteostat.net/en/  
+
+- **Current prominent varient data:** 
+Obtained from ECDC (European Centre for Disease Prevention and Control) official webisite where they provide the details of DNA-sequenced covid samples for a given week.  
+    _source:_ https://www.ecdc.europa.eu/en  
 
 The resulting matrix is saved as csv file and stored in [Assets/Data/](Assets/Data)  
 Pipeline script is located at [Backend/Data/DataManager/data_pipeline.py](Backend/Data/DataManager/matrix_pipeline.py) and script is located at [Backend/Data/DataManager/matrix_data.py](Backend/Data/DataManager/matrix_data.py) will provide more details regarding the pipeline's flow of execution
