@@ -6,8 +6,8 @@ from Frontend.AnalyticsTool.forecast_dashboard import start_dashboard
 
 
 def run_quick_forecast():
-    # run_data_pipeline()
-    # forecasting_pipeline()
+    run_data_pipeline()
+    forecasting_pipeline()
     start_dashboard()
 
 
