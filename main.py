@@ -1,4 +1,4 @@
-from Backend.Data.DataManager.data_pipeline import run_data_pipeline
+from Backend.Data.data_pipeline import run_data_pipeline
 
 from Backend.Modeling.forecast_pipeline import forecasting_pipeline
 from Backend.Modeling.model_validation_pipeline import model_validation_pipeline_v2_wrapper

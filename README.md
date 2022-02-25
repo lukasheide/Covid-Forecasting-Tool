@@ -206,7 +206,7 @@ Then as the second step, Non corona related data that is needed for data matrix 
 
 Sqlite DB file is created in [Assets/Data](Assets/Data)
 Intermidiate data files used during this pipeline run are stored in [Assets/Data/Scraped](Assets/Data/Scraped) 
-Pipeline script is located at [Backend/Data/DataManager/data_pipeline.py](Backend/Data/DataManager/data_pipeline.py)
+Pipeline script is located at [Backend/Data/data_pipeline.py](Backend/Data/data_pipeline.py)
 
 #### 2) Matrix Creation Pipeline
 The aim of the matrix creation pipeline is to create the dataset
