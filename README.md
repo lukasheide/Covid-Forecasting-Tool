@@ -187,29 +187,43 @@ to as a tightly-integrated backend and front-end.
 ```
 pip install -r requirements.txt 
 ```
-4) Now you're all set to run the project. All you need to run [main.py](main.py) script with a task assign to the 'task' variable as explain in the description of the script which is by defalut set to task = 'generate_forecasts' which will generate forecasts for the next 14 days including tomorrow and automatically starts the dashboard locally then open in the browser (http://127.0.0.1:8050/) where you can see the forecast for each district by each model and a complete map view of next 14days incident development for whole Germany.
+4) Now you're all set to run the project. To make it easier to inspect and run our code we created a [main.py](main.py) script that allows calling our most important functions and pipelines.
+For easier configuration the task variable can be adjusted to choose what function should be executed.
+More detailed informations can be found in the comments of the [main.py](main.py) script.
+The default option **generate_forecasts** will generate forecasts for the next 14 days 
+and automatically start the dashboard locally (http://127.0.0.1:8050/). Here the forecasts
+for each district by each model and a complete map view of next 14 days incident development for whole Germany can be inspected.
 
-    **NOTE: that you must be connected to the WWU VPN in order to run the project**  
 
-    to configure WWU VPN visit: https://www.uni-muenster.de/IT/services/kommunikation/vpn/ 
+    **NOTE: You must be connected to the WWU VPN to run the project since some required files stored on the server will be automatically accessed **  
+
+    To configure WWU VPN visit: https://www.uni-muenster.de/IT/services/kommunikation/vpn/ 
 
 5) Optional: If you also want to run our 
 [R script](Backend/Evaluation/evaluation_pipeline.R) that was mainly used for producing
-plots for our presentation as well as evaluation purposes make sure to install the latest version as well. <img src="./Assets/Images/Icons/r-icon.png" height=15>
-We used version R 4.1.1 for our project.
+plots for our presentation, evaluation purposes as well as computing the historical residuals 
+to compute prediction intervals of the differential equation models, 
+make sure to install the latest version as well. 
+We used version R 4.1.1 for our project. <img src="./Assets/Images/Icons/r-icon.png" height=15>
 
 ### <img src="Assets/Images/Icons/configuration.png" height=30> Configuration
 In the following we will explain the most important functions and pipelines and how to run them. 
 
 #### 1) Data Pipeline
-The pipeline basically exectuted in two folds, where it first creates the list of German districts currently apprear in Corona DatenPlatform which is the common list of district name convention which is used through out the entire process. Then few other additional data for each district will be retrieved namely; population and LATITUDE/LONGITUDE of the main city of the district. Then all the related data data for each district since 2020-03-01 will be retrieved, preprocessed and stored in their corresponding individual district tables(Ex: data for Münster is stored in the DB table Muesnter).
-
-Then as the second step, Non corona related data that is needed for data matrix creation to train the ML layer will and later as a secondary input to the ML-Compartmental Model will be retrieved, preprocessed and stored in their corresponding tables as follows; 
+The pipeline consists of two consecutive steps. 
+First, a list of all German districts that currently appear in Corona DatenPlatform is created. 
+As different naming conventions for the districts exist on different platforms this list is used throughout 
+the entire process as our naming standard. Additionally, information for each district is retrieved namely including
+population size as well as geospatial data regarding the main city of the district. 
+Consecutively all available RKI-data regarding infection counts, vaccinations, recoveries, etc. are downloaded
+from CoronaDatenplatform. This data is accessed using the public API, preprocessed and then stored in the database.  
+Then as the second step, non-corona related data that is needed for data matrix creation to train the ML layer will and later as a secondary input to the ML-Compartmental Model is retrieved, preprocessed and stored in their corresponding tables as follows: 
 
 - ECDC variant data in ecdc_variant_data table
 - DESTATIS mobility data in destatis_mobility_data table
 - OXCGRT policy data in oxcgrt_policy_data table
 
+LASITHA - STUFF BELOW WILL BE REWRITTEN RIGHT?:  
 Sqlite DB file is created in [Assets/Data](Assets/Data)  
 Intermidiate data files used during this pipeline run are stored in [Assets/Data/Scraped](Assets/Data/Scraped)  
 Pipeline script is located at [Backend/Data/DataManager/data_pipeline.py](Backend/Data/DataManager/data_pipeline.py) 
