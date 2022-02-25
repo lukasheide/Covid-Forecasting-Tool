@@ -196,6 +196,17 @@ We used version R 4.1.1 for our project.
 In the following we will explain the most important functions and pipelines and how to run them. 
 
 #### 1) Data Pipeline
+The pipeline basically exectuted in two folds, where it first creates the list of German districts currently apprear in Corona DatenPlatform which is the common list of district name convention which is used through out the entire process. Then few other additional data for each district will be retrieved namely; population and LATITUDE/LONGITUDE of the main city of the district. Then all the related data data for each district since 2020-03-01 will be retrieved, preprocessed and stored in their corresponding individual district tables(Ex: data for Münster is stored in the DB table Muesnter).
+
+Then as the second step, Non corona related data that is needed for data matrix creation to train the ML layer will and later as a secondary input to the ML-Compartmental Model will be retrieved, preprocessed and stored in their corresponding tables as follows; 
+
+- ECDC variant data in ecdc_variant_data table
+- DESTATIS mobility data in destatis_mobility_data table
+- OXCGRT policy data in oxcgrt_policy_data table
+
+Sqlite DB file is created in [Assets/Data](Assets/Data)
+Intermidiate data files used during this pipeline run are stored in [Assets/Data/Scraped](Assets/Data/Scraped) 
+Pipeline script is located at [Backend/Data/DataManager/data_pipeline.py](Backend/Data/DataManager/data_pipeline.py)
 
 #### 2) Matrix Creation Pipeline
 The aim of the matrix creation pipeline is to create the dataset
@@ -254,5 +265,6 @@ beta from the previous period.
 #### 4) Evaluation Pipeline
 
 #### 5) Forecasting Pipeline
+
 
 #### 6) Dashboard
