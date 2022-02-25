@@ -47,9 +47,9 @@ def get_dash_app():
     #                  'Warendorf']
 
     # load the district list from district_data table
-    # district_data = get_all_table_data(table_name='district_list')
-    # district_list = district_data['district'].tolist()
-    # district_list.sort()
+    district_data = get_all_table_data(table_name='district_list')
+    district_list = district_data['district'].tolist()
+    district_list.sort()
 
     # create the district list of latest 14 days of predictions in the prediction table
     dates_list = all_district_forecasts['date'].unique()[-14:]
@@ -181,7 +181,7 @@ def get_dash_app():
                                                 # html.H6('District Forecast ', style={'backgroundColor':'#111111', 'color':'white'}),
                                                 dcc.Dropdown(
                                                         id='district-dropdown',
-                                                        # options=[{'label': k, 'value': k} for k in district_list],
+                                                        options=[{'label': k, 'value': k} for k in district_list],
                                                         multi=False,
                                                         value='Münster',
                                                         style={'backgroundColor':'#111111', 'color':'#ffffff'},
@@ -497,7 +497,7 @@ def get_dash_app():
 
 
 def start_dashboard():
-    Timer(10, check_if_dash_up).start()
+    Timer(20, check_if_dash_up).start()
     get_dash_app().run_server()
 
 

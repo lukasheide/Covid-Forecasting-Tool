@@ -9,9 +9,13 @@ methods below are serving different pipeline specific data retrieval tasks from 
 
 
 def get_smoothen_cases(district, end_date, duration):
+    """
+        get seven day moving average of infections of a district for a given duration of time
+    """
     data_result = get_table_data_by_duration(table=district,
                                              end_date=end_date,
-                                             duration=duration-1,       # otherwise for a duration of two days we would get data from e.g. 15th Dec - 17th Dec
+                                             duration=duration - 1,
+                                             # otherwise for a duration of two days we would get data from e.g. 15th Dec - 17th Dec
                                              attributes=[Column.DATE, Column.SEVEN_DAY_SMOOTHEN])
 
     return data_result
@@ -19,6 +23,9 @@ def get_smoothen_cases(district, end_date, duration):
 
 # assumes DB tables are up-to_date
 def get_starting_values(district, train_start_date):
+    """
+        get vaccinated, recovered, population values of a given district in for a given date.
+    """
     district_status = get_table_data_by_day(table=district, date=train_start_date,
                                             attributes=[Column.CUM_VACCINATED, Column.CUM_RECOVERIES])
     district_details = get_district_data(district=district, attributes=[Column.POPULATION])
@@ -36,7 +43,9 @@ def get_starting_values(district, train_start_date):
 
 
 def get_model_params(district, train_start_date):
-    # Get theta for train_start_date from db:
+    """
+        Get theta(vaccination efficiency value) of a given district for a given date.
+    """
     theta = get_table_data_by_day(table=district, date=train_start_date,
                                   attributes=[Column.VACCINATION_EFFICIENCY])
     theta = theta[Column.VACCINATION_EFFICIENCY].tolist()[0]
@@ -53,6 +62,11 @@ def get_model_params(district, train_start_date):
 
 
 def eval_and_get_latest_possible_starting_date(given_date):
+    """
+        once a forecast start date is given to the forecast start pipeline,
+        this method determines whether it is possible to start the forecasting from that day,
+        based on the latest input data we have in the DB.
+    """
 
     dates_df = get_table_data('Münster', Column.DATE)
     dates_list = dates_df[Column.DATE].to_list()
