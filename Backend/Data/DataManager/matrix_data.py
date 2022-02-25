@@ -40,7 +40,6 @@ def create_weekly_matrix():
     # start_date = '2021-11-01'
     # end_date = '2021-12-01'
 
-
     # GET INTERVENTION DATA
     weekly_policy_dict = get_weekly_policy_data(start_date)
     # GET VARIANT DATA
@@ -51,8 +50,6 @@ def create_weekly_matrix():
 
     # only one city for debugging:
     # district_list = ['Essen', 'Bielefeld', 'Münster', 'Dortmund', 'Bochum', 'Warendorf']
-
-
 
     for j, district in enumerate(district_list):
         # print(district)
@@ -67,17 +64,6 @@ def create_weekly_matrix():
         # GET LAST WEEK BETA
         weekly_beta_dict, weekly_beta_t_minus_1, weekly_infections_dict, start_forecasting_dict = get_weekly_beta_v2(
             district, start_date, end_date)
-
-        # if len(weekly_policy_dict) > len(weekly_variant_dict):
-        #     shortest_dict = weekly_variant_dict
-        # else:
-        #     shortest_dict = weekly_policy_dict
-        # if len(weekly_mobility_dict) < len(shortest_dict):
-        #     shortest_dict = weekly_mobility_dict
-        # if len(weekly_temp_dict) < len(shortest_dict):
-        #     shortest_dict = weekly_temp_dict
-        # if len(weekly_beta_dict) < len(shortest_dict):
-        #     shortest_dict = weekly_temp_dict
 
         for week, value in weekly_beta_dict.items():
 
@@ -107,6 +93,7 @@ def create_weekly_matrix():
                       'beta',
                       'beta_t_minus_1',
                       'start_date_forecasting']
+
         # this table creation is only intermediate
         # and will be deleted at the end of create_complete_matrix_data() execution
         update_db('matrix_' + district, df)

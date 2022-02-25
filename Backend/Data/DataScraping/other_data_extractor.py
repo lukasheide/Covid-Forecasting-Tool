@@ -22,7 +22,7 @@ def update_ecdc_variant_table():
     germany = df[df['country'] == 'Germany']
     germany = germany.drop(['country', 'country_code'], axis=1)
     germany = germany.sort_values(by=['year_week'])
-    update_db('ecdc_varient_data', germany)
+    update_db('ecdc_variant_data', germany)
     print('latest update of variant data stored successfully!')
 
 

@@ -387,9 +387,6 @@ def model_validation_pipeline_v2_wrapper():
         path_or_buf=f'Assets/Data/Evaluation/model_validation_data_forecasts_{datetime.now().strftime("%d_%m_%H:%M")}.csv')
 
 
-
-
-
 def model_validation_pipeline_v2(pipeline_start_date, pipeline_end_date, forecasting_horizon, train_length_diffeqmodel,
                                  train_length_sarima, training_period_max,
                                  ml_model_path, standardizer_model_path, ensemble_model_share, districts,
