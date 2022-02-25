@@ -225,7 +225,7 @@ Then as the second step, non-corona related data that is needed for data matrix 
 
 LASITHA - STUFF BELOW WILL BE REWRITTEN RIGHT?:  
 Sqlite DB file is created in [Assets/Data](Assets/Data)  
-Intermidiate data files used during this pipeline run are stored in [Assets/Data/Scraped](Assets/Data/Scraped)  
+Intermediate data files used during this pipeline run are stored in [Assets/Data/Scraped](Assets/Data/Scraped)  
 Pipeline script is located at [Backend/Data/DataManager/data_pipeline.py](Backend/Data/DataManager/data_pipeline.py) 
 
 #### 2) Matrix Creation Pipeline
@@ -283,7 +283,7 @@ beta from the previous period.
 
 
 #### 4) Validation Pipeline
-This pipeline helps to execute a full validation run for all the models used in this project under flexible diferent configurations. for instance Multiple intervals over which the pipeline is supposed to run can be setup. For each interval the model validation pipeline will be called (includes all the models). This is usually only done once, unless one wants to run two unconnected time intervals. (Example: Run validation for Apr 2020 - Oct 2020 + Jun 2021 - Jan 2022)
+This pipeline helps to execute a full validation run for all the models used in this project under flexible diferent configurations. For instance, multiple intervals over which the pipeline is supposed to run can be setup. For each interval the model validation pipeline will be called (includes all the models). This is usually only done once, unless one wants to run two unconnected time intervals. (Example: Run validation for Apr 2020 - Oct 2020 + Jun 2021 - Jan 2022)
 
 after the configured pipeline run(s) are completed, it provides an output which contain all the forecast results along with corresponding evaluation results which will be later. The model_validation_data_metrics_(datetime).csv contains detailed information regarding the forecasts of the different models and the correct data (validation data). Using the idx column this table is connected to the model_validation_data_forecasts_(datetime).csv that evaluates the different approaches over each forecasting horizon and district combination. 
 
