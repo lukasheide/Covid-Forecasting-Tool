@@ -9,7 +9,7 @@ from Backend.Data.DataManager.db_calls import get_all_table_data, start_forecast
     end_forecast_pipeline, create_forecast_store
 from Backend.Data.DataManager.matrix_data import get_predictors_for_ml_layer
 from Backend.Modeling.Differential_Equation_Modeling.prediction_intervals import get_prediction_intervals
-from Backend.Modeling.forecasting_wrapper_functions import forecast_all_models, convert_all_forecasts_to_incidences, \
+from Backend.Modeling.Util.forecasting_wrapper_functions import forecast_all_models, convert_all_forecasts_to_incidences, \
     convert_seven_day_averages
 from Backend.Visualization.plotting import plot_all_forecasts
 

@@ -16,7 +16,7 @@ from Backend.Modeling.Differential_Equation_Modeling.seiurv_model import seiurv_
 from Backend.Evaluation.metrics import compute_evaluation_metrics
 from Backend.Modeling.Util.pipeline_util import train_test_split, get_list_of_random_dates, \
     get_list_of_random_districts, date_difference_strings
-from Backend.Modeling.forecasting_wrapper_functions import forecast_all_models, convert_all_forecasts_to_incidences, convert_seven_day_averages
+from Backend.Modeling.Util.forecasting_wrapper_functions import forecast_all_models, convert_all_forecasts_to_incidences, convert_seven_day_averages
 from Backend.Visualization.plotting import plot_train_fitted_and_validation, plot_train_fitted_and_predictions, plot_all_forecasts
 import copy
 
