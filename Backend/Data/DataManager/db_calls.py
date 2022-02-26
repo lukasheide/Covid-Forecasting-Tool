@@ -240,7 +240,7 @@ def get_variant_data(date=None):
         year_week_str = str(date_obj.year) + '-' + str(week if week >= 10 else str(week).zfill(2))
 
         query_sql = 'SELECT variant ' \
-                    'FROM ecdc_varient_data ' \
+                    'FROM ecdc_variant_data ' \
                     'WHERE year_week = "%s" AND percent_variant > 0 ' \
                     'ORDER BY year_week, percent_variant DESC ' \
                     'LIMIT 1' \
@@ -251,7 +251,7 @@ def get_variant_data(date=None):
         if result.empty:
             if date_obj < data_start_date_obj:
                 query_sql = 'SELECT variant ' \
-                            'FROM ecdc_varient_data ' \
+                            'FROM ecdc_variant_data ' \
                             'WHERE percent_variant > 0 ' \
                             'ORDER BY year_week, percent_variant ASC ' \
                             'LIMIT 1'
@@ -260,7 +260,7 @@ def get_variant_data(date=None):
 
             else:
                 query_sql = 'SELECT variant ' \
-                            'FROM ecdc_varient_data ' \
+                            'FROM ecdc_variant_data ' \
                             'WHERE percent_variant > 0 ' \
                             'ORDER BY year_week, percent_variant DESC ' \
                             'LIMIT 1'
@@ -271,7 +271,7 @@ def get_variant_data(date=None):
 
     else:
         query_sql = 'SELECT variant ' \
-                    'FROM ecdc_varient_data ' \
+                    'FROM ecdc_variant_data ' \
                     'WHERE percent_variant > 0 ' \
                     'ORDER BY year_week, percent_variant DESC ' \
                     'LIMIT 1'

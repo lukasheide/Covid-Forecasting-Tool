@@ -204,7 +204,7 @@ def get_weekly_policy_data(start_date):
 
 
 def get_weekly_variant_data(start_date):
-    variant_data = get_all_table_data(table_name='ecdc_varient_data')
+    variant_data = get_all_table_data(table_name='ecdc_variant_data')
     weekly_variant_dict = {}
     no_weeks = 1
     week_variant = ''
