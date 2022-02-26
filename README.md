@@ -190,7 +190,8 @@ to as a tightly-integrated backend and front-end.
 ### <img src="Assets/Images/Icons/wrench.png" height=28> Technical Setup
 1) Ensure that you have Python version 3.8 or above installed <img src="Assets/Images/Icons/python-icon.png" height=15> and the latest version of _pip_ package-management system. We worked with PyCharm as an IDE and suggest to use it as well especially due to its handy debugging functionalities  <img src="Assets/Images/Icons/pycharm.png" height=18>.
 2) Clone our repository to your desired local folder.
-3) Install all requirements. To do so This can be done by running: 
+3) Checkout _prod_ branch.
+3) Install all requirements(in Pycharm you can create a virtual environment and then open the _requirements.txt_ file which will automatically prompt a notification where you can simple click on 'install requirements'). Or you can manually install the requirements by running:
 ```
 pip install -r requirements.txt 
 ```
