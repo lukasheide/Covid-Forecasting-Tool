@@ -48,6 +48,7 @@ for the next 14 days for all 401 German districts.
     - [Validation Pipeline](#4-validation-pipeline)
     - [Forecasting Pipeline](#5-forecasting-pipeline)
     - [Dashboard](#6-dashboard)
+    - [Start here](#7-start-here)
 
 ## Modeling
 ### Differential Equation Models
@@ -232,7 +233,7 @@ Then as the second step, non-corona related data that is needed for data matrix 
 NOTE about code location(s) & resource files:
   
 - Sqlite DB file is created in [Assets/Data](Assets/Data)
-  - DB file is created under the name _covcast.db_ and will be updated to the latest state every time the data pipeline is executed.  
+  - DB file is created under the name **_covcast.db_** and will be updated to the latest state every time the data pipeline is executed.  
 - **Intermediate** data files used during this pipeline run are stored in [Assets/Data/Scraped](Assets/Data/Scraped)  
   - ECDC variant data will be stored under [Assets/Data/Scraped/ecdc](Assets/Data/Scraped/ecdc) and a new DDMMYY.csv file created at each run of the pipeline and same day multiple runs will rewrite the file of that day.
   - DESTATIS mobility data will be stored under [Assets/Data/Scraped/destatis](Assets/Data/Scraped/destatis) and a new DDMMYY.csv file created at each run of the pipeline and same day multiple runs will rewrite the file of that day. **NOTE: another .csv file under the name _destatis_base.csv_ will be maintained here due to the 'past 30 days history only' condition is DESTATIS data source. Therefore, we are maintaining a seperate file (_destatis_base.csv_) in our remote server to allow ourselves to have a continuous history since 2020/01/01.
@@ -378,4 +379,21 @@ NOTE about code location(s) & starting manually:
 - The dashboard app is design to run automatically after the forecast pipeline (if not opened automatically in a new tab of your default browser, please have a look at the console for _''--> App Server is started successfully!''_. If found click on it manually to open. If not and no error is found in the console, then please wait until the server is started and ready).**
 - If you have already executed a forecast run (read the 'Pipeline Manual 7' below) and just need to start the dashboard, please go to [Frontend/AnalyticsTool/forecast_dashboard.py](Frontend/AnalyticsTool/forecast_dashboard.py) and execute the script manually. 
   
-#### 7) Full Runs
+#### 7) Start here
+For your conviniece, All above explained complex pipelines are compacted into two execution tasks so that you can experience the Tool in a fast and easy manner. these task are set up in the [main.py](main.py)  
+
+Assigning different tasks name to the task variable in the main.py script will allow you to run different process of our tool:
+    
+- **task --> 'generate_forecasts':**
+        
+This will only collect basic data from the scratch, Apart from the basic data inputs, this pipeline requires an additional file input called prediction_intervals.csv. These intervals are used for computing the prediction intervals for differential equation models for forecasting. 'generate_forecasts' will automatically download the latest existing _**prediction_intervals.csv**_ from our remote server during the pipeline run. After forecasts generated, 
+  the dashboard app will automatically start in your web browser (this may take about approx.20-30sec)  
+
+**NOTE: to generate this prediction_intervals.csv by yourself with different configurations, you need to execute the evaluation_pipeline.R script manually [Frontend/AnalyticsTool/forecast_dashboard.py](Backend/Evaluation/evaluation_pipeline.R). Where you can find further explanations to configure and execute the script.**
+        
+- **task --> 'run_model_validation':**
+        
+This pipeline helps to execute a full validation run for all the models used in this project under flexible different configurations. For instance, multiple intervals over which the pipeline is supposed to run can be setup. For each interval the model validation pipeline will be called (includes all the models). This is usually only done once, unless one wants to run two unconnected time intervals.  
+(Example: Run validation for Apr 2020 - Oct 2020 + Jun 2021 - Jan 2022) 
+
+After the configured pipeline run(s) are completed, it provides an output which contain all the forecast results along with corresponding evaluation results which will be later. The model_validation_data_metrics_(datetime).csv contains detailed information regarding the forecasts of the different models and the correct data (validation data). Using the idx column this table is connected to the **__model_validation_data_forecasts_(datetime).csv_** that evaluates the different approaches over each forecasting horizon and district combination.
