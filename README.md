@@ -40,8 +40,8 @@ for the next 14 days for all 401 German districts.
     - [Ensemble Model](#model-4-ensemble-model)
 - [Architecture](#architecture)
 - [Configuration](#configuration)
-  - [Technical Setup](#img-srcassetsimagesiconswrenchpng-height28-technical-setup)
-  - [Pipelines Manual](#img-srcassetsimagesiconsconfigurationpng-height30-pipelines-manual)
+  - [Technical Setup](#technical-setup)
+  - [Pipeline Manuals](#pipeline-manuals)
     - [Data Pipeline](#1-data-pipeline)
     - [Matrix Creation Pipeline](#2-matrix-creation-pipeline)
     - [Machine Learning Layer](#3-machine-learning-layer)
@@ -187,7 +187,7 @@ to as a tightly-integrated backend and front-end.
 
 ## Configuration
 ### <img src="Assets/Images/Icons/wrench.png" height=28> Technical Setup
-1) Ensure that you have Python version 3.8 or above installed <img src="Assets/Images/Icons/python-icon.png" height=15> and the latest version of Pip package-management system. We worked with PyCharm as an IDE and suggest to use it as well especially due to its handy debugging functionalities  <img src="Assets/Images/Icons/pycharm.png" height=18>.
+1) Ensure that you have Python version 3.8 or above installed <img src="Assets/Images/Icons/python-icon.png" height=15> and the latest version of _pip_ package-management system. We worked with PyCharm as an IDE and suggest to use it as well especially due to its handy debugging functionalities  <img src="Assets/Images/Icons/pycharm.png" height=18>.
 2) Clone our repository to your desired local folder.
 3) Install all requirements. To do so This can be done by running: 
 ```
@@ -212,7 +212,7 @@ to compute prediction intervals of the differential equation models,
 make sure to install the latest version as well. 
 We used version R 4.1.1 for our project. <img src="./Assets/Images/Icons/r-icon.png" height=15>
 
-### <img src="Assets/Images/Icons/configuration.png" height=30> Pipelines Manual
+### <img src="Assets/Images/Icons/configuration.png" height=30> Pipeline Manuals
 In the following we will explain the most important functions and pipelines and how to run them. 
 
 #### 1) Data Pipeline
@@ -224,15 +224,20 @@ population size as well as geospatial data regarding the main city of the distri
 Consecutively all available RKI-data regarding infection counts, vaccinations, recoveries, etc. are downloaded
 from CoronaDatenplatform. This data is accessed using the public API, preprocessed and then stored in the database.  
 Then as the second step, non-corona related data that is needed for data matrix creation to train the ML layer will and later as a secondary input to the ML-Compartmental Model is retrieved, preprocessed and stored in their corresponding tables as follows: 
-
+  
 - ECDC variant data in ecdc_variant_data table
 - DESTATIS mobility data in destatis_mobility_data table
-- OXCGRT policy data in oxcgrt_policy_data table
+- OXCGRT policy data in oxcgrt_policy_data table  
 
-LASITHA - STUFF BELOW WILL BE REWRITTEN RIGHT?:  
-Sqlite DB file is created in [Assets/Data](Assets/Data)  
-Intermediate data files used during this pipeline run are stored in [Assets/Data/Scraped](Assets/Data/Scraped)  
-Pipeline script is located at [Backend/Data/DataManager/data_pipeline.py](Backend/Data/DataManager/data_pipeline.py) 
+NOTE about code location(s) & resource files:
+  
+- Sqlite DB file is created in [Assets/Data](Assets/Data)
+  - DB file is created under the name _covcast.db_ and will be updated to the latest state every time the data pipeline is executed.  
+- **Intermediate** data files used during this pipeline run are stored in [Assets/Data/Scraped](Assets/Data/Scraped)  
+  - ECDC variant data will be stored under [Assets/Data/Scraped/ecdc](Assets/Data/Scraped/ecdc) and a new DDMMYY.csv file created at each run of the pipeline and same day multiple runs will rewrite the file of that day.
+  - DESTATIS mobility data will be stored under [Assets/Data/Scraped/destatis](Assets/Data/Scraped/destatis) and a new DDMMYY.csv file created at each run of the pipeline and same day multiple runs will rewrite the file of that day. **NOTE: another .csv file under the name _destatis_base.csv_ will be maintained here due to the 'past 30 days history only' condition is DESTATIS data source. Therefore, we are maintaining a seperate file (_destatis_base.csv_) in our remote server to allow ourselves to have a continuous history since 2020/01/01.
+  - OXCGRT weekly policy index data will be stored under [Assets/Data/Scraped/oxcgrt](Assets/Data/Scraped/oxcgrt) and a new DDMMYY.csv file created at each run of the pipeline and same day multiple runs will rewrite the file of that day.
+- Pipeline script is located at [Backend/Data/DataManager/data_pipeline.py](Backend/Data/DataManager/data_pipeline.py) 
 
 #### 2) Matrix Creation Pipeline
 The aim of the matrix creation pipeline is to create the dataset
@@ -267,8 +272,10 @@ Obtained from Meteostat who is one of the largest vendors of open weather and cl
 Obtained from ECDC (European Centre for Disease Prevention and Control) official webisite where they provide the details of DNA-sequenced covid samples for a given week.  
     _source:_ https://www.ecdc.europa.eu/en  
 
-The resulting matrix is saved as csv file and stored in [Assets/Data/](Assets/Data)  
-Pipeline script is located at [Backend/Data/DataManager/data_pipeline.py](Backend/Data/DataManager/matrix_pipeline.py) and script is located at [Backend/Data/DataManager/matrix_data.py](Backend/Data/DataManager/matrix_data.py) will provide more details regarding the pipeline's flow of execution
+NOTE about code location(s) & resource files:  
+
+- The resulting matrix is saved as .csv file under the name _all_matrix_data_v3.csv_ and stored in [Assets/Data/](Assets/Data)  
+- Pipeline script is located at [Backend/Data/DataManager/data_pipeline.py](Backend/Data/DataManager/matrix_pipeline.py) and script is located at [Backend/Data/DataManager/matrix_data.py](Backend/Data/DataManager/matrix_data.py) will provide more details regarding the pipeline's flow of execution
 
 
 #### 3) Machine Learning Layer
@@ -319,10 +326,12 @@ information regarding the forecasts of the different models and the
 correct data (validation data). Using the idx column this table is 
 connected to the model_validation_data_forecasts_(datetime).csv that 
 evaluates the different approaches over each forecasting horizon and 
-district combination. 
+district combination.  
 
-Evaluation results files generated by this pipeline run are stored in [Assets/Data/Evaluation](Assets/Data/Evaluation).  
-The validation pipeline script is located at [Backend/Data/DataManager/model_validation_pipeline.py](Backend/Data/DataManager/model_validation_pipeline.py).
+NOTE about code location(s) & resource files:  
+
+- Evaluation results files generated by this pipeline run are stored in [Assets/Data/Evaluation](Assets/Data/Evaluation).  
+- The validation pipeline script is located at [Backend/Data/DataManager/model_validation_pipeline.py](Backend/Data/DataManager/model_validation_pipeline.py).
 Here more detailed information is provided regarding the pipeline's flow of execution and its several configuration options.
 
 #### 5) Forecasting Pipeline
@@ -345,22 +354,28 @@ You can run clean the exisiting forecasts and run the pipeline by setting
 the 'with_clean' papameter to 'True' (by default, with_clean=False) and 
 also you can start the forecast at any past date of your interest. But the 
 latest possible date is today's date and is the default date if not 
-specified.
+specified.  
 
-The prediction pipeline script is located at 
+NOTE about code location(s) & resource files:  
+
+- The prediction pipeline script is located at 
 [Backend/Data/DataManager/forecast_pipeline.py](Backend/Data/DataManager/forecast_pipeline.py)  
-Its results are stored in the SQLite database.
-You can find the methods that handle these tables under 
-_start_forecast_pipeline, end_forecast_pipeline, insert_forecast_vals_ in 
-[Backend/Data/DataManager/db_calls.py](Backend/Data/DataManager/db_calls.py) 
+- Its results are stored in the SQLite database. You can find the methods that handle these tables under _start_forecast_pipeline, end_forecast_pipeline, insert_forecast_vals_ in [Backend/Data/DataManager/db_calls.py](Backend/Data/DataManager/db_calls.py) 
 
 #### 6) Dashboard
 The dashboard is designed to be easily accessible, easy-to-use and -comprehend. 
 The reason for that is the overall goal to support local health authorities. 
 Advanced technical skills cannot be presumed for all employees at local offices. 
 Thus, the tool must be usable and understandable without particular technical expertise. 
-Furthermore, it should be able to provide and visualise the forecasting results of the different models, forecasting the 7-day-incidence on district level.  
+Furthermore, it should be able to provide and visualise the forecasting results of the different models, forecasting the 7-day-incidence on district level. Below image will give you a brief idea about the overall view of the dashborad.   
 
 <img src="Assets/Images/Dashboard/dashboard_view.png" height=320>
+  
+The dashboard can be subdivided into two parts. The first part aims to show the exact forecasting results for a specific district. First, the district in focus can be selected at the top in a drop-down menu. Below that, additional filters can be chosen. The user can choose the forecasting result of which model they want to visualise on the left. All four models (SEIURV Last Beta, SEIURV ML Beta, ARIMA, and Ensemble) are available. It is possible only to view the results of individual models or multiple results simultaneously. That allows easy direct comparison of the different results. Another filter option that can be selected is to show the prediction intervals. The intervals indicate the probability that the actual results lie within the area and show the possible deviations. Central in the visualisation is the graph that visualises the forecasting results over two weeks. The x-axis represents the training and forecasting time horizon, while the y-axis depicts the 7-day-incidence. The forecasting lines of the different models are coloured differently, making it easier to distinguish them. To make it easier to compare different districts, the same colour is always associated with the same model. When hovering with the mouse over a forecasting line, detailed information is displayed automatically: the model used, date, and 7-day-incidence.  
 
-The dashboard can be subdivided into two parts. The first part aims to show the exact forecasting results for a specific district. First, the district in focus can be selected at the top in a drop-down menu. Below that, additional filters can be chosen. The user can choose the forecasting result of which model they want to visualise on the left. All four models (SEIURV Last Beta, SEIURV ML Beta, ARIMA, and Ensemble) are available. It is possible only to view the results of individual models or multiple results simultaneously. That allows easy direct comparison of the different results. Another filter option that can be selected is to show the prediction intervals. The intervals indicate the probability that the actual results lie within the area and show the possible deviations. Central in the visualisation is the graph that visualises the forecasting results over two weeks. The x-axis represents the training and forecasting time horizon, while the y-axis depicts the 7-day-incidence. The forecasting lines of the different models are coloured differently, making it easier to distinguish them. To make it easier to compare different districts, the same colour is always associated with the same model. When hovering with the mouse over a forecasting line, detailed information is displayed automatically: the model used, date, and 7-day-incidence. 
+NOTE about code location(s) & starting manually:
+  
+- The dashboard app is design to run automatically after the forecast pipeline (if not opened automatically in a new tab of your default browser, please have a look at the console for _''--> App Server is started successfully!''_. If found click on it manually to open. If not and no error is found in the console, then please wait until the server is started and ready).**
+- If you have already executed a forecast run (read the 'Pipeline Manual 7' below) and just need to start the dashboard, please go to [Frontend/AnalyticsTool/forecast_dashboard.py](Frontend/AnalyticsTool/forecast_dashboard.py) and execute the script manually. 
+  
+#### 7) Full Runs
