@@ -15,12 +15,12 @@ from Backend.Data.DataManager.data_util import format_name, date_str_to_int, val
 
 
 def get_engine():
-    engine = sqlalchemy.create_engine('sqlite:///Assets/Data/opendaten.db')
+    engine = sqlalchemy.create_engine('sqlite:///Assets/Data/covcast.db')
     return engine
 
 
 def get_db_connection():
-    return sqlite3.connect('Assets/Data/opendaten.db')
+    return sqlite3.connect('Assets/Data/covcast.db')
 
 
 def update_db(table_name, dataframe, replace=True):

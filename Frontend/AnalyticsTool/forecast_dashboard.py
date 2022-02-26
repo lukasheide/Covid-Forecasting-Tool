@@ -20,6 +20,9 @@ from Backend.Data.DataManager.data_util import create_dates_array
 from Backend.Data.DataManager.db_calls import get_district_forecast_data, get_all_latest_forecasts, get_all_table_data
 
 
+server_started = False
+
+
 def get_dash_app():
     # dark template
     pio.templates.default = 'plotly_dark'
@@ -492,17 +495,23 @@ def get_dash_app():
             forecast_map = ensemble_forecast
 
         return forecast_map
-
+    global server_started
+    server_started = True
+    print('--> App Server started successfully!')
     return app
 
 
 def start_dashboard():
-    Timer(20, check_if_dash_up).start()
+    Timer(1, check_if_dash_up).start()
     get_dash_app().run_server()
 
 
 def check_if_dash_up():
-    webbrowser.open_new('http://127.0.0.1:8050/')
+    global server_started
+    while True:
+        if server_started:
+            webbrowser.open_new('http://127.0.0.1:8050/')
+            break
 
 
 if __name__ == '__main__':
