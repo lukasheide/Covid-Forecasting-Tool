@@ -7,8 +7,8 @@ from Frontend.AnalyticsTool.forecast_dashboard import start_dashboard
 
 # description can be found below
 def run_quick_forecast():
-    # run_data_pipeline()
-    # forecasting_pipeline(full_run=True, debug=False, forecast_from=None, with_clean=False)
+    run_data_pipeline()
+    forecasting_pipeline(full_run=True, debug=False, forecast_from=None, with_clean=False)
     """
 
     :param full_run: generates forecasts for all the districts
@@ -29,7 +29,7 @@ def run_model_validation():
 
 if __name__ == '__main__':
     """
-        Assigning different tasks name to the task variable will allow you to run different process of out tool
+        Assigning different tasks name to the task variable will allow you to run different process of our tool
     
         # task --> 'generate_forecasts':
         
