@@ -32,16 +32,22 @@ for the next 14 days for all 401 German districts.
 ## Table of Contents
 - [Modeling](#modeling)
   - [Differential Equation Models](###Differential-Equation-Models)
-    - [SEIURV + Last Beta](#Model-1\)-SEIURV-Last-Beta)
-    - [SEIURV + Machine Learning Beta](#Model-2\)-SEIURV-ML-Beta)
-  - [Regression Model](#Regression-Model)
-    - [ARIMA](#Model-3\)-Arima-Model)
-  - [Combined Model](#Combined-Model)
-    - [Ensemble Model](#Model-4\)-Ensemble-Model)
+    - [SEIURV + Last Beta](#model-1-seiurv---last-beta)
+    - [SEIURV + Machine Learning Beta](#model-2-seiurv---ml-beta)
+  - [Regression Model](#regression-model)
+    - [ARIMA](#model-3-arima-model)
+  - [Combined Model](#combined-model)
+    - [Ensemble Model](#model-4-ensemble-model)
 - [Architecture](#architecture)
-- [How to use](#how-to-use)
-  - [Technical Setup](#Technical-Setup)
-  - [Configuration](#configuration)
+- [Configuration](#configuration)
+  - [Technical Setup](#img-srcassetsimagesiconswrenchpng-height28-technical-setup)
+  - [Pipelines Manual](#img-srcassetsimagesiconsconfigurationpng-height30-pipelines-manual)
+    - [Data Pipeline](#1-data-pipeline)
+    - [Matrix Creation Pipeline](#2-matrix-creation-pipeline)
+    - [Machine Learning Layer](#3-machine-learning-layer)
+    - [Validation Pipeline](#4-validation-pipeline)
+    - [Forecasting Pipeline](#5-forecasting-pipeline)
+    - [Dashboard](#6-dashboard)
 
 ## Modeling
 ### Differential Equation Models
@@ -179,7 +185,7 @@ automatically handled internally within Dash itself hence also referred
 to as a tightly-integrated backend and front-end.
 
 
-## How to use
+## Configuration
 ### <img src="Assets/Images/Icons/wrench.png" height=28> Technical Setup
 1) Ensure that you have Python version 3.8 or above installed <img src="Assets/Images/Icons/python-icon.png" height=15> and the latest version of Pip package-management system. We worked with PyCharm as an IDE and suggest to use it as well especially due to its handy debugging functionalities  <img src="Assets/Images/Icons/pycharm.png" height=18>.
 2) Clone our repository to your desired local folder.
@@ -206,7 +212,7 @@ to compute prediction intervals of the differential equation models,
 make sure to install the latest version as well. 
 We used version R 4.1.1 for our project. <img src="./Assets/Images/Icons/r-icon.png" height=15>
 
-### <img src="Assets/Images/Icons/configuration.png" height=30> Configuration
+### <img src="Assets/Images/Icons/configuration.png" height=30> Pipelines Manual
 In the following we will explain the most important functions and pipelines and how to run them. 
 
 #### 1) Data Pipeline
