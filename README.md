@@ -249,7 +249,7 @@ model. The latter beta answers the question as to which value of beta
 would have yielded the best results for forecasting. This beta therefore
 serves as the target variable of the machine learning layer.
 
-To create the matrix we use three additional predictors along with the fitted beta. These predictor were choosen after conducting several literature studies about indirect/direct influencing factors for infectious diseases. this way we could integrate the impact of influencing factors to our model which is the main idea behind integrating the machine learning layer. The used predictors and their sources are as follows;
+To create the matrix we use additional predictors related to other influencing factors along with the fitted beta. These predictor were chosen after conducting several literature studies about indirect/direct influencing factors on Covid-19 spreading. This way we could integrate the impact of influencing factors to our model which is the main idea behind integrating the machine learning layer. The used predictors and their sources are as follows;
 
 - **Mobility data :** 
 Obtained from DESTATIS (The Federal Statistical Office Germany) official website where they provide mobiltiy data of the mobile devices connection changes from their service towers during the past 30 days period.  
