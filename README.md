@@ -219,12 +219,12 @@ In the following we will explain the most important functions and pipelines and 
 
 #### 1) Data Pipeline
 The pipeline consists of two consecutive steps. 
-First, a list of all German districts that currently appear in Corona DatenPlatform is created. 
+First, a list of all German districts that currently appear in CoronaDaten Platform is created. 
 As different naming conventions for the districts exist on different platforms this list is used throughout 
 the entire process as our naming standard. Additionally, information for each district is retrieved namely including
 population size as well as geospatial data regarding the main city of the district. 
 Consecutively all available RKI-data regarding infection counts, vaccinations, recoveries, etc. are downloaded
-from CoronaDatenplatform. This data is accessed using the public API, preprocessed and then stored in the database.  
+from CoronaDaten Platform. This data is accessed using the public API, preprocessed and then stored in the database.  
 Then as the second step, non-corona related data that is needed for data matrix creation to train the ML layer will and later as a secondary input to the ML-Compartmental Model is retrieved, preprocessed and stored in their corresponding tables as follows: 
   
 - ECDC variant data in ecdc_variant_data table
@@ -250,7 +250,7 @@ period (in this case for the entire period since the start of the
 pandemic in Germany until January 2022). 
 For this purpose, the optimal beta is fitted for both the 
 training period before the prediction period and 
-the validation period. The fitted beta of the training period serves is also
+the validation period. The fitted beta of the training period is also
 used for the forecasting period in the case of the **SEIURV + Last Beta** 
 model. The latter beta answers the question as to which value of beta
 would have yielded the best results for forecasting. This beta therefore
@@ -377,7 +377,7 @@ The dashboard can be subdivided into two parts. The first part aims to show the 
 
 NOTE about code location(s) & starting manually:
   
-- The dashboard app is design to run automatically after the forecast pipeline (if not opened automatically in a new tab of your default browser, please have a look at the console for _''--> App Server is started successfully!''_. If found click on it manually to open. If not and no error is found in the console, then please wait until the server is started and ready).**
+- The dashboard app is design to run automatically after the forecast pipeline (if not opened automatically in a new tab of your default browser, please have a look at the console for _''--> App Server is started successfully!''_. If found click on it manually to open. If not and no error is found in the console, then please wait until the server is started and ready).
 - If you have already executed a forecast run (read the 'Pipeline Manual 7' below) and just need to start the dashboard, please go to [Frontend/AnalyticsTool/forecast_dashboard.py](Frontend/AnalyticsTool/forecast_dashboard.py) and execute the script manually. 
   
 #### 7) Start here
