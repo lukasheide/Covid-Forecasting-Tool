@@ -2,7 +2,6 @@
 <img src="Assets/Images/Logos/ercis_logo.png" height=60>
 <img src="Assets/Images/Logos/wwu_logo.png" height=75>
 
-
 ### Goal and Motivation:
 The goal of this project was to develop a short-term forecasting tool for 
 COVID-19 on a regional level using open data to support local health
