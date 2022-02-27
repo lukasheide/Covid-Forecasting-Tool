@@ -190,11 +190,11 @@ to as a tightly-integrated backend and front-end.
 1) Ensure that you have Python version 3.8 or above installed <img src="Assets/Images/Icons/python-icon.png" height=15> and the latest version of _pip_ package-management system. We worked with PyCharm as an IDE and suggest to use it as well especially due to its handy debugging functionalities  <img src="Assets/Images/Icons/pycharm.png" height=18>.
 2) Clone our repository to your desired local folder.
 3) Checkout _master_ branch.
-5) Install all requirements(in Pycharm you can create a virtual environment and then open the _requirements.txt_ file which will automatically prompt a notification where you can simple click on 'install requirements'). Or you can manually install the requirements by running:
+4) Install all requirements(in Pycharm you can create a virtual environment and then open the _requirements.txt_ file which will automatically prompt a notification where you can simple click on 'install requirements'). Or you can manually install the requirements by running:
 ```
 pip install -r requirements.txt 
 ```
-6) Now you're all set to run the project. Before executing any script, **make sure you have set the working directory of the environment to the _root_ folder of the project**. To make it easier to inspect and run our code we created a [main.py](main.py) script that allows calling our most important functions and pipelines.
+5) Now you're all set to run the project. Before executing any script, **make sure you have set the working directory of the environment to the _root_ folder of the project**. To make it easier to inspect and run our code we created a [main.py](main.py) script that allows calling our most important functions and pipelines.
 For easier configuration the task variable can be adjusted to choose what function should be executed.
 More detailed informations can be found in the comments of the [main.py](main.py) script.
 The default option **generate_forecasts** will generate forecasts for the next 14 days 
@@ -206,7 +206,7 @@ for each district by each model and a complete map view of next 14 days incident
 
     To configure WWU VPN visit: https://www.uni-muenster.de/IT/services/kommunikation/vpn/ 
 
-7) Optional: If you also want to run our 
+6) Optional: If you also want to run our 
 [R script](Backend/Evaluation/evaluation_pipeline.R) that was mainly used for producing
 plots for our presentation, evaluation purposes as well as computing the historical residuals 
 to compute prediction intervals of the differential equation models, 
