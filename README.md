@@ -380,7 +380,7 @@ NOTE about code location(s) & starting manually:
 - If you have already executed a forecast run (read the 'Pipeline Manual 7' below) and just need to start the dashboard, please go to [Frontend/AnalyticsTool/forecast_dashboard.py](Frontend/AnalyticsTool/forecast_dashboard.py) and execute the script manually. 
   
 #### 7) Start here
-For your conviniece, All above explained complex pipelines are compacted into two execution tasks so that you can experience the Tool in a fast and easy manner. these task are set up in the [main.py](main.py)  
+For your conviniece, all above explained complex pipelines are compacted into two execution tasks so that you can experience the Tool in a fast and easy manner. these task are set up in the [main.py](main.py)  
 
 Assigning different tasks name to the task variable in the main.py script will allow you to run different process of our tool:
     
