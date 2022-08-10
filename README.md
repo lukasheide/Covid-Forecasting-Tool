@@ -380,13 +380,13 @@ NOTE about code location(s) & starting manually:
 - If you have already executed a forecast run (read the 'Pipeline Manual 7' below) and just need to start the dashboard, please go to [Frontend/AnalyticsTool/forecast_dashboard.py](Frontend/AnalyticsTool/forecast_dashboard.py) and execute the script manually. 
   
 #### 7) Start here
-For your conviniece, all above explained complex pipelines are compacted into two execution tasks so that you can experience the Tool in a fast and easy manner. these task are set up in the [main.py](main.py)  
+For your convenience, all above explained complex pipelines are compacted into two execution tasks so that you can experience the tool in a fast and easy manner. These task are set up in the [main.py](main.py)  
 
 Assigning different tasks name to the task variable in the main.py script will allow you to run different process of our tool:
     
 - **task --> 'generate_forecasts':**
         
-This will only collect basic data from the scratch, Apart from the basic data inputs, this pipeline requires an additional file input called prediction_intervals.csv. These intervals are used for computing the prediction intervals for differential equation models for forecasting. 'generate_forecasts' will automatically download the latest existing _**prediction_intervals.csv**_ from our remote server during the pipeline run. After forecasts generated, 
+This will only collect basic data from the scratch, apart from the basic data inputs, this pipeline requires an additional file input called prediction_intervals.csv. These intervals are used for computing the prediction intervals for differential equation models for forecasting. 'generate_forecasts' will automatically download the latest existing _**prediction_intervals.csv**_ from our remote server during the pipeline run. After forecasts generated, 
   the dashboard app will automatically start in your web browser (this may take about approx.20-30sec)  
 
 **NOTE: to generate this prediction_intervals.csv by yourself with different configurations, you need to execute the evaluation_pipeline.R script manually [Frontend/AnalyticsTool/forecast_dashboard.py](Backend/Evaluation/evaluation_pipeline.R). Where you can find further explanations to configure and execute the script.**
